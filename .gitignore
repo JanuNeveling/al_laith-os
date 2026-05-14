@@ -1,6 +1,12 @@
 # Claude Code local settings
 .claude/settings.local.json
 
+# Vercel
+.vercel
+
+# Node
+node_modules/
+
 # Archives
 *.zip
 
