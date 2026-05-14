@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zone 5 — Knowledge Hub | Al Laith OS</title>
+<link rel="stylesheet" href="../Shared/design-system.css">
+<style>
+/* ── Zone 5 specific styles ── */
+.z5-progress-ring { display:flex; align-items:center; gap:16px; }
+.z5-ring-wrap { position:relative; width:72px; height:72px; flex-shrink:0; }
+.z5-ring-wrap svg { transform:rotate(-90deg); }
+.z5-ring-bg { fill:none; stroke:var(--surface-3); stroke-width:6; }
+.z5-ring-fill { fill:none; stroke-width:6; stroke-linecap:round; transition:stroke-dashoffset .6s ease; }
+.z5-ring-label { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; }
+
+.z5-stat-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:24px; }
+.z5-stat { background:var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:16px; }
+.z5-stat-num { font-size:28px; font-weight:800; line-height:1; }
+.z5-stat-label { font-size:11px; color:var(--text-dim); margin-top:4px; text-transform:uppercase; letter-spacing:.05em; }
+
+.z5-cat-progress { background:var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:12px; }
+.z5-cat-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.z5-cat-name { font-weight:600; font-size:14px; display:flex; align-items:center; gap:8px; }
+.z5-cat-count { font-size:12px; color:var(--text-dim); }
+.z5-prog-track { height:8px; background:var(--surface-3); border-radius:4px; overflow:hidden; }
+.z5-prog-fill { height:100%; border-radius:4px; transition:width .6s ease; }
+
+.z5-search-bar { display:flex; gap:10px; margin-bottom:20px; }
+.z5-search-bar input { flex:1; }
+.z5-filter-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+.z5-filter-btn { padding:5px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface-2); color:var(--text-dim); font-size:12px; font-weight:500; cursor:pointer; transition:all .15s; }
+.z5-filter-btn.active { background:var(--primary); border-color:var(--primary); color:#fff; }
+
+.z5-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; }
+.z5-card { background:var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:16px; cursor:pointer; transition:all .15s; position:relative; }
+.z5-card:hover { border-color:var(--primary); transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,0,0,.15); }
+.z5-card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
+.z5-card-title { font-weight:600; font-size:14px; line-height:1.3; flex:1; margin-right:8px; }
+.z5-status-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:3px; }
+.dot-not-started { background:var(--text-dim); }
+.dot-learning { background:#F59E0B; }
+.dot-understood { background:#10B981; }
+.z5-card-desc { font-size:12px; color:var(--text-dim); line-height:1.5; margin-bottom:10px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.z5-card-footer { display:flex; align-items:center; justify-content:space-between; }
+.z5-cat-badge { font-size:10px; font-weight:600; padding:3px 8px; border-radius:10px; text-transform:uppercase; letter-spacing:.04em; }
+.cat-social { background:rgba(59,130,246,.15); color:#60A5FA; }
+.cat-brand  { background:rgba(245,158,11,.15); color:#FBBF24; }
+.cat-b2b    { background:rgba(16,185,129,.15); color:#34D399; }
+.cat-strategy { background:rgba(139,92,246,.15); color:#A78BFA; }
+.z5-card-notes-hint { font-size:10px; color:var(--text-dim); font-style:italic; }
+
+/* ── Concept Detail Modal ── */
+.concept-modal { display:none; position:fixed; inset:0; z-index:200; }
+.concept-modal.open { display:flex; }
+.concept-overlay { position:absolute; inset:0; background:rgba(0,0,0,.6); }
+.concept-panel { position:relative; z-index:1; margin-left:auto; width:100%; max-width:680px; height:100vh; overflow-y:auto; background:var(--surface-1); border-left:1px solid var(--border); display:flex; flex-direction:column; }
+.concept-panel-head { padding:24px 24px 0; border-bottom:1px solid var(--border); padding-bottom:16px; position:sticky; top:0; background:var(--surface-1); z-index:2; }
+.concept-panel-title { font-size:20px; font-weight:700; margin-bottom:6px; }
+.concept-panel-meta { display:flex; align-items:center; gap:10px; }
+.concept-panel-body { padding:24px; flex:1; }
+.concept-section { margin-bottom:24px; }
+.concept-section-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-dim); margin-bottom:8px; }
+.concept-desc-box { background:var(--surface-2); border-radius:10px; padding:14px; font-size:13px; line-height:1.7; color:var(--text-secondary); }
+.concept-allaith-box { background:rgba(50,159,205,.08); border:1px solid rgba(50,159,205,.2); border-radius:10px; padding:14px; font-size:13px; line-height:1.7; }
+
+.status-toggle { display:flex; gap:8px; }
+.status-btn { flex:1; padding:9px; border-radius:8px; border:1px solid var(--border); background:var(--surface-2); font-size:12px; font-weight:600; cursor:pointer; text-align:center; transition:all .15s; }
+.status-btn.active-not-started { background:var(--surface-3); border-color:var(--text-dim); color:var(--text-primary); }
+.status-btn.active-learning { background:rgba(245,158,11,.15); border-color:#F59E0B; color:#F59E0B; }
+.status-btn.active-understood { background:rgba(16,185,129,.15); border-color:#10B981; color:#10B981; }
+
+.concept-notes-area { width:100%; min-height:100px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:12px; font-size:13px; color:var(--text-primary); resize:vertical; font-family:inherit; line-height:1.6; }
+.concept-notes-area:focus { outline:none; border-color:var(--primary); }
+
+.related-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.related-chip { padding:4px 10px; background:var(--surface-2); border:1px solid var(--border); border-radius:12px; font-size:11px; cursor:pointer; transition:all .15s; }
+.related-chip:hover { border-color:var(--primary); color:var(--primary); }
+
+.ai-output-box { background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:16px; font-size:13px; line-height:1.8; white-space:pre-wrap; margin-top:10px; display:none; }
+.ai-output-box.visible { display:block; }
+.obsidian-preview { background:#1a1a2e; border:1px solid #333; border-radius:10px; padding:16px; font-size:12px; line-height:1.8; font-family:'Courier New', monospace; color:#d4d4d4; white-space:pre-wrap; margin-top:10px; display:none; max-height:300px; overflow-y:auto; }
+.obsidian-preview.visible { display:block; }
+
+/* ── Export page ── */
+.export-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; margin-top:20px; }
+.export-card { background:var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:10px; }
+.export-card-title { font-weight:600; font-size:14px; }
+.export-card-desc { font-size:12px; color:var(--text-dim); line-height:1.5; flex:1; }
+
+/* ── Suggested next ── */
+.suggestion-card { background:linear-gradient(135deg,rgba(50,159,205,.1),rgba(139,92,246,.08)); border:1px solid rgba(50,159,205,.2); border-radius:12px; padding:18px; display:flex; align-items:center; gap:16px; margin-bottom:24px; cursor:pointer; transition:all .15s; }
+.suggestion-card:hover { border-color:var(--primary); }
+.suggestion-icon { font-size:32px; flex-shrink:0; }
+.suggestion-text h4 { font-weight:600; margin-bottom:4px; }
+.suggestion-text p { font-size:12px; color:var(--text-dim); }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="os-shell.html" class="sidebar-logo">
+      <div class="logo-mark">AL</div>
+      <div>
+        <div class="logo-title">Al Laith OS</div>
+        <div class="logo-sub">Knowledge Hub</div>
+      </div>
+    </a>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <button class="nav-item active" onclick="navigate('dashboard')">
+      <span class="nav-icon">🧠</span> Dashboard
+    </button>
+
+    <div class="nav-section-label" style="margin-top:12px">Knowledge Map</div>
+    <button class="nav-item" onclick="navigate('all')">
+      <span class="nav-icon">📚</span> All Concepts
+      <span class="nav-badge" id="nb-all">40</span>
+    </button>
+    <button class="nav-item" onclick="navigate('social')">
+      <span class="nav-icon">📱</span> Social Media
+      <span class="nav-badge" id="nb-social">10</span>
+    </button>
+    <button class="nav-item" onclick="navigate('brand')">
+      <span class="nav-icon">🎯</span> Brand &amp; Voice
+      <span class="nav-badge" id="nb-brand">10</span>
+    </button>
+    <button class="nav-item" onclick="navigate('b2b')">
+      <span class="nav-icon">🤝</span> B2B &amp; UAE
+      <span class="nav-badge" id="nb-b2b">10</span>
+    </button>
+    <button class="nav-item" onclick="navigate('strategy')">
+      <span class="nav-icon">📊</span> Strategy
+      <span class="nav-badge" id="nb-strategy">10</span>
+    </button>
+
+    <div class="nav-section-label" style="margin-top:12px">Obsidian</div>
+    <button class="nav-item" onclick="navigate('export')">
+      <span class="nav-icon">⬇️</span> Export to Obsidian
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="os-shell.html" class="btn btn-ghost btn-sm" style="width:100%;justify-content:center">← Command Centre</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main-content" id="main-content">
+
+  <!-- ── DASHBOARD ── -->
+  <div id="page-dashboard" class="page active">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Marketing Brain</h1>
+        <p class="page-subtitle">Your personal marketing knowledge map — built concept by concept.</p>
+      </div>
+    </div>
+
+    <div class="z5-stat-row" id="dash-stats"></div>
+
+    <div id="dash-suggestion"></div>
+
+    <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">Progress by category</h3>
+    <div id="dash-categories"></div>
+
+    <h3 style="font-size:14px;font-weight:700;margin:24px 0 12px">Recently updated</h3>
+    <div class="z5-grid" id="dash-recent"></div>
+  </div>
+
+  <!-- ── KNOWLEDGE MAP (all / category) ── -->
+  <div id="page-map" class="page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title" id="map-title">All Concepts</h1>
+        <p class="page-subtitle" id="map-sub">Click any concept to open it, read, take notes, and track your progress.</p>
+      </div>
+    </div>
+
+    <div class="z5-search-bar">
+      <input class="form-input" id="map-search" placeholder="Search concepts…" oninput="renderMap()">
+    </div>
+    <div class="z5-filter-row">
+      <button class="z5-filter-btn active" data-filter="all" onclick="setFilter('all',this)">All</button>
+      <button class="z5-filter-btn" data-filter="not-started" onclick="setFilter('not-started',this)">⚫ Not started</button>
+      <button class="z5-filter-btn" data-filter="learning" onclick="setFilter('learning',this)">🟡 Learning</button>
+      <button class="z5-filter-btn" data-filter="understood" onclick="setFilter('understood',this)">🟢 Understood</button>
+    </div>
+    <div class="z5-grid" id="map-grid"></div>
+    <div id="map-empty" style="display:none;text-align:center;padding:48px;color:var(--text-dim)">No concepts match your search.</div>
+  </div>
+
+  <!-- ── EXPORT ── -->
+  <div id="page-export" class="page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Export to Obsidian</h1>
+        <p class="page-subtitle">Download your knowledge as Markdown files — drag them straight into your Obsidian vault.</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-body">
+        <h3 style="font-weight:600;margin-bottom:8px">How to import into Obsidian</h3>
+        <ol style="font-size:13px;color:var(--text-secondary);line-height:2;padding-left:18px">
+          <li>Open Obsidian → your vault folder</li>
+          <li>Create a folder called <strong>Al Laith Marketing Brain</strong></li>
+          <li>Download files below and drag them into that folder</li>
+          <li>Open Graph View (left sidebar icon) to see your knowledge web</li>
+          <li>Concepts with notes you've written will be richest — fill those in first</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="export-grid">
+      <div class="export-card">
+        <div style="font-size:28px">📦</div>
+        <div class="export-card-title">Export All 40 Concepts</div>
+        <div class="export-card-desc">Downloads every concept as a single bundled Markdown file. Open it in Obsidian or split into individual notes.</div>
+        <button class="btn btn-primary" onclick="exportAll()">⬇️ Download All (.md)</button>
+      </div>
+      <div class="export-card">
+        <div style="font-size:28px">✍️</div>
+        <div class="export-card-title">Export My Notes Only</div>
+        <div class="export-card-desc">Downloads only concepts where you've written personal notes — your actual knowledge, not the pre-built content.</div>
+        <button class="btn btn-ghost" onclick="exportNotes()">⬇️ Download My Notes</button>
+      </div>
+      <div class="export-card">
+        <div style="font-size:28px">🟢</div>
+        <div class="export-card-title">Export Understood Concepts</div>
+        <div class="export-card-desc">Only the concepts you've marked as Understood — your mastered knowledge map.</div>
+        <button class="btn btn-ghost" onclick="exportByStatus('understood')">⬇️ Download Mastered</button>
+      </div>
+      <div class="export-card">
+        <div style="font-size:28px">🔗</div>
+        <div class="export-card-title">Export Index File</div>
+        <div class="export-card-desc">A master index note that links to every concept — perfect as the home page of your Obsidian vault.</div>
+        <button class="btn btn-ghost" onclick="exportIndex()">⬇️ Download Index</button>
+      </div>
+    </div>
+
+    <h3 style="font-size:14px;font-weight:700;margin:32px 0 12px">Export individual concepts</h3>
+    <div class="z5-grid" id="export-grid"></div>
+  </div>
+
+</main>
+
+<!-- ── CONCEPT DETAIL MODAL ── -->
+<div class="concept-modal" id="conceptModal">
+  <div class="concept-overlay" onclick="closeModal()"></div>
+  <div class="concept-panel">
+    <div class="concept-panel-head">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()" style="margin-bottom:12px">← Back</button>
+      <div class="concept-panel-title" id="modal-title"></div>
+      <div class="concept-panel-meta">
+        <span class="z5-cat-badge" id="modal-cat-badge"></span>
+        <span id="modal-links-count" style="font-size:11px;color:var(--text-dim)"></span>
+      </div>
+    </div>
+    <div class="concept-panel-body">
+
+      <div class="concept-section">
+        <div class="concept-section-label">What it is</div>
+        <div class="concept-desc-box" id="modal-desc"></div>
+      </div>
+
+      <div class="concept-section">
+        <div class="concept-section-label">🏗️ Al Laith angle</div>
+        <div class="concept-allaith-box" id="modal-allaith"></div>
+      </div>
+
+      <div class="concept-section">
+        <div class="concept-section-label">Your progress</div>
+        <div class="status-toggle">
+          <button class="status-btn" id="sbtn-not-started" onclick="setStatus('not-started')">⚫ Not started</button>
+          <button class="status-btn" id="sbtn-learning" onclick="setStatus('learning')">🟡 Learning</button>
+          <button class="status-btn" id="sbtn-understood" onclick="setStatus('understood')">🟢 Understood</button>
+        </div>
+      </div>
+
+      <div class="concept-section">
+        <div class="concept-section-label">Your notes</div>
+        <textarea class="concept-notes-area" id="modal-notes" placeholder="Write what you learn here… your own words, examples, questions. This saves automatically." oninput="saveNotes()"></textarea>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:4px" id="notes-save-indicator">Auto-saves as you type</div>
+      </div>
+
+      <div class="concept-section">
+        <div class="concept-section-label">Related concepts</div>
+        <div class="related-chips" id="modal-related"></div>
+      </div>
+
+      <div class="concept-section">
+        <div class="concept-section-label">🤖 Ask Claude</div>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px">Get a beginner-friendly explanation with Al Laith examples and practical first steps.</p>
+        <button class="btn btn-ai" id="explain-btn" onclick="askClaude()">✨ Explain this concept to me</button>
+        <div class="ai-output-box" id="ai-explanation"></div>
+      </div>
+
+      <div class="concept-section">
+        <div class="concept-section-label">📝 Generate Obsidian Note</div>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px">Claude writes a full, structured Markdown note ready to drop straight into your Obsidian vault.</p>
+        <button class="btn btn-ghost" id="obsidian-btn" onclick="generateObsidianNote()">📝 Generate note</button>
+        <div class="obsidian-preview" id="obsidian-preview"></div>
+        <div id="obsidian-actions" style="display:none;margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="downloadObsidianNote()">⬇️ Download .md</button>
+          <button class="btn btn-ghost btn-sm" onclick="copyObsidianNote()">📋 Copy to clipboard</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="../Shared/storage-schema.js"></script>
+<script src="../Shared/brand-voice.js"></script>
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════
+   KNOWLEDGE LIBRARY — 40 pre-seeded marketing concepts
+══════════════════════════════════════════════════════════════ */
+const CONCEPTS = [
+  // ── SOCIAL MEDIA ──────────────────────────────────────────
+  {
+    id:'content-pillars', cat:'social', title:'Content Pillars',
+    desc:'The recurring themes your content is organised around. Instead of posting randomly, every post fits into a pillar — making your feed feel coherent and strategic.',
+    allaith:'Al Laith uses 6 pillars: Products (equipment shots), Sectors (job sites), Messaging (brand values), Community (team), Training (safety), Interactive (questions/polls). Every post you create should belong to one.',
+    related:['content-calendar','content-strategy','brand-voice','posting-frequency']
+  },
+  {
+    id:'content-calendar', cat:'social', title:'Content Calendar',
+    desc:'A forward plan showing what you\'re posting, when, and on which platform. Prevents last-minute scrambling and ensures consistent output across the month.',
+    allaith:'Al Laith plans posts in Zone 1 using the calendar feature. A good calendar mixes pillars across the week — not three Products posts in a row, then silence.',
+    related:['content-pillars','posting-frequency','campaign-planning','content-strategy']
+  },
+  {
+    id:'instagram-algorithm', cat:'social', title:'Instagram Algorithm',
+    desc:'The system Instagram uses to decide who sees your posts and how widely they spread. It favours content that gets saves, shares, comments, and watch time early after posting.',
+    allaith:'For Al Laith, Reels with a strong visual hook in the first 2 seconds get the most reach. Saves matter more than likes — posts that teach or show scale get saved.',
+    related:['reels-strategy','engagement-rate','posting-frequency','stories-vs-feed']
+  },
+  {
+    id:'reels-strategy', cat:'social', title:'Reels Strategy',
+    desc:'Short-form video (7–90 seconds) is Instagram\'s highest-reach format. The first 2 seconds determine if people stop scrolling. Hook, value or entertainment, strong visual end.',
+    allaith:'Al Laith has powerful Reel material: time-lapses of scaffold builds, equipment moving at scale, site reveals. These naturally grab attention without needing tricks.',
+    related:['instagram-algorithm','content-pillars','stories-vs-feed','engagement-rate']
+  },
+  {
+    id:'linkedin-b2b', cat:'social', title:'LinkedIn for B2B',
+    desc:'LinkedIn is where business decision-makers live. Long-form posts, project case studies, and industry insight perform best. It rewards consistency and expertise, not entertainment.',
+    allaith:'LinkedIn is Al Laith\'s most strategic platform. Project managers, procurement officers, and site directors are there. Case studies, scale-of-work posts, and team stories build credibility.',
+    related:['b2b-vs-b2c','social-proof','content-pillars','target-audience']
+  },
+  {
+    id:'hashtag-strategy', cat:'social', title:'Hashtag Strategy',
+    desc:'Tags that help the right people discover your posts. A good mix includes niche tags (very specific), industry tags (medium competition), and brand tags (your own community).',
+    allaith:'Al Laith uses: #AlLaith (brand), #UAE #GCC (location), #EquipmentRental #Scaffolding (niche), #ConstructionUAE #EventsUAE (industry). 15–20 tags per Instagram post.',
+    related:['instagram-algorithm','engagement-rate','content-pillars']
+  },
+  {
+    id:'carousel-posts', cat:'social', title:'Carousel Posts',
+    desc:'Multi-slide posts on Instagram and LinkedIn. They get swiped through, which signals strong engagement to the algorithm. Great for step-by-step content, comparisons, and lists.',
+    allaith:'"5 types of scaffolding we installed this month" or "Before and after: event build in 72 hours" work perfectly as carousels. High save rates from procurement teams.',
+    related:['instagram-algorithm','content-pillars','engagement-rate','storytelling']
+  },
+  {
+    id:'engagement-rate', cat:'social', title:'Engagement Rate',
+    desc:'The percentage of your audience that interacts with your content. Formula: (Likes + Comments + Shares + Saves) ÷ Followers × 100. The real measure of content quality.',
+    allaith:'A 2–5% engagement rate is good for a B2B account. Al Laith should prioritise saves (from procurement teams saving project references) and shares (from industry peers).',
+    related:['instagram-algorithm','kpis','posting-frequency','call-to-action']
+  },
+  {
+    id:'stories-vs-feed', cat:'social', title:'Stories vs Feed',
+    desc:'Feed posts are permanent and build long-term brand. Stories disappear after 24 hours and drive daily engagement. Different audiences consume each — some only watch stories.',
+    allaith:'Use Al Laith feed posts for polished project content and brand moments. Stories for behind-the-scenes, quick updates, polls ("Which site would you work on?"), and day-in-the-life content.',
+    related:['instagram-algorithm','content-pillars','reels-strategy']
+  },
+  {
+    id:'posting-frequency', cat:'social', title:'Posting Frequency',
+    desc:'How often you publish on each platform. Consistency beats volume — posting 3x per week every week outperforms posting 7x for one week then going silent for three.',
+    allaith:'Al Laith target: Instagram 4–5x per week, LinkedIn 3x per week, Facebook 2–3x per week. Quality first — a single powerful post beats three weak ones.',
+    related:['content-calendar','instagram-algorithm','engagement-rate']
+  },
+
+  // ── BRAND & VOICE ─────────────────────────────────────────
+  {
+    id:'brand-voice', cat:'brand', title:'Brand Voice',
+    desc:'The personality and tone your brand communicates in across everything — captions, bios, articles, emails. Consistent voice makes a brand recognisable and trustworthy.',
+    allaith:'Al Laith voice: strategic, authoritative, precise. Lead with outcomes and scale. Use specific claims, not vague praise. "Whatever It Takes" is the tagline — it must be earned by the content, not just appended.',
+    related:['tone-of-voice','brand-positioning','brand-storytelling','content-pillars']
+  },
+  {
+    id:'brand-positioning', cat:'brand', title:'Brand Positioning',
+    desc:'How you want your brand to be perceived in the mind of your audience relative to competitors. It\'s the space you own. Positioning is not what you say — it\'s what they believe.',
+    allaith:'Al Laith\'s position: delivery partner, not just a supplier. Not "we rent equipment" but "we make your project happen." That shift changes every piece of content.',
+    related:['usp','brand-voice','competitor-analysis','b2b-vs-b2c']
+  },
+  {
+    id:'visual-identity', cat:'brand', title:'Visual Identity',
+    desc:'The complete visual system of a brand: logo, colours, fonts, photography style, graphic templates. When applied consistently, the audience recognises content instantly.',
+    allaith:'Al Laith: navy blue (#0C172C), brand blue (#329FCD). Photo-Forward formula: hero photo, dark gradient overlay, bold headline bottom-left, logos positioned precisely. Every post follows this.',
+    related:['visual-consistency','brand-voice','brand-storytelling']
+  },
+  {
+    id:'brand-storytelling', cat:'brand', title:'Brand Storytelling',
+    desc:'Using narrative to communicate value instead of just listing features. Stories create emotion, context, and memory. People remember stories. They forget product specs.',
+    allaith:'"We didn\'t just deliver 3,000 scaffolding frames. We made the Dubai Airshow happen." That\'s a story. Not "we provide scaffolding solutions." Lead with what was achieved, not what was sold.',
+    related:['brand-voice','social-proof','content-pillars','visual-identity']
+  },
+  {
+    id:'tone-of-voice', cat:'brand', title:'Tone of Voice',
+    desc:'The HOW of your communication — not just what you say, but the character behind it. Brands can be formal or casual, bold or humble, technical or simple.',
+    allaith:'Al Laith is direct, outcome-led, and earned-confident. No filler words. No vague superlatives like "world-class" or "premier." Specific claims: "72-hour build", "3,000 frames", "zero incidents."',
+    related:['brand-voice','brand-positioning','brand-storytelling']
+  },
+  {
+    id:'brand-tagline', cat:'brand', title:'Brand Tagline',
+    desc:'A short phrase that captures the essence of a brand\'s promise. The best taglines are earned by the content around them — they land harder because of what came before.',
+    allaith:'"Whatever It Takes." — Al Laith\'s commitment to delivery against any condition, timeline, or scale. It should close a post only when the post actually demonstrates that commitment.',
+    related:['brand-voice','brand-positioning','brand-storytelling']
+  },
+  {
+    id:'visual-consistency', cat:'brand', title:'Visual Consistency',
+    desc:'Every piece of content looking like it comes from the same brand. Same colours, same fonts, same photo treatment. Inconsistency signals amateurism; consistency builds authority.',
+    allaith:'When someone scrolls past an Al Laith post, they should know it\'s Al Laith before they read the name. That comes from applying the Photo-Forward template and colour system to every single post.',
+    related:['visual-identity','brand-voice']
+  },
+  {
+    id:'usp', cat:'brand', title:'Unique Selling Proposition (USP)',
+    desc:'What makes you genuinely different from every competitor. Not just "better" — specifically different in a way that matters to your target audience.',
+    allaith:'Al Laith\'s USP: full-service delivery partner across Equipment Rental, Scaffolding, and Events in UAE/GCC under one roof, with a track record at the largest events and construction projects in the region.',
+    related:['brand-positioning','competitor-analysis','b2b-vs-b2c','social-proof']
+  },
+  {
+    id:'storytelling', cat:'brand', title:'Visual Storytelling',
+    desc:'Using images and video to tell a story without relying entirely on words. A photo of a team installing scaffolding at night tells a "Whatever It Takes" story without a caption.',
+    allaith:'Al Laith\'s best content is often the photos themselves: scale of the yard, the precision of a scaffold build, the packed stands at an event Al Laith built. Let the visual do the heavy lifting.',
+    related:['brand-storytelling','visual-identity','reels-strategy','carousel-posts']
+  },
+  {
+    id:'content-repurposing', cat:'brand', title:'Content Repurposing',
+    desc:'Taking one piece of content and reformatting it for multiple platforms and formats. One great project story becomes a Reel, a carousel, a LinkedIn post, a blog article, and an Instagram caption.',
+    allaith:'Zone 1\'s Repurpose Engine does this for Al Laith automatically. A single project brief should generate: 1 LinkedIn article, 1 Instagram Reel script, 1 Facebook post, and 1 blog intro.',
+    related:['content-calendar','content-pillars','campaign-planning']
+  },
+
+  // ── B2B & UAE ─────────────────────────────────────────────
+  {
+    id:'b2b-vs-b2c', cat:'b2b', title:'B2B vs B2C Marketing',
+    desc:'B2B (Business-to-Business) targets companies. B2C targets individual consumers. They require very different content, tone, channels, and timelines. Most rules you\'ve read about marketing assume B2C.',
+    allaith:'Al Laith is pure B2B. Your content doesn\'t need to go viral — it needs to build trust with project managers and procurement directors over months. Reach matters less than credibility.',
+    related:['target-audience','linkedin-b2b','trust-credibility','b2b-decision-making']
+  },
+  {
+    id:'uae-business-culture', cat:'b2b', title:'UAE Business Culture',
+    desc:'The UAE is a relationship-first market. Trust is built over time through personal connections, consistency, and reputation. Decision-makers are senior and time-poor. Formality matters at first contact.',
+    allaith:'Al Laith\'s longevity and project track record are the strongest marketing assets in the UAE market. Showing scale and reliability matters more than clever campaigns. Relationships are everything.',
+    related:['b2b-vs-b2c','trust-credibility','gcc-market','ramadan-marketing']
+  },
+  {
+    id:'gcc-market', cat:'b2b', title:'GCC Market',
+    desc:'The Gulf Cooperation Council: UAE, Saudi Arabia, Qatar, Kuwait, Bahrain, and Oman. Similar cultures and business norms but different regulations, procurement processes, and competitive landscapes.',
+    allaith:'Al Laith is UAE-based but operates across GCC. Saudi Arabia (Vision 2030 projects) and Qatar (post-World Cup infrastructure) are significant growth markets. Content should reflect this ambition.',
+    related:['uae-business-culture','b2b-vs-b2c','target-audience','sector-marketing']
+  },
+  {
+    id:'ramadan-marketing', cat:'b2b', title:'Ramadan Marketing',
+    desc:'Business activity slows during Ramadan (shorter hours, different priorities), but brand engagement can increase. Values-led and community content performs better than promotional content.',
+    allaith:'Al Laith content during Ramadan should shift to community and team stories. Project completions, team photos, charity partnerships. Avoid hard sales. Respect the cultural moment.',
+    related:['uae-business-culture','content-calendar','brand-storytelling']
+  },
+  {
+    id:'arabic-english-content', cat:'b2b', title:'Arabic vs English Content',
+    desc:'UAE\'s business market is bilingual. English dominates corporate B2B. Arabic builds local community trust and reaches a different audience. Bilingual captions signal genuine local commitment.',
+    allaith:'Al Laith\'s corporate audience reads English. But adding Arabic phrases or bilingual versions of key posts shows respect for the market and broadens reach to UAE-national decision-makers.',
+    related:['uae-business-culture','target-audience','gcc-market']
+  },
+  {
+    id:'b2b-decision-making', cat:'b2b', title:'B2B Decision Making',
+    desc:'B2B purchases involve multiple stakeholders (procurement, finance, operations, senior leadership), longer timelines (weeks to months), and much higher scrutiny than consumer purchases.',
+    allaith:'The person who finds Al Laith on Instagram is rarely the one who signs the contract. Your content must educate the junior researcher AND build authority for the senior decision-maker who reviews it.',
+    related:['b2b-vs-b2c','trust-credibility','social-proof','target-audience']
+  },
+  {
+    id:'trust-credibility', cat:'b2b', title:'Trust & Credibility',
+    desc:'In B2B, trust is the primary purchase driver. Credibility is built through case studies, project scale evidence, client names, industry certifications, and consistency over time.',
+    allaith:'Al Laith\'s credibility assets: scale of work (show numbers — frames, square metres, events), project names (Dubai Airshow, ADIPEC), longevity in market, safety record. Show these constantly.',
+    related:['social-proof','b2b-decision-making','brand-positioning','usp']
+  },
+  {
+    id:'sector-marketing', cat:'b2b', title:'Sector-Based Marketing',
+    desc:'Tailoring your message to specific industries. Construction companies care about different things than event organisers. Sector-specific content feels relevant instead of generic.',
+    allaith:'Al Laith serves Construction, Events, Oil & Gas, Aviation, Facility Management. Each sector gets different content angles. A scaffolding post for an oil rig client reads very differently than for a stadium build.',
+    related:['target-audience','content-pillars','b2b-vs-b2c','gcc-market']
+  },
+  {
+    id:'relationship-marketing', cat:'b2b', title:'Relationship Marketing',
+    desc:'Building long-term client relationships rather than chasing one-off transactions. In B2B, clients who trust you become repeat buyers and the most powerful referral sources.',
+    allaith:'Al Laith\'s marketing should reinforce existing relationships, not just chase new ones. Client shoutouts, project completion posts with client names, and milestone content all strengthen existing bonds.',
+    related:['b2b-vs-b2c','trust-credibility','uae-business-culture','social-proof']
+  },
+  {
+    id:'thought-leadership', cat:'b2b', title:'Thought Leadership',
+    desc:'Positioning yourself or your brand as an authority by sharing original insight, not just company news. Thought leaders are trusted — their opinions shape how others in the industry think.',
+    allaith:'"The 3 things that separate a great scaffold build from a dangerous one" — that\'s thought leadership. Al Laith has deep expertise that competitors can\'t replicate. Share it generously.',
+    related:['linkedin-b2b','brand-positioning','trust-credibility','content-pillars']
+  },
+
+  // ── STRATEGY & PLANNING ───────────────────────────────────
+  {
+    id:'marketing-funnel', cat:'strategy', title:'Marketing Funnel',
+    desc:'The stages a potential client moves through: Awareness (they find you) → Interest (they follow/engage) → Consideration (they research) → Decision (they contact you) → Loyalty (they return).',
+    allaith:'Al Laith needs content at every stage. Reels for Awareness. Case studies for Consideration. Testimonials for Decision. Client milestone posts for Loyalty. Most brands only do Awareness.',
+    related:['content-strategy','target-audience','lead-generation','call-to-action']
+  },
+  {
+    id:'content-strategy', cat:'strategy', title:'Content Strategy',
+    desc:'The big-picture plan for your content: who you\'re talking to, what you\'re saying, why, on which platforms, how often, and how you measure success. Strategy before execution.',
+    allaith:'Al Laith\'s content strategy lives in Zone 1. The pillars, the audience, the platforms, the voice — that\'s strategy. Zone 1 is the execution layer. Get strategy right first.',
+    related:['content-pillars','content-calendar','marketing-funnel','target-audience']
+  },
+  {
+    id:'campaign-planning', cat:'strategy', title:'Campaign Planning',
+    desc:'A focused content push around a specific theme, product, or event with a defined start, end, goal, and set of content pieces. More intentional than always-on posting.',
+    allaith:'Al Laith campaign examples: "Ramadan Build Stories" (Ramadan week), "Dubai Airshow 2025" (pre/during/post), "Scaffolding Safety Month" (October). Each needs a brief, a content plan, and a goal.',
+    related:['content-calendar','content-strategy','kpis','content-pillars']
+  },
+  {
+    id:'kpis', cat:'strategy', title:'KPIs & Analytics',
+    desc:'Key Performance Indicators are measurable goals. In marketing: reach, impressions, engagement rate, follower growth, website clicks, leads generated, cost per lead.',
+    allaith:'Al Laith KPIs to track: LinkedIn follower growth, Instagram engagement rate, website traffic from social, number of RFQ (quote requests) from digital channels. Tie everything back to business outcomes.',
+    related:['marketing-funnel','engagement-rate','content-strategy','campaign-planning']
+  },
+  {
+    id:'target-audience', cat:'strategy', title:'Target Audience',
+    desc:'The specific people your content is made for. The more precisely you define them, the more relevant your content becomes. "Everyone" is not an audience.',
+    allaith:'Al Laith primary audience: Project Managers, Procurement Officers, Event Directors, and Site Managers in UAE/GCC. Secondary: future employees, industry press. Every post should be made for one of these.',
+    related:['b2b-vs-b2c','marketing-funnel','content-strategy','linkedin-b2b']
+  },
+  {
+    id:'competitor-analysis', cat:'strategy', title:'Competitor Analysis',
+    desc:'Studying what your competitors do on social media and in their marketing — what works for them, what gaps they leave, and how you can differentiate.',
+    allaith:'Zone 1\'s Intelligence zone tracks Al Laith\'s UAE competitors. The goal: find topics they haven\'t covered, tones they haven\'t used, and audiences they\'re ignoring.',
+    related:['brand-positioning','usp','content-strategy','thought-leadership']
+  },
+  {
+    id:'seo-basics', cat:'strategy', title:'SEO Basics',
+    desc:'Search Engine Optimisation — making your content findable on Google. Based on keywords (what people search for), content quality, site structure, and backlinks (other sites linking to you).',
+    allaith:'When someone searches "scaffolding rental Dubai" or "event equipment UAE", Al Laith should appear. Blog posts targeting these phrases, properly structured, build long-term organic search presence.',
+    related:['content-strategy','lead-generation','content-repurposing']
+  },
+  {
+    id:'social-proof', cat:'strategy', title:'Social Proof',
+    desc:'Evidence that others trust and value what you do. Testimonials, client logos, project numbers, awards, certifications. In B2B, social proof is one of the most powerful conversion drivers.',
+    allaith:'"Al Laith delivered 4,000 scaffolding frames for ADIPEC 2024 with zero safety incidents" is more powerful than any tagline. Quantify everything. Name clients where possible.',
+    related:['trust-credibility','brand-storytelling','lead-generation','b2b-decision-making']
+  },
+  {
+    id:'lead-generation', cat:'strategy', title:'Lead Generation',
+    desc:'Marketing activities designed to get potential clients to identify themselves — filling out a form, requesting a quote, sending a DM, clicking a contact link.',
+    allaith:'Al Laith lead gen: "Request a quote" CTAs on LinkedIn posts, DM prompts on Instagram project reveals, website contact forms. Every piece of content should eventually point toward contact.',
+    related:['marketing-funnel','call-to-action','social-proof','content-strategy']
+  },
+  {
+    id:'call-to-action', cat:'strategy', title:'Call to Action (CTA)',
+    desc:'The instruction that tells your audience what to do next after consuming your content. Every piece of content needs one — even subtle ones.',
+    allaith:'"Contact us for a quote." / "See how we built it → link in bio." / "Follow for more project reveals." Al Laith CTAs should be outcome-led, not generic. Avoid "like and share."',
+    related:['lead-generation','marketing-funnel','engagement-rate','content-pillars']
+  }
+];
+
+/* ══════════════════════════════════════════════════════════════
+   STORAGE
+══════════════════════════════════════════════════════════════ */
+const STORE_KEY = 'z5_nodes';
+
+function getNodes() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); } catch(e) { return []; }
+}
+function setNodes(arr) {
+  localStorage.setItem(STORE_KEY, JSON.stringify(arr));
+}
+function getNode(id) {
+  return getNodes().find(n => n.id === id) || { id, status:'not-started', notes:'', ai_explanation:'', ai_obsidian_note:'' };
+}
+function saveNode(data) {
+  const nodes = getNodes();
+  const idx = nodes.findIndex(n => n.id === data.id);
+  if (idx >= 0) nodes[idx] = Object.assign(nodes[idx], data);
+  else nodes.push(Object.assign({ id:'', status:'not-started', notes:'', ai_explanation:'', ai_obsidian_note:'' }, data));
+  setNodes(nodes);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════════ */
+const state = { page:'dashboard', catFilter:'all', statusFilter:'all', currentId:null, notesTimer:null };
+
+const CAT_LABELS = { social:'Social Media', brand:'Brand & Voice', b2b:'B2B & UAE', strategy:'Strategy & Planning' };
+const CAT_ICONS  = { social:'📱', brand:'🎯', b2b:'🤝', strategy:'📊' };
+const CAT_COLORS = { social:'#60A5FA', brand:'#FBBF24', b2b:'#34D399', strategy:'#A78BFA' };
+const CAT_FILLS  = { social:'rgba(59,130,246,.5)', brand:'rgba(245,158,11,.5)', b2b:'rgba(16,185,129,.5)', strategy:'rgba(139,92,246,.5)' };
+
+/* ══════════════════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════════════════ */
+function navigate(page) {
+  state.page = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const catPages = ['all','social','brand','b2b','strategy'];
+  if (catPages.includes(page)) {
+    document.getElementById('page-map').classList.add('active');
+    state.catFilter = page === 'all' ? 'all' : page;
+    renderMap();
+    const titles = { all:'All Concepts', social:'Social Media Marketing', brand:'Brand & Voice', b2b:'B2B & UAE Market', strategy:'Strategy & Planning' };
+    document.getElementById('map-title').textContent = titles[page] || 'Concepts';
+    document.getElementById('map-sub').textContent = page === 'all'
+      ? 'Click any concept to open it, read, take notes, and track your progress.'
+      : `${CAT_ICONS[page]} ${titles[page]} — ${CONCEPTS.filter(c=>c.cat===page).length} concepts`;
+  } else if (page === 'export') {
+    document.getElementById('page-export').classList.add('active');
+    renderExportGrid();
+  } else {
+    document.getElementById('page-dashboard').classList.add('active');
+    renderDashboard();
+  }
+
+  // Highlight active nav
+  const navMap = { dashboard:0, all:1, social:2, brand:3, b2b:4, strategy:5, export:6 };
+  const navItems = document.querySelectorAll('.nav-item');
+  const idx = navMap[page];
+  if (navItems[idx]) navItems[idx].classList.add('active');
+
+  updateBadges();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════════════════════════ */
+function renderDashboard() {
+  const nodes = getNodes();
+  const total = CONCEPTS.length;
+  const understood = nodes.filter(n => n.status === 'understood').length;
+  const learning = nodes.filter(n => n.status === 'learning').length;
+  const notStarted = total - understood - learning;
+  const withNotes = CONCEPTS.filter(c => { const n = getNode(c.id); return n.notes && n.notes.trim(); }).length;
+
+  // Stats
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="z5-stat">
+      <div class="z5-stat-num" style="color:var(--primary)">${total}</div>
+      <div class="z5-stat-label">Total concepts</div>
+    </div>
+    <div class="z5-stat">
+      <div class="z5-stat-num" style="color:#10B981">${understood}</div>
+      <div class="z5-stat-label">Understood</div>
+    </div>
+    <div class="z5-stat">
+      <div class="z5-stat-num" style="color:#F59E0B">${learning}</div>
+      <div class="z5-stat-label">Learning</div>
+    </div>
+    <div class="z5-stat">
+      <div class="z5-stat-num">${withNotes}</div>
+      <div class="z5-stat-label">With your notes</div>
+    </div>`;
+
+  // Suggestion
+  const suggestionEl = document.getElementById('dash-suggestion');
+  const notStartedConcepts = CONCEPTS.filter(c => getNode(c.id).status === 'not-started');
+  if (notStartedConcepts.length > 0) {
+    const pick = notStartedConcepts[0];
+    suggestionEl.innerHTML = `
+      <div class="suggestion-card" onclick="openModal('${pick.id}')">
+        <div class="suggestion-icon">💡</div>
+        <div class="suggestion-text">
+          <h4>Suggested next: ${pick.title}</h4>
+          <p>${pick.desc.slice(0,90)}… — click to open</p>
+        </div>
+      </div>`;
+  } else {
+    suggestionEl.innerHTML = `
+      <div class="suggestion-card">
+        <div class="suggestion-icon">🎉</div>
+        <div class="suggestion-text">
+          <h4>You've started every concept!</h4>
+          <p>Keep going — mark concepts as Understood as you complete them.</p>
+        </div>
+      </div>`;
+  }
+
+  // Categories
+  const catEl = document.getElementById('dash-categories');
+  const cats = ['social','brand','b2b','strategy'];
+  catEl.innerHTML = cats.map(cat => {
+    const catConcepts = CONCEPTS.filter(c => c.cat === cat);
+    const catUnderstood = catConcepts.filter(c => getNode(c.id).status === 'understood').length;
+    const catLearning = catConcepts.filter(c => getNode(c.id).status === 'learning').length;
+    const pct = Math.round((catUnderstood / catConcepts.length) * 100);
+    return `
+      <div class="z5-cat-progress" onclick="navigate('${cat}')" style="cursor:pointer">
+        <div class="z5-cat-header">
+          <div class="z5-cat-name">${CAT_ICONS[cat]} ${CAT_LABELS[cat]}</div>
+          <div class="z5-cat-count">${catUnderstood}/${catConcepts.length} understood · ${catLearning} learning</div>
+        </div>
+        <div class="z5-prog-track">
+          <div class="z5-prog-fill" style="width:${pct}%;background:${CAT_COLORS[cat]}"></div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Recent
+  const recentEl = document.getElementById('dash-recent');
+  const recentNodes = getNodes()
+    .filter(n => n.updated_at)
+    .sort((a,b) => (b.updated_at||0) - (a.updated_at||0))
+    .slice(0,6)
+    .map(n => CONCEPTS.find(c => c.id === n.id))
+    .filter(Boolean);
+
+  if (recentNodes.length === 0) {
+    recentEl.innerHTML = `<div style="color:var(--text-dim);font-size:13px;grid-column:1/-1">No concepts updated yet — open your first one above to get started.</div>`;
+  } else {
+    recentEl.innerHTML = recentNodes.map(c => conceptCardHtml(c)).join('');
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   KNOWLEDGE MAP
+══════════════════════════════════════════════════════════════ */
+let mapStatusFilter = 'all';
+
+function setFilter(f, el) {
+  mapStatusFilter = f;
+  document.querySelectorAll('.z5-filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderMap();
+}
+
+function renderMap() {
+  const q = (document.getElementById('map-search')?.value || '').toLowerCase();
+  let concepts = CONCEPTS;
+  if (state.catFilter !== 'all') concepts = concepts.filter(c => c.cat === state.catFilter);
+  if (mapStatusFilter !== 'all') concepts = concepts.filter(c => getNode(c.id).status === mapStatusFilter);
+  if (q) concepts = concepts.filter(c => c.title.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q));
+
+  const grid = document.getElementById('map-grid');
+  const empty = document.getElementById('map-empty');
+  if (!concepts.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    grid.innerHTML = concepts.map(c => conceptCardHtml(c)).join('');
+  }
+}
+
+function conceptCardHtml(c) {
+  const node = getNode(c.id);
+  const status = node.status || 'not-started';
+  const hasNotes = node.notes && node.notes.trim();
+  const statusLabels = { 'not-started':'Not started', learning:'Learning', understood:'Understood' };
+  return `
+    <div class="z5-card" onclick="openModal('${c.id}')">
+      <div class="z5-card-top">
+        <div class="z5-card-title">${c.title}</div>
+        <div class="z5-status-dot dot-${status}" title="${statusLabels[status]}"></div>
+      </div>
+      <div class="z5-card-desc">${c.desc}</div>
+      <div class="z5-card-footer">
+        <span class="z5-cat-badge cat-${c.cat}">${CAT_LABELS[c.cat]}</span>
+        ${hasNotes ? '<span class="z5-card-notes-hint">📝 Has notes</span>' : ''}
+      </div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CONCEPT MODAL
+══════════════════════════════════════════════════════════════ */
+function openModal(id) {
+  const concept = CONCEPTS.find(c => c.id === id);
+  if (!concept) return;
+  state.currentId = id;
+  const node = getNode(id);
+
+  document.getElementById('modal-title').textContent = concept.title;
+  const badge = document.getElementById('modal-cat-badge');
+  badge.textContent = CAT_LABELS[concept.cat];
+  badge.className = `z5-cat-badge cat-${concept.cat}`;
+  document.getElementById('modal-links-count').textContent = `${concept.related.length} related concepts`;
+  document.getElementById('modal-desc').textContent = concept.desc;
+  document.getElementById('modal-allaith').textContent = concept.allaith;
+  document.getElementById('modal-notes').value = node.notes || '';
+
+  // Status buttons
+  updateStatusButtons(node.status || 'not-started');
+
+  // Related
+  const relEl = document.getElementById('modal-related');
+  relEl.innerHTML = (concept.related || []).map(rid => {
+    const rc = CONCEPTS.find(c => c.id === rid);
+    return rc ? `<span class="related-chip" onclick="openModal('${rid}')">${rc.title}</span>` : '';
+  }).join('');
+
+  // AI explanation
+  const aiBox = document.getElementById('ai-explanation');
+  if (node.ai_explanation) {
+    aiBox.textContent = node.ai_explanation;
+    aiBox.classList.add('visible');
+    document.getElementById('explain-btn').textContent = '✨ Re-explain this concept';
+  } else {
+    aiBox.textContent = '';
+    aiBox.classList.remove('visible');
+    document.getElementById('explain-btn').textContent = '✨ Explain this concept to me';
+  }
+
+  // Obsidian note
+  const obsBox = document.getElementById('obsidian-preview');
+  const obsActions = document.getElementById('obsidian-actions');
+  if (node.ai_obsidian_note) {
+    obsBox.textContent = node.ai_obsidian_note;
+    obsBox.classList.add('visible');
+    obsActions.style.display = 'flex';
+    document.getElementById('obsidian-btn').textContent = '📝 Regenerate note';
+  } else {
+    obsBox.textContent = '';
+    obsBox.classList.remove('visible');
+    obsActions.style.display = 'none';
+    document.getElementById('obsidian-btn').textContent = '📝 Generate note';
+  }
+
+  document.getElementById('conceptModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('conceptModal').classList.remove('open');
+  state.currentId = null;
+  if (state.page === 'dashboard') renderDashboard();
+  else renderMap();
+}
+
+function updateStatusButtons(status) {
+  ['not-started','learning','understood'].forEach(s => {
+    const btn = document.getElementById('sbtn-'+s);
+    btn.className = 'status-btn' + (s === status ? ' active-'+s : '');
+  });
+}
+
+function setStatus(status) {
+  if (!state.currentId) return;
+  saveNode({ id: state.currentId, status, updated_at: Date.now() });
+  updateStatusButtons(status);
+  updateBadges();
+}
+
+function saveNotes() {
+  if (!state.currentId) return;
+  clearTimeout(state.notesTimer);
+  document.getElementById('notes-save-indicator').textContent = 'Saving…';
+  state.notesTimer = setTimeout(() => {
+    const notes = document.getElementById('modal-notes').value;
+    saveNode({ id: state.currentId, notes, updated_at: Date.now() });
+    document.getElementById('notes-save-indicator').textContent = 'Saved ✓';
+    setTimeout(() => {
+      document.getElementById('notes-save-indicator').textContent = 'Auto-saves as you type';
+    }, 1500);
+  }, 600);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   AI FEATURES
+══════════════════════════════════════════════════════════════ */
+async function claudeFetch(body) {
+  if (window.location.protocol === 'https:') {
+    const r = await fetch('/api/claude', {
+      method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(body)
+    });
+    if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e.error?.message||'API error '+r.status); }
+    return r.json();
+  }
+  const key = (window.AlLaithAI && AlLaithAI.CONFIG && AlLaithAI.CONFIG.apiKey) || localStorage.getItem('al_laith_settings') && JSON.parse(localStorage.getItem('al_laith_settings')||'{}').anthropic_api_key || '';
+  if (!key) throw Object.assign(new Error('NO_KEY'),{noKey:true});
+  const r = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-allow-browser-access':'true'},
+    body:JSON.stringify(body)
+  });
+  if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e.error?.message||'API error '+r.status); }
+  return r.json();
+}
+
+async function askClaude() {
+  const concept = CONCEPTS.find(c => c.id === state.currentId);
+  if (!concept) return;
+  const btn = document.getElementById('explain-btn');
+  const box = document.getElementById('ai-explanation');
+  btn.disabled = true;
+  btn.textContent = '✨ Asking Claude…';
+  box.textContent = 'Claude is thinking…';
+  box.classList.add('visible');
+  try {
+    const prompt = `You are a marketing teacher. The student is a complete beginner working in marketing for Al Laith Group — a UAE company in equipment rental, scaffolding, and events.
+
+Explain the marketing concept: "${concept.title}"
+
+Their context: ${concept.allaith}
+
+Write your explanation in a warm, clear, beginner-friendly way. Structure it as:
+
+**What it means in plain English:**
+[2–3 sentences, no jargon]
+
+**Why it matters for Al Laith specifically:**
+[2–3 sentences connecting to their real work]
+
+**A practical first step to apply it:**
+[One specific, actionable thing they can do this week]
+
+**A quick example:**
+[One concrete example in the Al Laith context]
+
+Keep it encouraging and specific. No generic marketing textbook language.`;
+
+    const data = await claudeFetch({
+      model:'claude-3-5-haiku-20241022', max_tokens:600,
+      messages:[{role:'user', content:prompt}]
+    });
+    const text = data.content?.[0]?.text || 'Could not generate explanation. Try again.';
+    box.textContent = text;
+    saveNode({ id: state.currentId, ai_explanation: text, updated_at: Date.now() });
+    btn.textContent = '✨ Re-explain this concept';
+  } catch(e) {
+    if (e.noKey) {
+      box.textContent = 'AI features require the API key to be configured in Vercel environment variables. Once set up, Claude will explain any concept in plain English with Al Laith examples.';
+    } else {
+      box.textContent = 'Error: ' + e.message;
+    }
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function generateObsidianNote() {
+  const concept = CONCEPTS.find(c => c.id === state.currentId);
+  if (!concept) return;
+  const node = getNode(state.currentId);
+  const btn = document.getElementById('obsidian-btn');
+  const box = document.getElementById('obsidian-preview');
+  const actions = document.getElementById('obsidian-actions');
+  btn.disabled = true;
+  btn.textContent = '📝 Generating…';
+  box.textContent = 'Claude is writing your Obsidian note…';
+  box.classList.add('visible');
+  try {
+    const relatedTitles = (concept.related || []).map(rid => {
+      const rc = CONCEPTS.find(c => c.id === rid);
+      return rc ? `[[${rc.title}]]` : '';
+    }).filter(Boolean).join(', ');
+
+    const prompt = `Write a complete Obsidian Markdown note for the marketing concept: "${concept.title}"
+
+Context for the note:
+- Reader: Janu, marketing lead at Al Laith Group (UAE equipment rental, scaffolding, events)
+- Level: Complete beginner learning marketing
+- Al Laith specific angle: ${concept.allaith}
+- Their personal notes: ${node.notes || '(none yet)'}
+
+Write the note in this exact Obsidian format:
+
+# ${concept.title}
+
+## What It Is
+[Plain-English explanation, 2-3 sentences. No jargon.]
+
+## Why It Matters for Al Laith
+[Specific to Al Laith's world — equipment, scaffolding, events, UAE B2B market]
+
+## Key Points
+- [Point 1]
+- [Point 2]
+- [Point 3]
+- [Point 4]
+
+## Al Laith Example
+[One concrete, specific example of this concept applied at Al Laith]
+
+## Practical First Steps
+1. [Step 1 — something they can do this week]
+2. [Step 2]
+3. [Step 3]
+
+## Related Concepts
+${relatedTitles}
+
+## My Notes
+${node.notes || '[Add your personal notes here as you learn]'}
+
+---
+*Category: ${CAT_LABELS[concept.cat]}*
+*Source: Al Laith OS Knowledge Hub*
+*Last updated: ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}*
+
+Output ONLY the markdown content. No intro, no explanation, just the note.`;
+
+    const data = await claudeFetch({
+      model:'claude-3-5-haiku-20241022', max_tokens:800,
+      messages:[{role:'user', content:prompt}]
+    });
+    const text = data.content?.[0]?.text || '';
+    box.textContent = text;
+    actions.style.display = 'flex';
+    saveNode({ id: state.currentId, ai_obsidian_note: text, updated_at: Date.now() });
+    btn.textContent = '📝 Regenerate note';
+  } catch(e) {
+    if (e.noKey) {
+      // Generate a basic stub note without AI
+      const stubNote = generateStubNote(concept, node);
+      box.textContent = stubNote;
+      actions.style.display = 'flex';
+      saveNode({ id: state.currentId, ai_obsidian_note: stubNote, updated_at: Date.now() });
+      btn.textContent = '📝 Regenerate note';
+    } else {
+      box.textContent = 'Error: ' + e.message;
+      actions.style.display = 'none';
+    }
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function generateStubNote(concept, node) {
+  const relatedTitles = (concept.related || []).map(rid => {
+    const rc = CONCEPTS.find(c => c.id === rid);
+    return rc ? `[[${rc.title}]]` : '';
+  }).filter(Boolean).join(', ');
+  return `# ${concept.title}
+
+## What It Is
+${concept.desc}
+
+## Al Laith Angle
+${concept.allaith}
+
+## Related Concepts
+${relatedTitles}
+
+## My Notes
+${node.notes || '[Add your personal notes here as you learn]'}
+
+---
+*Category: ${CAT_LABELS[concept.cat]}*
+*Source: Al Laith OS Knowledge Hub*
+*Last updated: ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}*`;
+}
+
+function downloadObsidianNote() {
+  const concept = CONCEPTS.find(c => c.id === state.currentId);
+  const node = getNode(state.currentId);
+  const content = node.ai_obsidian_note || generateStubNote(concept, node);
+  downloadMd(concept.title + '.md', content);
+}
+
+function copyObsidianNote() {
+  const node = getNode(state.currentId);
+  const concept = CONCEPTS.find(c => c.id === state.currentId);
+  const content = node.ai_obsidian_note || generateStubNote(concept, node);
+  navigator.clipboard.writeText(content).then(() => {
+    const btn = document.querySelector('#obsidian-actions .btn-ghost');
+    if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => { btn.textContent = '📋 Copy to clipboard'; }, 2000); }
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   EXPORT
+══════════════════════════════════════════════════════════════ */
+function renderExportGrid() {
+  document.getElementById('export-grid').innerHTML = CONCEPTS.map(c => {
+    const node = getNode(c.id);
+    const status = node.status || 'not-started';
+    const dotColors = { 'not-started':'var(--text-dim)', learning:'#F59E0B', understood:'#10B981' };
+    return `
+      <div class="z5-card" style="cursor:default">
+        <div class="z5-card-top">
+          <div class="z5-card-title">${c.title}</div>
+          <div class="z5-status-dot" style="background:${dotColors[status]}"></div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="z5-cat-badge cat-${c.cat}">${CAT_LABELS[c.cat]}</span>
+        </div>
+        <div style="margin-top:10px">
+          <button class="btn btn-ghost btn-sm" onclick="exportSingle('${c.id}')">⬇️ Download .md</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function exportSingle(id) {
+  const concept = CONCEPTS.find(c => c.id === id);
+  const node = getNode(id);
+  const content = node.ai_obsidian_note || generateStubNote(concept, node);
+  downloadMd(concept.title + '.md', content);
+}
+
+function exportAll() {
+  const lines = [];
+  lines.push('# Al Laith Marketing Brain — Complete Knowledge Map\n');
+  lines.push(`*Exported: ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}*\n`);
+  lines.push('---\n');
+  CONCEPTS.forEach(c => {
+    const node = getNode(c.id);
+    lines.push(node.ai_obsidian_note || generateStubNote(c, node));
+    lines.push('\n---\n');
+  });
+  downloadMd('Al Laith Marketing Brain — All Concepts.md', lines.join('\n'));
+}
+
+function exportNotes() {
+  const withNotes = CONCEPTS.filter(c => { const n = getNode(c.id); return n.notes && n.notes.trim(); });
+  if (!withNotes.length) { alert('You haven\'t added personal notes to any concept yet. Open a concept and write in the "Your notes" field first.'); return; }
+  const lines = ['# My Marketing Notes\n', `*${withNotes.length} concepts with personal notes*\n`, '---\n'];
+  withNotes.forEach(c => {
+    const node = getNode(c.id);
+    lines.push(`## ${c.title}\n`);
+    lines.push(`*${CAT_LABELS[c.cat]}*\n\n`);
+    lines.push(node.notes + '\n\n---\n');
+  });
+  downloadMd('My Marketing Notes.md', lines.join('\n'));
+}
+
+function exportByStatus(status) {
+  const filtered = CONCEPTS.filter(c => getNode(c.id).status === status);
+  if (!filtered.length) { alert(`No concepts marked as "${status}" yet.`); return; }
+  const labels = { understood:'Mastered' };
+  const lines = [`# ${labels[status]||status} Concepts\n`, `*${filtered.length} concepts*\n`, '---\n'];
+  filtered.forEach(c => {
+    const node = getNode(c.id);
+    lines.push(node.ai_obsidian_note || generateStubNote(c, node));
+    lines.push('\n---\n');
+  });
+  downloadMd(`Al Laith — ${labels[status]||status} Concepts.md`, lines.join('\n'));
+}
+
+function exportIndex() {
+  const cats = ['social','brand','b2b','strategy'];
+  const lines = ['# Al Laith Marketing Brain — Index\n', `*${CONCEPTS.length} concepts across 4 categories*\n`, '---\n'];
+  cats.forEach(cat => {
+    lines.push(`\n## ${CAT_ICONS[cat]} ${CAT_LABELS[cat]}\n`);
+    CONCEPTS.filter(c => c.cat === cat).forEach(c => {
+      const node = getNode(c.id);
+      const status = { 'not-started':'⚫', learning:'🟡', understood:'🟢' }[node.status||'not-started'];
+      lines.push(`- ${status} [[${c.title}]]\n`);
+    });
+  });
+  lines.push('\n---\n*Generated by Al Laith OS Knowledge Hub*\n');
+  downloadMd('Marketing Brain — Index.md', lines.join(''));
+}
+
+function downloadMd(filename, content) {
+  const blob = new Blob([content], { type:'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BADGES + UTILS
+══════════════════════════════════════════════════════════════ */
+function updateBadges() {
+  const cats = ['social','brand','b2b','strategy'];
+  cats.forEach(cat => {
+    const el = document.getElementById('nb-'+cat);
+    if (el) {
+      const understood = CONCEPTS.filter(c => c.cat === cat && getNode(c.id).status === 'understood').length;
+      const total = CONCEPTS.filter(c => c.cat === cat).length;
+      el.textContent = understood > 0 ? `${understood}/${total}` : total;
+      el.style.background = understood > 0 ? 'rgba(16,185,129,.2)' : '';
+      el.style.color = understood > 0 ? '#10B981' : '';
+    }
+  });
+  const allEl = document.getElementById('nb-all');
+  if (allEl) {
+    const understood = CONCEPTS.filter(c => getNode(c.id).status === 'understood').length;
+    allEl.textContent = understood > 0 ? `${understood}/${CONCEPTS.length}` : CONCEPTS.length;
+    allEl.style.background = understood > 0 ? 'rgba(16,185,129,.2)' : '';
+    allEl.style.color = understood > 0 ? '#10B981' : '';
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════ */
+navigate('dashboard');
+</script>
+</body>
+</html>

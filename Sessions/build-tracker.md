@@ -69,10 +69,10 @@
 
 | Session | Task | File | Status | Notes |
 |---|---|---|---|---|
-| 5a | Canvas + node rendering | zone5-knowledge.html | 🔲 | D3.js from cdnjs |
-| 5b | Edge creation + relationship labels | zone5-knowledge.html | 🔲 | |
-| 5c | Pre-loaded seed nodes + Zone 3 integration | zone5-knowledge.html | 🔲 | Marketing concept map |
-| 5d | Search + cluster colouring + Zone 4 integration | zone5-knowledge.html | 🔲 | |
+| 5a | Knowledge Hub — 40 concepts, status tracking, notes | zone5-knowledge.html | ✅ | Rebuilt as Obsidian-companion; 4 categories, search, filter |
+| 5b | AI explain + Obsidian note generation | zone5-knowledge.html | ✅ | claudeFetch proxy; stub fallback; generates .md files |
+| 5c | Export — single, all, by status, index | zone5-knowledge.html | ✅ | Downloads .md files direct to Obsidian vault |
+| 5d | OS Shell integration | zone5-knowledge.html | ✅ | Zone card updated to online, links to zone5-knowledge.html |
 
 ---
 
@@ -88,10 +88,10 @@
 
 ## Current Session
 
-**Session:** Phase 1 — Zone 1 Upgrades (in progress)
-**Task:** Phase 1 COMPLETE (1a–1g all done)
-**Status:** All Zone 1 upgrades shipped
-**Next action:** Phase 2a — Zone 4 Intelligence Hub (zone4-intelligence.html) OR Phase 3a — Zone 2 Projects Hub (zone2-projects.html)
+**Session:** Phase 5 — Zone 5 Knowledge Hub
+**Task:** Zone 5 complete — rebuilt as Obsidian companion
+**Status:** Shipped. 40 concepts, AI explain, Obsidian export, OS Shell linked.
+**Next action:** Phase 2 (Zone 4 Intelligence) or Phase 3 (Zone 2 Projects)
 
 ---
 
