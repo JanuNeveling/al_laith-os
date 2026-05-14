@@ -461,8 +461,8 @@
     </div>
     <div class="os-topbar-right">
       <div class="os-date" id="os-date">—</div>
-      <div id="z1-status-pill" class="pill off">
-        <span class="dot"></span><span>Checking Zone 1…</span>
+      <div id="z1-status-pill" class="pill live">
+        <span class="dot"></span><span>Zone 1 Live</span>
       </div>
     </div>
   </header>
@@ -490,12 +490,15 @@
     </div>
   </section>
 
-  <!-- ── Bridge banner ──────────────────────────── -->
-  <div id="z1-bridge" class="z1-bridge">
+  <!-- ── Zone 1 quick-launch banner ──────────────── -->
+  <div id="z1-bridge" class="z1-bridge online">
     <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-      <circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>
+      <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
     </svg>
-    <span id="z1-bridge-text">Checking Zone 1 connection…</span>
+    <span id="z1-bridge-text">
+      <strong>Content Hub</strong> — create posts, score content, repurpose across platforms, manage approvals.
+      <a href="zone1-content.html" target="_self">Open Zone 1 →</a>
+    </span>
   </div>
 
   <!-- ── Stat strip ──────────────────────────────── -->
@@ -739,51 +742,8 @@ function updateClock() {
   if (ampmEl) ampmEl.textContent = ampm;
 }
 
-/* ── Zone 1 live check ──────────────────────────────────────── */
-let z1Online = false;
-let z1LiveStats = null;
-
-async function checkZone1() {
-  const pill   = document.getElementById('z1-status-pill');
-  const bridge = document.getElementById('z1-bridge');
-  const bt     = document.getElementById('z1-bridge-text');
-
-  try {
-    const res = await fetch('http://localhost:3000/api/posts?limit=1', { signal: AbortSignal.timeout(2500) });
-    if (!res.ok) throw new Error('not ok');
-
-    const [postsRes, todayRes] = await Promise.allSettled([
-      fetch('http://localhost:3000/api/posts?limit=500').then(r => r.json()),
-      fetch('http://localhost:3000/api/posts/today').then(r => r.json()),
-    ]);
-
-    const all   = postsRes.status === 'fulfilled' ? postsRes.value : [];
-    const today = todayRes.status === 'fulfilled' ? todayRes.value : {};
-    const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
-
-    z1LiveStats = {
-      total:    all.length,
-      thisWeek: all.filter(p => new Date(p.created_at) >= weekAgo).length,
-      ready:    all.filter(p => p.status === 'ready').length,
-      ideas:    all.filter(p => p.status === 'idea').length,
-      today:    today.ready || 0,
-      target:   today.target || 4,
-    };
-    z1Online = true;
-
-    pill.className = 'pill live';
-    pill.innerHTML = `<span class="dot"></span><span>Zone 1 online</span>`;
-    bridge.className = 'z1-bridge online';
-    bt.innerHTML = `Zone 1 is live — <strong>${z1LiveStats.thisWeek}</strong> posts this week · <strong>${z1LiveStats.ready}</strong> ready · today <strong>${z1LiveStats.today}/${z1LiveStats.target}</strong>.<a href="http://localhost:3000" target="_blank">Open Zone 1 →</a>`;
-
-  } catch {
-    z1Online = false;
-    pill.className = 'pill off';
-    pill.innerHTML = `<span class="dot"></span><span>Zone 1 offline</span>`;
-    bridge.className = 'z1-bridge';
-    bt.innerHTML = `Zone 1 (hub-app) is not running. Start it: <code>cd hub-app &amp;&amp; npm start</code> — then refresh.`;
-  }
-
+/* ── Refresh stats from localStorage ───────────────────────── */
+function checkZone1() {
   renderStats();
   renderZones();
   renderAttention();
@@ -792,12 +752,12 @@ async function checkZone1() {
 /* ── Stats ──────────────────────────────────────────────────── */
 function renderStats() {
   const os = AlLaithOS.getOsStats();
-  const z1 = z1LiveStats || os.zone1 || {};
+  const z1 = os.zone1 || {};
   const z3 = os.zone3 || {};
   const z4 = os.zone4 || {};
 
   document.getElementById('stat-posts-week').textContent = z1.thisWeek ?? '0';
-  document.getElementById('stat-posts-sub').textContent  = z1Online ? 'live from Zone 1' : 'from cache';
+  document.getElementById('stat-posts-sub').textContent  = 'from Zone 1';
   document.getElementById('stat-ready').textContent      = z1.ready ?? '0';
   document.getElementById('stat-reports').textContent    = z4.reports ?? '0';
 
@@ -829,12 +789,12 @@ function renderZones() {
   }
 
   grid.innerHTML = ZONES.map(z => {
-    const stats      = z.id === 1 && z1LiveStats ? z1LiveStats : (os[z.key] || {});
-    const isOnline   = z.id === 1 ? z1Online : (z.status === 'online');
-    const isClickable = isOnline || (z.href && z.status === 'online');
+    const stats      = os[z.key] || {};
+    const isOnline   = z.status === 'online';
+    const isClickable = isOnline && z.href;
     const tag        = isClickable ? 'a' : 'div';
-    const href       = z.id === 1 ? 'http://localhost:3000' : (z.href || '#');
-    const hrefAttr   = isClickable ? `href="${href}" target="${z.id === 1 ? '_blank' : '_self'}"` : '';
+    const href       = z.href || '#';
+    const hrefAttr   = isClickable ? `href="${href}" target="_self"` : '';
     const pillClass  = isOnline ? 'live' : (z.status === 'building' ? 'build' : 'off');
     const pillLabel  = isOnline ? 'Live' : (z.status === 'building' ? 'Building' : 'Offline');
     const offlineCls = !isClickable ? ' offline' : '';
@@ -871,15 +831,11 @@ function renderAttention() {
   const count = document.getElementById('attention-count');
   const items = [];
 
-  if (!z1Online) {
-    items.push({ text: '<strong>Zone 1 is offline.</strong> Start the hub-app server to see live content stats.' });
-  }
-
   const ideas = AlLaithOS.zone1.getByStatus('idea');
   if (ideas.length > 0) {
     items.push({
       text: `<strong>${ideas.length} content ideas</strong> in Zone 1 waiting to be developed.`,
-      action: z1Online ? { label: 'Open Z1', href: 'http://localhost:3000' } : null,
+      action: { label: 'Open Z1', href: 'zone1-content.html' },
     });
   }
 
@@ -959,8 +915,6 @@ function init() {
 
   AlLaithOS.setOsMeta({ lastOpened: new Date().toISOString() });
   renderStats(); renderZones(); renderAttention();
-  checkZone1();
-  setInterval(checkZone1, 30000);
 }
 
 document.addEventListener('DOMContentLoaded', init);
