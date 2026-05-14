@@ -1,0 +1,13 @@
+# Claude Code local settings
+.claude/settings.local.json
+
+# Archives
+*.zip
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# API keys — never commit these
+*.env
+.env*

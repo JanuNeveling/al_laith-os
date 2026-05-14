@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Al Laith Business OS</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ────────────────────────────────────────────────────────────
+       Tokens
+    ──────────────────────────────────────────────────────────── */
+    :root {
+      --bg:           #060D1A;
+      --bg-2:         #08111F;
+      --surface:      #0C1729;
+      --surface-2:    #112038;
+      --surface-3:    #18304F;
+
+      --border:       rgba(140, 175, 230, 0.10);
+      --border-soft:  rgba(140, 175, 230, 0.06);
+      --border-mid:   rgba(140, 175, 230, 0.16);
+      --border-strong:rgba(140, 175, 230, 0.28);
+
+      --text:         #E9EFF8;
+      --text-soft:    #B7C5DC;
+      --text-dim:     #6E83A6;
+      --text-muted:   #475D80;
+
+      --blue:         #5B9BFF;
+      --blue-bright:  #82B5FF;
+      --blue-deep:    #2E6EE0;
+      --blue-dim:     rgba(91, 155, 255, 0.12);
+      --blue-dimmer:  rgba(91, 155, 255, 0.06);
+      --blue-glow:    rgba(91, 155, 255, 0.30);
+      --sky:          #B5D3FF;
+
+      --status-live:  #82B5FF;
+      --status-build: #6E83A6;
+      --status-off:   #475D80;
+
+      --f-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+      --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+      --r-sm: 6px;
+      --r-md: 10px;
+      --r-lg: 14px;
+      --r-xl: 18px;
+      --shadow: 0 30px 60px -30px rgba(0, 10, 30, 0.8),
+                0 6px 18px -6px  rgba(0, 10, 30, 0.5);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--f-sans);
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.005em;
+    }
+
+    /* subtle dotted grid bg */
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 90% 60% at 50% -10%, rgba(91, 155, 255, 0.10), transparent 70%),
+        radial-gradient(circle, rgba(140, 175, 230, 0.05) 1px, transparent 1px);
+      background-size: auto, 28px 28px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    code, .mono { font-family: var(--f-mono); }
+
+    /* ─── Layout ─── */
+    .os-layout {
+      position: relative; z-index: 1;
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 28px 32px 40px;
+      display: flex; flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ─── Topbar ─── */
+    .os-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 4px 0 22px;
+      border-bottom: 1px solid var(--border-soft);
+      margin-bottom: 32px;
+    }
+    .os-logo { display: flex; align-items: center; gap: 12px; }
+    .os-logo-mark {
+      width: 38px; height: 38px; border-radius: 9px;
+      background: linear-gradient(140deg, #2E6EE0 0%, #0A2350 100%);
+      color: #fff;
+      display: grid; place-items: center;
+      font-weight: 700; font-size: 13px; letter-spacing: 0.5px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.20), 0 6px 16px -4px rgba(46,110,224,0.4);
+    }
+    .os-logo-text { display: flex; flex-direction: column; line-height: 1.05; gap: 3px; }
+    .os-logo-name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+    .os-logo-sub  {
+      font-family: var(--f-mono); font-size: 10px;
+      color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.18em;
+    }
+    .os-topbar-right { display: flex; align-items: center; gap: 18px; }
+    .os-date {
+      font-family: var(--f-mono); font-size: 12px;
+      color: var(--text-dim); letter-spacing: 0.04em;
+    }
+
+    /* ─── Pill ─── */
+    .pill {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 11px 5px 9px; border-radius: 999px;
+      font-family: var(--f-mono); font-size: 10.5px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      border: 1px solid var(--border);
+      background: var(--surface); color: var(--text-dim);
+      white-space: nowrap;
+    }
+    .pill .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--status-off);
+    }
+    .pill.live    { color: var(--blue-bright); border-color: rgba(130,181,255,0.4); background: var(--blue-dim); }
+    .pill.live .dot { background: var(--blue-bright); box-shadow: 0 0 0 3px rgba(130,181,255,0.18); animation: pulse 2.2s infinite ease-out; }
+    .pill.build   { color: var(--text-soft); }
+    .pill.build .dot { background: var(--text-dim); }
+    .pill.off     { color: var(--text-muted); }
+    .pill.off .dot   { background: var(--status-off); }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 3px rgba(130,181,255,0.18); }
+      50%       { box-shadow: 0 0 0 6px rgba(130,181,255,0.04); }
+    }
+
+    /* ─── Hero ─── */
+    .os-hero {
+      display: grid; grid-template-columns: 1.4fr 1fr;
+      gap: 32px; align-items: end;
+      margin-bottom: 28px;
+    }
+    .greeting-block { display: flex; flex-direction: column; gap: 8px; }
+    .greeting-eyebrow {
+      font-family: var(--f-mono); font-size: 11px;
+      color: var(--text-dim); letter-spacing: 0.22em; text-transform: uppercase;
+    }
+    .greeting-eyebrow .sep { color: var(--text-muted); margin: 0 8px; }
+    .os-greeting {
+      font-size: clamp(34px, 4vw, 46px); font-weight: 500;
+      line-height: 1.05; letter-spacing: -0.025em; color: var(--text); margin: 0;
+    }
+    .os-greeting em { font-style: normal; color: var(--blue-bright); font-weight: 600; }
+    .os-tagline {
+      font-size: 15px; color: var(--text-soft);
+      max-width: 38ch; margin-top: 2px;
+    }
+
+    .hero-side {
+      border-left: 1px solid var(--border); padding-left: 24px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .hero-side-label {
+      font-family: var(--f-mono); font-size: 10.5px;
+      letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim);
+    }
+    .hero-side-clock {
+      font-family: var(--f-mono); font-size: 36px; font-weight: 500;
+      color: var(--text); letter-spacing: -0.02em; line-height: 1;
+    }
+    .hero-side-clock .ampm { font-size: 14px; color: var(--text-dim); margin-left: 6px; letter-spacing: 0.08em; }
+    .hero-side-meta {
+      font-size: 12.5px; color: var(--text-soft);
+      display: flex; gap: 14px; flex-wrap: wrap;
+    }
+    .hero-side-meta span b { color: var(--blue-bright); font-weight: 600; }
+
+    /* ─── Bridge banner ─── */
+    .z1-bridge {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 18px; border-radius: var(--r-lg);
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+      font-size: 13.5px; color: var(--text-soft);
+      margin-bottom: 28px; position: relative; overflow: hidden;
+    }
+    .z1-bridge::before {
+      content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+      background: var(--status-off);
+    }
+    .z1-bridge.online {
+      background: linear-gradient(180deg, rgba(91,155,255,0.08), rgba(91,155,255,0.02));
+      border-color: rgba(91,155,255,0.25);
+    }
+    .z1-bridge.online::before { background: var(--blue-bright); box-shadow: 0 0 18px var(--blue-glow); }
+    .z1-bridge svg { color: var(--text-dim); flex-shrink: 0; }
+    .z1-bridge.online svg { color: var(--blue-bright); }
+    .z1-bridge strong { color: var(--text); font-weight: 600; }
+    .z1-bridge code {
+      font-size: 12px; background: rgba(140,175,230,0.10);
+      padding: 2px 7px; border-radius: 4px; color: var(--sky);
+    }
+    .z1-bridge a { color: var(--blue-bright); font-weight: 600; margin-left: 6px; }
+    .z1-bridge a:hover { text-decoration: underline; }
+
+    /* ─── Stat strip ─── */
+    .stat-strip {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 0; margin-bottom: 32px;
+      border: 1px solid var(--border); border-radius: var(--r-lg);
+      background: var(--surface); overflow: hidden;
+    }
+    .stat-card {
+      padding: 18px 22px; display: flex; flex-direction: column; gap: 8px;
+      position: relative; border-right: 1px solid var(--border-soft);
+    }
+    .stat-card:last-child { border-right: none; }
+    .stat-card::after {
+      content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+      background: var(--blue); transform: scaleX(0); transform-origin: left;
+      transition: transform 0.35s ease;
+    }
+    .stat-card:hover::after { transform: scaleX(1); }
+    .stat-label {
+      font-family: var(--f-mono); font-size: 10.5px;
+      color: var(--text-dim); letter-spacing: 0.14em; text-transform: uppercase;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .stat-label .idx { color: var(--text-muted); font-size: 10px; }
+    .stat-value {
+      font-family: var(--f-mono); font-size: 38px; font-weight: 500;
+      color: var(--text); line-height: 1; letter-spacing: -0.02em;
+      display: flex; align-items: baseline; gap: 6px;
+    }
+    .stat-value .unit { font-size: 14px; color: var(--text-dim); font-weight: 400; }
+    .stat-sub { font-size: 12px; color: var(--text-dim); }
+
+    /* ─── Quick-add ─── */
+    .quick-wrap { position: relative; margin-bottom: 32px; }
+    .quick-add {
+      display: flex; align-items: center; gap: 14px;
+      padding: 10px 10px 10px 18px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-xl); transition: all 0.2s ease;
+    }
+    .quick-add:focus-within {
+      border-color: rgba(91,155,255,0.45); background: var(--surface-2);
+      box-shadow: 0 0 0 4px var(--blue-dimmer);
+    }
+    .quick-add-plus { width: 22px; height: 22px; color: var(--text-dim); flex-shrink: 0; }
+    .quick-add:focus-within .quick-add-plus { color: var(--blue-bright); }
+    .quick-add input {
+      flex: 1; border: none; background: transparent; outline: none;
+      color: var(--text); font-family: var(--f-sans); font-size: 15px; padding: 8px 0;
+    }
+    .quick-add input::placeholder { color: var(--text-dim); }
+    .quick-types { display: flex; gap: 6px; align-items: center; padding-right: 4px; }
+    .quick-type-btn {
+      padding: 7px 13px; background: transparent;
+      border: 1px solid var(--border); border-radius: 999px;
+      color: var(--text-soft); font-family: var(--f-mono); font-size: 11px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      cursor: pointer; transition: all 0.15s ease;
+    }
+    .quick-type-btn:hover { color: var(--text); border-color: var(--border-mid); }
+    .quick-type-btn.active {
+      background: var(--blue-dim); border-color: rgba(91,155,255,0.4); color: var(--blue-bright);
+    }
+    .quick-add-submit {
+      padding: 9px 18px; background: var(--blue); border: 1px solid var(--blue);
+      color: #fff; border-radius: 999px; font-family: var(--f-sans);
+      font-size: 13px; font-weight: 600; cursor: pointer; letter-spacing: -0.005em;
+      transition: all 0.15s ease; box-shadow: 0 4px 12px -4px var(--blue-glow);
+    }
+    .quick-add-submit:hover { background: var(--blue-bright); border-color: var(--blue-bright); }
+    .quick-confirm {
+      display: none; margin-top: 10px; padding-left: 18px;
+      font-family: var(--f-mono); font-size: 11.5px;
+      color: var(--blue-bright); letter-spacing: 0.04em;
+    }
+
+    /* ─── Section header ─── */
+    .section-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 16px; padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .section-head h2 {
+      font-family: var(--f-mono); font-size: 11px; font-weight: 500;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--text-soft); margin: 0;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .section-head h2::before {
+      content: ""; width: 6px; height: 6px; background: var(--blue);
+      border-radius: 1px; box-shadow: 0 0 8px var(--blue-glow);
+    }
+    .section-head .meta {
+      font-family: var(--f-mono); font-size: 10.5px;
+      color: var(--text-muted); letter-spacing: 0.08em;
+    }
+
+    /* ─── Attention ─── */
+    .attention {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-lg); overflow: hidden; margin-bottom: 32px;
+    }
+    .attention-item {
+      display: grid; grid-template-columns: 28px 1fr auto;
+      align-items: center; gap: 12px; padding: 14px 20px;
+      border-bottom: 1px solid var(--border-soft); transition: background 0.15s ease;
+    }
+    .attention-item:last-child { border-bottom: none; }
+    .attention-item:hover { background: var(--surface-2); }
+    .attention-marker {
+      font-family: var(--f-mono); font-size: 10.5px;
+      color: var(--text-muted); letter-spacing: 0.04em;
+    }
+    .attention-text { font-size: 13.5px; color: var(--text-soft); }
+    .attention-text strong { color: var(--text); font-weight: 600; }
+    .attention-text code {
+      color: var(--blue-bright); font-size: 12px;
+      background: rgba(91,155,255,0.08); padding: 1px 6px; border-radius: 4px;
+    }
+    .attention-action {
+      font-family: var(--f-mono); font-size: 11px; color: var(--blue-bright);
+      letter-spacing: 0.06em; cursor: pointer; text-transform: uppercase;
+    }
+    .attention-action:hover { text-decoration: underline; }
+
+    /* ─── Zones grid ─── */
+    .zones-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-bottom: 40px;
+    }
+    .zone {
+      position: relative; display: flex; flex-direction: column; gap: 14px;
+      padding: 22px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-xl); overflow: hidden;
+      transition: all 0.25s ease; cursor: pointer; min-height: 220px;
+    }
+    .zone::before {
+      content: ""; position: absolute; inset: 0 0 auto 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--blue), transparent);
+      opacity: 0; transition: opacity 0.3s ease;
+    }
+    .zone.live::before { opacity: 0.5; }
+    .zone:hover { border-color: var(--border-strong); transform: translateY(-2px); box-shadow: var(--shadow); }
+    .zone.live:hover { border-color: rgba(91,155,255,0.4); }
+    .zone.offline { opacity: 0.55; cursor: not-allowed; }
+    .zone.offline:hover { transform: none; border-color: var(--border); box-shadow: none; }
+
+    .zone-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .zone-id {
+      font-family: var(--f-mono); font-size: 11px; color: var(--text-dim);
+      letter-spacing: 0.18em; text-transform: uppercase;
+    }
+    .zone-id .num { color: var(--blue-bright); font-weight: 600; }
+    .zone-glyph {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--blue-dimmer); border: 1px solid var(--border);
+      display: grid; place-items: center; color: var(--blue-bright);
+    }
+    .zone-glyph svg { width: 18px; height: 18px; }
+    .zone.offline .zone-glyph { color: var(--text-muted); }
+
+    .zone-body { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .zone-name { font-size: 19px; font-weight: 600; letter-spacing: -0.015em; color: var(--text); line-height: 1.15; }
+    .zone-desc { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
+    .zone-stats {
+      display: flex; gap: 22px; padding-top: 14px;
+      border-top: 1px dashed var(--border); margin-top: auto;
+    }
+    .zone-stat { display: flex; flex-direction: column; gap: 4px; }
+    .zone-stat-val {
+      font-family: var(--f-mono); font-size: 18px; font-weight: 500;
+      color: var(--text); line-height: 1; letter-spacing: -0.01em;
+    }
+    .zone.offline .zone-stat-val { color: var(--text-soft); }
+    .zone-stat-lab {
+      font-family: var(--f-mono); font-size: 9.5px;
+      color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.10em;
+    }
+
+    .zone-go {
+      position: absolute; top: 22px; right: 22px;
+      opacity: 0; transform: translateX(-4px); transition: all 0.2s ease;
+      color: var(--blue-bright);
+    }
+    .zone.live:hover .zone-go { opacity: 1; transform: translateX(0); }
+
+    /* ─── Footer ─── */
+    .os-footer {
+      margin-top: auto; padding: 20px 0 0;
+      border-top: 1px solid var(--border-soft);
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: var(--f-mono); font-size: 11px; color: var(--text-muted); letter-spacing: 0.06em;
+    }
+    .os-footer-right { display: flex; gap: 18px; align-items: center; }
+    .os-footer .ok { color: var(--blue-bright); }
+    .os-footer .meta-dot {
+      display: inline-block; width: 4px; height: 4px; border-radius: 50%;
+      background: var(--text-muted); margin: 0 8px; vertical-align: middle;
+    }
+
+    /* ─── Toast ─── */
+    #toast-container {
+      position: fixed; top: 24px; right: 24px;
+      z-index: 1000; display: flex; flex-direction: column; gap: 8px;
+    }
+    .toast {
+      padding: 12px 18px; background: var(--surface-2);
+      border: 1px solid var(--border-mid); border-radius: 10px;
+      font-size: 13px; color: var(--text); box-shadow: var(--shadow);
+      animation: toast-in 0.25s ease;
+    }
+    .toast.toast-success { border-left: 3px solid var(--blue-bright); }
+    @keyframes toast-in  { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+    @keyframes toast-out { to   { opacity: 0; transform: translateY(-8px); } }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 1100px) { .zones-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 800px) {
+      .os-hero { grid-template-columns: 1fr; }
+      .hero-side { border-left: none; border-top: 1px solid var(--border); padding-left: 0; padding-top: 18px; }
+      .stat-strip { grid-template-columns: repeat(2, 1fr); }
+      .stat-card:nth-child(2) { border-right: none; }
+      .stat-card:nth-child(1), .stat-card:nth-child(2) { border-bottom: 1px solid var(--border-soft); }
+      .zones-grid { grid-template-columns: 1fr; }
+      .quick-types { display: none; }
+      .os-layout { padding: 18px 16px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<div class="os-layout">
+
+  <!-- ── Topbar ─────────────────────────────────── -->
+  <header class="os-topbar">
+    <div class="os-logo">
+      <div class="os-logo-mark">AL</div>
+      <div class="os-logo-text">
+        <div class="os-logo-name">Al Laith</div>
+        <div class="os-logo-sub">Business OS · v0.1</div>
+      </div>
+    </div>
+    <div class="os-topbar-right">
+      <div class="os-date" id="os-date">—</div>
+      <div id="z1-status-pill" class="pill off">
+        <span class="dot"></span><span>Checking Zone 1…</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Hero ───────────────────────────────────── -->
+  <section class="os-hero">
+    <div class="greeting-block">
+      <div class="greeting-eyebrow">
+        <span>System nominal</span>
+        <span class="sep">/</span>
+        <span id="hero-active-zones">6 zones tracked</span>
+      </div>
+      <h1 class="os-greeting">Good <em id="greeting-time">morning</em>, Janu.</h1>
+      <div class="os-tagline">Whatever it takes — here&rsquo;s where you do it.</div>
+    </div>
+
+    <div class="hero-side">
+      <div class="hero-side-label">Local time</div>
+      <div class="hero-side-clock" id="hero-clock">--:--<span class="ampm" id="hero-clock-ampm"></span></div>
+      <div class="hero-side-meta">
+        <span><b id="hero-meta-posts">0</b> posts this week</span>
+        <span><b id="hero-meta-ready">0</b> ready</span>
+        <span><b id="hero-meta-reports">0</b> reports</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Bridge banner ──────────────────────────── -->
+  <div id="z1-bridge" class="z1-bridge">
+    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>
+    </svg>
+    <span id="z1-bridge-text">Checking Zone 1 connection…</span>
+  </div>
+
+  <!-- ── Stat strip ──────────────────────────────── -->
+  <section class="stat-strip">
+    <div class="stat-card">
+      <div class="stat-label"><span class="idx">01</span><span>Posts · 7d</span></div>
+      <div class="stat-value" id="stat-posts-week">—</div>
+      <div class="stat-sub" id="stat-posts-sub">from Zone 1</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label"><span class="idx">02</span><span>Ready to publish</span></div>
+      <div class="stat-value" id="stat-ready">—</div>
+      <div class="stat-sub">Zone 1 queue</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label"><span class="idx">03</span><span>Research reports</span></div>
+      <div class="stat-value" id="stat-reports">—</div>
+      <div class="stat-sub">Zone 4 intelligence</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label"><span class="idx">04</span><span>Learning progress</span></div>
+      <div class="stat-value" id="stat-learning">—<span class="unit">%</span></div>
+      <div class="stat-sub">Zone 3 avg. topic progress</div>
+    </div>
+  </section>
+
+  <!-- ── Quick-add ───────────────────────────────── -->
+  <div class="quick-wrap">
+    <div class="quick-add">
+      <svg class="quick-add-plus" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      <input
+        id="quick-add-input"
+        type="text"
+        placeholder="Quick-capture — type an idea, job, resource, or competitor…"
+        autocomplete="off"
+      />
+      <div class="quick-types">
+        <button class="quick-type-btn active" data-type="idea">Idea</button>
+        <button class="quick-type-btn" data-type="job">Job</button>
+        <button class="quick-type-btn" data-type="resource">Resource</button>
+        <button class="quick-type-btn" data-type="competitor">Comp</button>
+      </div>
+      <button class="quick-add-submit" id="quick-add-submit">Capture</button>
+    </div>
+    <div class="quick-confirm" id="quick-add-confirm"></div>
+  </div>
+
+  <!-- ── Attention ───────────────────────────────── -->
+  <section style="margin-bottom:36px;">
+    <div class="section-head">
+      <h2>Needs attention</h2>
+      <div class="meta" id="attention-count">—</div>
+    </div>
+    <div class="attention" id="attention-list">
+      <div class="attention-item">
+        <div class="attention-marker">···</div>
+        <div class="attention-text">Loading status…</div>
+        <div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Zones ───────────────────────────────────── -->
+  <section>
+    <div class="section-head">
+      <h2>Your zones</h2>
+      <div class="meta" id="zones-last-updated">—</div>
+    </div>
+    <div class="zones-grid" id="zones-grid"></div>
+  </section>
+
+  <!-- ── Footer ──────────────────────────────────── -->
+  <footer class="os-footer">
+    <div>AL LAITH · BUSINESS OS · PHASE 0 FOUNDATION</div>
+    <div class="os-footer-right">
+      <span id="storage-used">— kB used</span>
+      <span class="meta-dot"></span>
+      <span id="ai-status" class="ok">AI · stub</span>
+    </div>
+  </footer>
+
+</div>
+
+<!-- Real shared scripts — these replace the inline stubs from the design prototype -->
+<script src="../Shared/storage-schema.js"></script>
+<script src="../Shared/brand-voice.js"></script>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   Al Laith OS Shell — App Logic
+   Wired to window.AlLaithOS (storage-schema.js)
+   and window.AlLaithAI (brand-voice.js)
+════════════════════════════════════════════════════════════════ */
+
+const ZONES = [
+  {
+    id: 1, key: 'zone1', icon: 'pen',
+    number: 'Z1', name: 'Content Hub',
+    desc: 'Content creation, brand voice engine, repurpose, calendar, approvals, scores.',
+    status: 'online', href: 'zone1-content.html',
+    stats: [
+      { key: 'thisWeek', label: 'Week' },
+      { key: 'ready',    label: 'Ready' },
+      { key: 'ideas',    label: 'Ideas' },
+    ],
+  },
+  {
+    id: 2, key: 'zone2', icon: 'briefcase',
+    number: 'Z2', name: 'Projects',
+    desc: 'Job logger, case study builder, events workspace, proposal generator.',
+    status: 'building', href: null,
+    stats: [
+      { key: 'jobs',        label: 'Jobs' },
+      { key: 'caseStudies', label: 'Studies' },
+      { key: 'events',      label: 'Events' },
+    ],
+  },
+  {
+    id: 3, key: 'zone3', icon: 'book',
+    number: 'Z3', name: 'Learning Hub',
+    desc: 'Claude tutor, resource library, topic tracker, growth journal.',
+    status: 'building', href: null,
+    stats: [
+      { key: 'resources',   label: 'Resources' },
+      { key: 'topics',      label: 'Topics' },
+      { key: 'avgProgress', label: 'Avg', suffix: '%' },
+    ],
+  },
+  {
+    id: 4, key: 'zone4', icon: 'scope',
+    number: 'Z4', name: 'Intelligence',
+    desc: 'Signal research, trend watch, competitor watchlist for the GCC market.',
+    status: 'building', href: null,
+    stats: [
+      { key: 'reports',     label: 'Reports' },
+      { key: 'competitors', label: 'Comps' },
+      { key: 'trends',      label: 'Trends' },
+    ],
+  },
+  {
+    id: 5, key: 'zone5', icon: 'graph',
+    number: 'Z5', name: 'Knowledge Graph',
+    desc: 'Visual D3 graph connecting concepts, trends, and marketing knowledge.',
+    status: 'building', href: null,
+    stats: [
+      { key: 'nodes', label: 'Nodes' },
+      { key: 'edges', label: 'Edges' },
+    ],
+  },
+  {
+    id: 6, key: 'zone6', icon: 'pulse',
+    number: 'Z6', name: 'Pulse',
+    desc: 'Output tracker, streak system, weekly AI digest, batch content creator.',
+    status: 'building', href: null,
+    stats: [
+      { key: 'thisWeek',    label: 'Week' },
+      { key: 'totalOutput', label: 'Total' },
+    ],
+  },
+];
+
+const ICONS = {
+  pen:       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5l4 4L8 20H4v-4z"/><path d="M14 5l5 5"/></svg>',
+  briefcase: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/></svg>',
+  book:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h10a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4z"/><path d="M18 4v16"/></svg>',
+  scope:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6"/><path d="M11 8v3l2 1M20 20l-4-4"/></svg>',
+  graph:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.5 7.5l3.5 8M16.5 7.5l-3.5 8M8 6h8"/></svg>',
+  pulse:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>',
+  arrowOut:  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>',
+};
+
+const QUICK_ADD_TYPES = {
+  idea: {
+    save(text) {
+      AlLaithOS.zone1.ideas.save({ title: text, status: 'idea', pillar: 'Products' });
+      AlLaithOS.zone1.writeStats();
+      return 'Idea saved to Zone 1.';
+    },
+  },
+  job: {
+    save(text) {
+      AlLaithOS.zone2.jobs.save({ title: text, status: 'active' });
+      AlLaithOS.zone2.writeStats();
+      return 'Job saved to Zone 2.';
+    },
+  },
+  resource: {
+    save(text) {
+      AlLaithOS.zone3.resources.save({ title: text, url: text.startsWith('http') ? text : '', summary: null });
+      AlLaithOS.zone3.writeStats();
+      return 'Resource saved to Zone 3.';
+    },
+  },
+  competitor: {
+    save(text) {
+      AlLaithOS.zone4.competitors.save({ name: text, lastResearched: null, summary: null });
+      AlLaithOS.zone4.writeStats();
+      return 'Competitor saved to Zone 4.';
+    },
+  },
+};
+
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toast(msg, type = 'info') {
+  const c = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = 'toast toast-' + type;
+  el.textContent = msg;
+  c.appendChild(el);
+  setTimeout(() => { el.style.animation = 'toast-out 0.2s ease forwards'; setTimeout(() => el.remove(), 200); }, 3000);
+}
+
+function fmtDate() {
+  const d = new Date();
+  const day  = d.toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase();
+  const date = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+  return `${day} · ${date}`;
+}
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'morning';
+  if (h < 18) return 'afternoon';
+  return 'evening';
+}
+
+function updateClock() {
+  const d = new Date();
+  let h = d.getHours();
+  const m = String(d.getMinutes()).padStart(2, '0');
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12; if (h === 0) h = 12;
+  const clockEl = document.getElementById('hero-clock');
+  if (clockEl) clockEl.firstChild.textContent = `${String(h).padStart(2,'0')}:${m}`;
+  const ampmEl = document.getElementById('hero-clock-ampm');
+  if (ampmEl) ampmEl.textContent = ampm;
+}
+
+/* ── Zone 1 live check ──────────────────────────────────────── */
+let z1Online = false;
+let z1LiveStats = null;
+
+async function checkZone1() {
+  const pill   = document.getElementById('z1-status-pill');
+  const bridge = document.getElementById('z1-bridge');
+  const bt     = document.getElementById('z1-bridge-text');
+
+  try {
+    const res = await fetch('http://localhost:3000/api/posts?limit=1', { signal: AbortSignal.timeout(2500) });
+    if (!res.ok) throw new Error('not ok');
+
+    const [postsRes, todayRes] = await Promise.allSettled([
+      fetch('http://localhost:3000/api/posts?limit=500').then(r => r.json()),
+      fetch('http://localhost:3000/api/posts/today').then(r => r.json()),
+    ]);
+
+    const all   = postsRes.status === 'fulfilled' ? postsRes.value : [];
+    const today = todayRes.status === 'fulfilled' ? todayRes.value : {};
+    const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+
+    z1LiveStats = {
+      total:    all.length,
+      thisWeek: all.filter(p => new Date(p.created_at) >= weekAgo).length,
+      ready:    all.filter(p => p.status === 'ready').length,
+      ideas:    all.filter(p => p.status === 'idea').length,
+      today:    today.ready || 0,
+      target:   today.target || 4,
+    };
+    z1Online = true;
+
+    pill.className = 'pill live';
+    pill.innerHTML = `<span class="dot"></span><span>Zone 1 online</span>`;
+    bridge.className = 'z1-bridge online';
+    bt.innerHTML = `Zone 1 is live — <strong>${z1LiveStats.thisWeek}</strong> posts this week · <strong>${z1LiveStats.ready}</strong> ready · today <strong>${z1LiveStats.today}/${z1LiveStats.target}</strong>.<a href="http://localhost:3000" target="_blank">Open Zone 1 →</a>`;
+
+  } catch {
+    z1Online = false;
+    pill.className = 'pill off';
+    pill.innerHTML = `<span class="dot"></span><span>Zone 1 offline</span>`;
+    bridge.className = 'z1-bridge';
+    bt.innerHTML = `Zone 1 (hub-app) is not running. Start it: <code>cd hub-app &amp;&amp; npm start</code> — then refresh.`;
+  }
+
+  renderStats();
+  renderZones();
+  renderAttention();
+}
+
+/* ── Stats ──────────────────────────────────────────────────── */
+function renderStats() {
+  const os = AlLaithOS.getOsStats();
+  const z1 = z1LiveStats || os.zone1 || {};
+  const z3 = os.zone3 || {};
+  const z4 = os.zone4 || {};
+
+  document.getElementById('stat-posts-week').textContent = z1.thisWeek ?? '0';
+  document.getElementById('stat-posts-sub').textContent  = z1Online ? 'live from Zone 1' : 'from cache';
+  document.getElementById('stat-ready').textContent      = z1.ready ?? '0';
+  document.getElementById('stat-reports').textContent    = z4.reports ?? '0';
+
+  const learnEl = document.getElementById('stat-learning');
+  if (learnEl) learnEl.innerHTML = `${z3.avgProgress != null ? z3.avgProgress : 0}<span class="unit">%</span>`;
+
+  // Hero side meta
+  const hPosts   = document.getElementById('hero-meta-posts');
+  const hReady   = document.getElementById('hero-meta-ready');
+  const hReports = document.getElementById('hero-meta-reports');
+  if (hPosts)   hPosts.textContent   = z1.thisWeek ?? 0;
+  if (hReady)   hReady.textContent   = z1.ready ?? 0;
+  if (hReports) hReports.textContent = z4.reports ?? 0;
+
+  const storageEl = document.getElementById('storage-used');
+  if (storageEl) storageEl.textContent = AlLaithOS.debug.storageUsed() + ' used';
+}
+
+/* ── Zones ──────────────────────────────────────────────────── */
+function renderZones() {
+  const grid = document.getElementById('zones-grid');
+  const os   = AlLaithOS.getOsStats();
+  const updEl = document.getElementById('zones-last-updated');
+
+  if (updEl) {
+    updEl.textContent = os.lastUpdated
+      ? `Updated ${new Date(os.lastUpdated).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' })}`
+      : '—';
+  }
+
+  grid.innerHTML = ZONES.map(z => {
+    const stats      = z.id === 1 && z1LiveStats ? z1LiveStats : (os[z.key] || {});
+    const isOnline   = z.id === 1 ? z1Online : (z.status === 'online');
+    const isClickable = isOnline || (z.href && z.status === 'online');
+    const tag        = isClickable ? 'a' : 'div';
+    const href       = z.id === 1 ? 'http://localhost:3000' : (z.href || '#');
+    const hrefAttr   = isClickable ? `href="${href}" target="${z.id === 1 ? '_blank' : '_self'}"` : '';
+    const pillClass  = isOnline ? 'live' : (z.status === 'building' ? 'build' : 'off');
+    const pillLabel  = isOnline ? 'Live' : (z.status === 'building' ? 'Building' : 'Offline');
+    const offlineCls = !isClickable ? ' offline' : '';
+    const liveCls    = isOnline ? ' live' : '';
+
+    const statsHtml = z.stats.map(s => {
+      const v = stats[s.key];
+      const display = v != null ? `${v}${s.suffix || ''}` : '—';
+      return `<div class="zone-stat">
+        <div class="zone-stat-val">${esc(display)}</div>
+        <div class="zone-stat-lab">${esc(s.label)}</div>
+      </div>`;
+    }).join('');
+
+    return `<${tag} class="zone${offlineCls}${liveCls}" ${hrefAttr}>
+      <div class="zone-head">
+        <div><div class="zone-id"><span class="num">${z.number}</span> · ${esc(z.name.toUpperCase())}</div></div>
+        <div class="pill ${pillClass}"><span class="dot"></span><span>${pillLabel}</span></div>
+      </div>
+      <div class="zone-glyph">${ICONS[z.icon] || ''}</div>
+      <div class="zone-body">
+        <div class="zone-name">${esc(z.name)}</div>
+        <div class="zone-desc">${esc(z.desc)}</div>
+      </div>
+      <div class="zone-stats">${statsHtml}</div>
+      <div class="zone-go">${ICONS.arrowOut}</div>
+    </${tag}>`;
+  }).join('');
+}
+
+/* ── Attention ──────────────────────────────────────────────── */
+function renderAttention() {
+  const list  = document.getElementById('attention-list');
+  const count = document.getElementById('attention-count');
+  const items = [];
+
+  if (!z1Online) {
+    items.push({ text: '<strong>Zone 1 is offline.</strong> Start the hub-app server to see live content stats.' });
+  }
+
+  const ideas = AlLaithOS.zone1.getByStatus('idea');
+  if (ideas.length > 0) {
+    items.push({
+      text: `<strong>${ideas.length} content ideas</strong> in Zone 1 waiting to be developed.`,
+      action: z1Online ? { label: 'Open Z1', href: 'http://localhost:3000' } : null,
+    });
+  }
+
+  const neverResearched = AlLaithOS.zone4.competitors.getAll().filter(c => !c.lastResearched);
+  if (neverResearched.length > 0) {
+    items.push({ text: `<strong>${neverResearched.length} competitors</strong> in Zone 4 have never been researched.` });
+  }
+
+  const notStarted = AlLaithOS.zone3.topics.getAll().filter(t => (t.progress || 0) === 0);
+  if (notStarted.length > 0) {
+    items.push({ text: `<strong>${notStarted.length} learning topics</strong> in Zone 3 haven&rsquo;t been started yet.` });
+  }
+
+  if (!AlLaithAI.isLive()) {
+    items.push({ text: 'AI is in stub mode. Run <code>AlLaithAI.setKey("sk-ant-…")</code> in console to activate.' });
+  }
+
+  if (items.length === 0) {
+    items.push({ text: 'All zones are healthy. Nothing needs immediate attention.' });
+  }
+
+  if (count) count.textContent = String(items.length).padStart(2, '0') + ' ITEMS';
+
+  list.innerHTML = items.map((it, i) => `
+    <div class="attention-item">
+      <div class="attention-marker">${String(i + 1).padStart(2, '0')}</div>
+      <div class="attention-text">${it.text}</div>
+      ${it.action
+        ? `<a class="attention-action" href="${it.action.href}" target="_blank">${it.action.label} →</a>`
+        : '<div></div>'}
+    </div>`).join('');
+}
+
+/* ── Quick-add ──────────────────────────────────────────────── */
+let activeQuickType = 'idea';
+
+document.querySelectorAll('.quick-type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.quick-type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeQuickType = btn.dataset.type;
+  });
+});
+
+document.getElementById('quick-add-submit').addEventListener('click', doQuickAdd);
+document.getElementById('quick-add-input').addEventListener('keydown', e => { if (e.key === 'Enter') doQuickAdd(); });
+
+function doQuickAdd() {
+  const input   = document.getElementById('quick-add-input');
+  const confirm = document.getElementById('quick-add-confirm');
+  const text    = input.value.trim();
+  if (!text) { input.focus(); return; }
+  const handler = QUICK_ADD_TYPES[activeQuickType];
+  if (!handler) return;
+  const msg = handler.save(text);
+  input.value = '';
+  confirm.textContent = '> ' + msg;
+  confirm.style.display = 'block';
+  setTimeout(() => { confirm.style.display = 'none'; }, 3000);
+  toast(msg, 'success');
+  renderStats(); renderAttention(); renderZones();
+}
+
+/* ── Init ───────────────────────────────────────────────────── */
+function init() {
+  const dateEl = document.getElementById('os-date');
+  if (dateEl) dateEl.textContent = fmtDate();
+
+  const greetEl = document.getElementById('greeting-time');
+  if (greetEl) greetEl.textContent = greeting();
+
+  updateClock();
+  setInterval(updateClock, 30000);
+
+  const aiEl = document.getElementById('ai-status');
+  if (aiEl) aiEl.textContent = AlLaithAI.isLive() ? 'AI · live' : 'AI · stub';
+
+  AlLaithOS.setOsMeta({ lastOpened: new Date().toISOString() });
+  renderStats(); renderZones(); renderAttention();
+  checkZone1();
+  setInterval(checkZone1, 30000);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
