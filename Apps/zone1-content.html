@@ -512,6 +512,41 @@
     /* Sheets export highlight */
     .sheets-preview { background:#f0faf0; border:1px solid #81C784; border-radius:6px; padding:10px; font-size:11px; font-family:monospace; word-break:break-all; max-height:120px; overflow-y:auto; color:#333; }
 
+    /* ── Repurpose result ── */
+    .repurpose-result { margin-top:14px; display:none; }
+    .repurpose-result.show { display:block; }
+    .repurpose-result-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--mute); margin-bottom:6px; }
+    .repurpose-output { background:var(--paper-2); border:1px solid var(--rule); border-radius:8px; padding:13px 15px; font-size:13px; line-height:1.65; color:var(--ink); white-space:pre-wrap; max-height:260px; overflow-y:auto; }
+    .repurpose-result-actions { display:flex; gap:8px; margin-top:10px; }
+
+    /* ── Intelligence page ── */
+    .intel-tabs { display:flex; gap:4px; margin-bottom:18px; background:var(--paper-2); border-radius:10px; padding:4px; }
+    .intel-tab { flex:1; text-align:center; padding:8px 12px; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; color:var(--mute); transition:all .15s; }
+    .intel-tab.active { background:#fff; color:var(--ink); box-shadow:var(--shadow-1); }
+    .intel-panel { display:none; }
+    .intel-panel.active { display:block; }
+    .intel-mode-row { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+    .intel-mode-pill { padding:5px 12px; border-radius:99px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--rule); background:#fff; color:var(--mute); transition:all .15s; }
+    .intel-mode-pill.active { background:var(--navy); color:#fff; border-color:var(--navy); }
+    .intel-output { background:var(--paper-2); border:1px solid var(--rule); border-radius:10px; padding:16px; font-size:13px; line-height:1.75; color:var(--ink); min-height:120px; white-space:pre-wrap; overflow-y:auto; max-height:420px; }
+    .intel-output.loading { color:var(--mute); font-style:italic; }
+    .intel-competitor-card { background:#fff; border:1px solid var(--rule); border-radius:10px; padding:13px 16px; margin-bottom:8px; display:flex; align-items:center; gap:14px; }
+    .intel-comp-name { font-size:13px; font-weight:700; flex:1; }
+    .intel-comp-last { font-size:11px; color:var(--mute); }
+    .intel-trend-chip { display:inline-flex; align-items:center; gap:5px; background:#fff; border:1px solid var(--rule); border-radius:99px; padding:5px 11px; font-size:12px; font-weight:500; cursor:pointer; margin:3px; transition:all .15s; }
+    .intel-trend-chip:hover { border-color:var(--blue); color:var(--blue); }
+    .intel-trend-chip .trend-arrow { font-size:10px; color:var(--ok); }
+
+    /* ── Schedule modal ── */
+    .sched-post-row { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; cursor:pointer; border:1px solid transparent; transition:all .15s; margin-bottom:4px; }
+    .sched-post-row:hover { background:var(--paper-2); border-color:var(--rule); }
+    .sched-post-row.selected { background:#EFF6FF; border-color:var(--blue); }
+    .sched-post-name { font-size:13px; font-weight:600; flex:1; }
+    .sched-post-status { font-size:10px; color:var(--mute); }
+
+    /* ── Review URL modal ── */
+    .review-url-box { background:var(--paper-2); border:1px solid var(--rule); border-radius:8px; padding:11px 13px; font-size:12px; font-family:var(--font-mono); word-break:break-all; color:var(--ink-3); max-height:80px; overflow-y:auto; }
+
     /* ── Content Scorer modal ── */
     .scorer-overall { display:flex; align-items:center; gap:16px; padding:16px; border-radius:10px; margin-bottom:4px; }
     .scorer-overall.sc-green { background:var(--good-bg); }
@@ -893,6 +928,9 @@
     <div class="sb-section">Config</div>
     <div class="sb-item" data-page="shotlist"><svg class="icon" width="16" height="16"><use href="#i-camera"/></svg> Shot List</div>
     <div class="sb-item" data-page="settings"><svg class="icon" width="16" height="16"><use href="#i-settings"/></svg> Settings</div>
+
+    <div class="sb-section">Intelligence</div>
+    <div class="sb-item" data-page="intelligence"><svg class="icon" width="16" height="16"><use href="#i-spark"/></svg> Signal Research</div>
 
     <div class="sb-section">Handoff</div>
     <div class="sb-item" data-page="marketing"><svg class="icon" width="16" height="16"><use href="#i-send"/></svg> For Marketing</div>
@@ -1656,11 +1694,79 @@
         <div class="repurpose-opt" data-type="video"><div class="r-icon">&#128249;</div><div class="r-label">Video</div></div>
         <div class="repurpose-opt" data-type="BTS"><div class="r-icon">&#127909;</div><div class="r-label">BTS</div></div>
       </div>
-      <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">
+      <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end;align-items:center">
+        <span id="repurpose-loading" style="font-size:12px;color:var(--mute);display:none">Rewriting with Claude…</span>
         <button class="btn btn-ghost" onclick="closeRepurposeModal()">Cancel</button>
-        <button class="btn btn-cta" onclick="confirmRepurpose()"><svg width="12" height="12"><use href="#i-recycle"/></svg> Create Variant</button>
+        <button class="btn btn-cta" id="repurpose-go-btn" onclick="confirmRepurpose()"><svg width="12" height="12"><use href="#i-recycle"/></svg> Rewrite with AI</button>
+      </div>
+      <div class="repurpose-result" id="repurpose-result">
+        <div class="repurpose-result-label">Rewritten for <span id="repurpose-format-label"></span></div>
+        <div class="repurpose-output" id="repurpose-output"></div>
+        <div class="repurpose-result-actions">
+          <button class="btn btn-ghost btn-sm" onclick="copyRepurposeOutput()">&#128203; Copy</button>
+          <button class="btn btn-cta btn-sm" onclick="saveRepurposeAsDraft()">&#10003; Save as Draft</button>
+        </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Intelligence Page -->
+<div id="intelligence" class="page">
+  <div class="section-header" style="margin-bottom:18px">
+    <div class="section-title">&#128269; Signal Research</div>
+    <div style="font-size:12px;color:var(--mute)">Competitor intelligence · Trends · Gap analysis</div>
+  </div>
+  <div class="intel-tabs">
+    <div class="intel-tab active" data-itab="signals" onclick="switchIntelTab('signals')">&#128270; Signal Research</div>
+    <div class="intel-tab" data-itab="trends" onclick="switchIntelTab('trends')">&#128200; Trend Watch</div>
+    <div class="intel-tab" data-itab="competitors" onclick="switchIntelTab('competitors')">&#128346; Competitors</div>
+  </div>
+
+  <!-- Signal Research panel -->
+  <div id="intel-signals" class="intel-panel active">
+    <div class="intel-mode-row" id="intel-mode-row">
+      <div class="intel-mode-pill active" data-mode="snapshot" onclick="setIntelMode('snapshot')">Company Snapshot</div>
+      <div class="intel-mode-pill" data-mode="gap" onclick="setIntelMode('gap')">Gap Analysis</div>
+      <div class="intel-mode-pill" data-mode="trends" onclick="setIntelMode('trends')">Trend Scan</div>
+      <div class="intel-mode-pill" data-mode="benchmark" onclick="setIntelMode('benchmark')">Content Benchmark</div>
+      <div class="intel-mode-pill" data-mode="ideas" onclick="setIntelMode('ideas')">Campaign Ideas</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" id="intel-input-label">Company or Topic to Research</label>
+      <textarea id="intel-query" class="form-textarea" rows="3" placeholder="e.g. Byrne Equipment Rental — or — scaffolding content trends in UAE 2026"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="btn btn-cta" onclick="runIntelResearch()">&#128269; Research</button>
+      <button class="btn btn-ghost btn-sm" onclick="clearIntelOutput()">Clear</button>
+      <span id="intel-status" style="font-size:12px;color:var(--mute);align-self:center"></span>
+    </div>
+    <div id="intel-output" class="intel-output" style="display:none"></div>
+  </div>
+
+  <!-- Trend Watch panel -->
+  <div id="intel-trends" class="intel-panel">
+    <div class="card" style="margin-bottom:14px">
+      <div class="section-title" style="font-size:13px;margin-bottom:10px">&#128200; UAE Industry Trend Topics</div>
+      <div id="trend-chips" style="line-height:2.2"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Research a trend in depth</label>
+      <textarea id="trend-query" class="form-textarea" rows="2" placeholder="e.g. What content formats are construction companies using on LinkedIn in 2026?"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="btn btn-cta" onclick="runTrendResearch()">&#128200; Analyse Trend</button>
+    </div>
+    <div id="trend-output" class="intel-output" style="display:none"></div>
+  </div>
+
+  <!-- Competitors panel -->
+  <div id="intel-competitors" class="intel-panel">
+    <div class="section-header" style="margin-bottom:12px">
+      <div style="font-size:13px;font-weight:600">Default Competitor Watchlist</div>
+      <button class="btn btn-ghost btn-sm" onclick="runFullCompScan()">&#128269; Scan All</button>
+    </div>
+    <div id="competitor-list"></div>
   </div>
 </div>
 
@@ -1713,6 +1819,58 @@
       <span id="scorer-saved-note" style="font-size:11px;color:var(--ok);display:none;margin-right:auto">&#10003; Score saved to post</span>
       <button class="btn btn-ghost btn-sm" id="scorer-retry-btn" style="display:none" onclick="retryScorer()">Re-score</button>
       <button class="btn btn-ghost" onclick="closeScorerModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Schedule Post Modal — Phase 1d -->
+<div class="modal-overlay" id="schedModal" onclick="if(event.target===this)closeSchedModal()">
+  <div class="modal" style="width:460px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">&#128197; Schedule a Post</div>
+        <div class="modal-sub" id="sched-date-label">Select a post to schedule for this date</div>
+      </div>
+      <button class="modal-close" onclick="closeSchedModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="sched-post-list"><div class="loading-row">No unscheduled drafts or ready posts.</div></div>
+    </div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeSchedModal()">Cancel</button>
+      <button class="btn btn-cta" onclick="confirmSchedule()">&#128197; Schedule</button>
+    </div>
+  </div>
+</div>
+
+<!-- Review URL Modal — Phase 1f -->
+<div class="modal-overlay" id="reviewUrlModal" onclick="if(event.target===this)closeReviewUrlModal()">
+  <div class="modal" style="width:500px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">&#128279; Share for Review</div>
+        <div class="modal-sub" id="review-url-post-title">Copy this link and send it to your marketing reviewer</div>
+      </div>
+      <button class="modal-close" onclick="closeReviewUrlModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--mute);margin-bottom:12px">The reviewer opens this link, reads the post, and clicks Approve or Request Changes. They copy the response token back to you.</p>
+      <div class="review-url-box" id="review-url-text"></div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button class="btn btn-cta btn-sm" onclick="copyReviewUrl()">&#128203; Copy Link</button>
+        <span id="review-url-copied" style="font-size:11px;color:var(--ok);display:none;align-self:center">&#10003; Copied!</span>
+      </div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--rule)">
+        <label class="form-label">Paste Response Token (from reviewer)</label>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <input id="review-token-input" class="form-input" placeholder="Paste reviewer token here…" style="flex:1"/>
+          <button class="btn btn-ghost btn-sm" onclick="importReviewToken()">Import</button>
+        </div>
+        <div id="review-token-result" style="font-size:12px;color:var(--ok);margin-top:6px;display:none"></div>
+      </div>
+    </div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeReviewUrlModal()">Close</button>
     </div>
   </div>
 </div>
@@ -2422,8 +2580,9 @@ function navigate(page){
   if(page==='series')    loadSeries();
   if(page==='settings')  loadSettings();
   if(page==='production') loadProduction();
-  if(page==='marketing')  loadMarketing();
-  if(page==='shotlist')   loadShotList();
+  if(page==='marketing')    loadMarketing();
+  if(page==='shotlist')     loadShotList();
+  if(page==='intelligence') loadIntelligence();
 }
 
 function showComposer(post=null){ clearComposer(); navigate('composer'); if(post) fillComposer(post); }
@@ -3302,7 +3461,13 @@ function renderCalendar(posts,year,month){
 }
 function calNav(offset){ state.calMonth+=offset; if(state.calMonth>12){state.calMonth=1;state.calYear++;} if(state.calMonth<1){state.calMonth=12;state.calYear--;} loadCalendar(); }
 function calToday(){ const n=new Date();state.calYear=n.getFullYear();state.calMonth=n.getMonth()+1;loadCalendar(); }
-function calDayClick(ds){ showComposer(); const e=$('c-date');if(e)e.value=ds; }
+function calDayClick(ds){
+  // If day has posts, open first post in composer
+  const dayPosts = getPosts().filter(p=>p.schedule_date&&p.schedule_date.startsWith(ds));
+  if(dayPosts.length>0){ editPost(dayPosts[0].id); return; }
+  // Empty day — open schedule modal to assign a post
+  openSchedModal(ds);
+}
 
 /* ── Series ─────────────────────────────────────────────── */
 async function loadSeries(){
@@ -4529,6 +4694,9 @@ function renderMktCard(post){
       </div>
       ${latestFb?`<div class="mkt-feedback-preview">&#128172; <em>"${esc(String(latestFb.feedback||'').slice(0,80))}${String(latestFb.feedback||'').length>80?'&hellip;':''}"</em></div>`:''}
       <div class="mkt-card-actions">${actions}</div>
+      <div style="margin-top:6px">
+        <button class="btn btn-ghost btn-xs" onclick="openReviewUrlModal(${post.id})" style="width:100%">&#128279; Share for Review</button>
+      </div>
       ${revokeBtn}
     </div>
   </div>`;
@@ -4696,6 +4864,432 @@ function buildMarketingPackHTML(posts){
     +'}\n'
     +'<\/script></body></html>';
 }
+
+// ── Phase 1e: OS Shell stats sync ────────────────────────────────────────────
+function syncOsStats(){
+  if(window.AlLaithOS && AlLaithOS.zone1){
+    try{ AlLaithOS.zone1.writeStats(); }catch(e){ console.warn('syncOsStats:',e); }
+  }
+}
+
+// ── Phase 1c: Repurpose Engine (AI-powered) ───────────────────────────────────
+var _repurposeOriginalPost = null;
+var _repurposeResult       = '';
+
+function openRepurposeModal(){
+  if(!state.editingPostId){ alert('Save the post first, then use Repurpose.'); return; }
+  _repurposeOriginalPost = getPosts().find(p=>p.id===state.editingPostId) || null;
+  var result = $('repurpose-result');
+  if(result) result.classList.remove('show');
+  var output = $('repurpose-output');
+  if(output) output.textContent = '';
+  _repurposeResult = '';
+  $('repurposeModal').classList.add('open');
+  document.querySelectorAll('.repurpose-opt').forEach(o=>o.classList.remove('selected'));
+  state.repurposeType = null;
+}
+
+async function confirmRepurpose(){
+  if(!state.repurposeType){ alert('Select a format first.'); return; }
+  if(!_repurposeOriginalPost){ alert('No post loaded.'); return; }
+  var caption = _repurposeOriginalPost.caption || _repurposeOriginalPost.hook || _repurposeOriginalPost.snippet || '';
+  if(!caption){ alert('The original post has no caption to rewrite. Add a caption in the Composer first.'); return; }
+
+  var loading = $('repurpose-loading');
+  var goBtn   = $('repurpose-go-btn');
+  var result  = $('repurpose-result');
+  var output  = $('repurpose-output');
+  var fmtLabel = $('repurpose-format-label');
+
+  if(loading) loading.style.display = 'inline';
+  if(goBtn)   goBtn.disabled = true;
+  if(result)  result.classList.remove('show');
+
+  var formats = {
+    reel:'Instagram Reel script',carousel:'Carousel slide captions',
+    linkedin:'LinkedIn post',facebook:'Facebook post',
+    blog:'Blog article opening',video:'Video script',BTS:'Behind-the-scenes caption'
+  };
+  if(fmtLabel) fmtLabel.textContent = formats[state.repurposeType] || state.repurposeType;
+
+  try{
+    var res = await AlLaithAI.quick.repurpose({
+      post: caption, type: state.repurposeType,
+      title: _repurposeOriginalPost.title,
+      pillar: _repurposeOriginalPost.pillar,
+      platform: state.repurposeType==='linkedin'?'LinkedIn':state.repurposeType==='facebook'?'Facebook':'Instagram'
+    });
+    _repurposeResult = res.text || '';
+    if(output) output.textContent = _repurposeResult;
+    if(result) result.classList.add('show');
+  }catch(e){
+    if(output) output.textContent = 'Rewrite failed: '+e.message+'\n\nAdd your Anthropic API key in Settings to enable live AI.';
+    if(result) result.classList.add('show');
+  }finally{
+    if(loading) loading.style.display = 'none';
+    if(goBtn)   goBtn.disabled = false;
+  }
+}
+
+function copyRepurposeOutput(){
+  if(!_repurposeResult) return;
+  navigator.clipboard.writeText(_repurposeResult).then(()=>toast('Copied!','success')).catch(()=>{
+    var ta=document.createElement('textarea');ta.value=_repurposeResult;
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+    toast('Copied!','success');
+  });
+}
+
+function saveRepurposeAsDraft(){
+  if(!_repurposeResult||!_repurposeOriginalPost) return;
+  var variant = mkPost({
+    title: _repurposeOriginalPost.title+' — '+state.repurposeType,
+    pillar: _repurposeOriginalPost.pillar,
+    content_type: state.repurposeType,
+    caption: _repurposeResult,
+    hook: _repurposeOriginalPost.hook,
+    hashtags: _repurposeOriginalPost.hashtags,
+    platforms: _repurposeOriginalPost.platforms,
+    status: 'draft',
+    repurpose_of: _repurposeOriginalPost.id
+  });
+  var posts = getPosts(); posts.push(variant); setPosts(posts);
+  syncOsStats();
+  closeRepurposeModal();
+  showComposer(variant);
+  toast('Repurposed draft saved and opened.','success');
+}
+
+// ── Phase 1d: Calendar scheduling ────────────────────────────────────────────
+var _schedDate     = '';
+var _schedPostId   = null;
+
+function openSchedModal(dateStr){
+  _schedDate   = dateStr;
+  _schedPostId = null;
+  var label = $('sched-date-label');
+  if(label) label.textContent = 'Schedule a post for ' + new Date(dateStr+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+  var list  = $('sched-post-list');
+  // Show unscheduled posts (idea/draft/ready that have no schedule_date)
+  var candidates = getPosts().filter(p=>!p.schedule_date&&['idea','draft','ready','planned'].includes(p.status));
+  if(!candidates.length){
+    list.innerHTML = '<div class="loading-row">No unscheduled posts. Create a draft in the Composer first.</div>';
+  } else {
+    list.innerHTML = candidates.map(p=>`
+      <div class="sched-post-row" id="sched-row-${p.id}" onclick="selectSchedPost(${p.id})">
+        <div style="flex:1">
+          <div class="sched-post-name">${esc(p.title)}</div>
+          <div class="sched-post-status">${pillarTag(p.pillar)} ${typeChip(p.content_type)}</div>
+        </div>
+        <span style="font-size:11px;color:var(--mute)">${p.status}</span>
+      </div>`).join('');
+  }
+  $('schedModal').classList.add('open');
+}
+
+function closeSchedModal(){ $('schedModal').classList.remove('open'); }
+
+function selectSchedPost(id){
+  _schedPostId = id;
+  document.querySelectorAll('.sched-post-row').forEach(r=>r.classList.remove('selected'));
+  var row = document.getElementById('sched-row-'+id);
+  if(row) row.classList.add('selected');
+}
+
+function confirmSchedule(){
+  if(!_schedPostId){ alert('Select a post to schedule.'); return; }
+  var posts = getPosts();
+  var idx   = posts.findIndex(p=>p.id===_schedPostId);
+  if(idx<0){ closeSchedModal(); return; }
+  posts[idx].schedule_date = _schedDate;
+  posts[idx].updated_at    = now();
+  setPosts(posts);
+  syncOsStats();
+  closeSchedModal();
+  loadCalendar();
+  toast('Scheduled: '+posts[idx].title,'success');
+}
+
+// ── Phase 1f: Approval Bridge (URL-based review) ─────────────────────────────
+var _reviewUrlPostId = null;
+var _reviewUrlFull   = '';
+
+function openReviewUrlModal(postId){
+  _reviewUrlPostId = postId;
+  var post = getPosts().find(p=>p.id===postId);
+  if(!post){ alert('Post not found.'); return; }
+  var payload = {
+    id: post.id, title: post.title, caption: post.caption||'',
+    hook: post.hook||'', hashtags: post.hashtags||'',
+    pillar: post.pillar, platforms: post.platforms,
+    content_type: post.content_type, cta: post.cta||''
+  };
+  var encoded  = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  var baseUrl  = window.location.href.split('?')[0];
+  _reviewUrlFull = baseUrl+'?review='+encoded;
+  var titleEl  = $('review-url-post-title');
+  if(titleEl) titleEl.textContent = '"'+post.title.slice(0,60)+'"';
+  var urlBox   = $('review-url-text');
+  if(urlBox)   urlBox.textContent = _reviewUrlFull;
+  var copied   = $('review-url-copied');
+  if(copied)   copied.style.display='none';
+  var tokenRes = $('review-token-result');
+  if(tokenRes) tokenRes.style.display='none';
+  var tokenIn  = $('review-token-input');
+  if(tokenIn)  tokenIn.value='';
+  $('reviewUrlModal').classList.add('open');
+}
+
+function closeReviewUrlModal(){ $('reviewUrlModal').classList.remove('open'); }
+
+function copyReviewUrl(){
+  if(!_reviewUrlFull) return;
+  navigator.clipboard.writeText(_reviewUrlFull).then(()=>{
+    var c=$('review-url-copied'); if(c){c.style.display='inline';setTimeout(()=>c.style.display='none',2500);}
+  }).catch(()=>{
+    var ta=document.createElement('textarea');ta.value=_reviewUrlFull;
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+    var c=$('review-url-copied'); if(c){c.style.display='inline';setTimeout(()=>c.style.display='none',2500);}
+  });
+}
+
+function importReviewToken(){
+  var input = $('review-token-input');
+  var token = (input?input.value:'').trim();
+  if(!token){ alert('Paste the reviewer token first.'); return; }
+  try{
+    var decoded = JSON.parse(decodeURIComponent(escape(atob(token))));
+    if(!decoded.post_id||!decoded.decision) throw new Error('Invalid token format');
+    var posts = getPosts();
+    var idx   = posts.findIndex(p=>p.id===decoded.post_id);
+    if(idx<0) throw new Error('Post not found in this app');
+    if(decoded.decision==='approved'){
+      posts[idx].status='approved';
+    } else if(decoded.decision==='changes'){
+      posts[idx].status='ready';
+    }
+    posts[idx].updated_at=now();
+    setPosts(posts);
+    var m=getMktPost(decoded.post_id);
+    if(decoded.comment) m.feedback=(m.feedback||[]).concat({feedback:decoded.comment,mkt_status:decoded.decision,exported_at:new Date().toISOString()});
+    m.mkt_status=decoded.decision;
+    setMktPost(decoded.post_id,m);
+    syncOsStats();
+    var res=$('review-token-result');
+    if(res){res.textContent='✓ Token imported. Status: '+decoded.decision+(decoded.comment?' — "'+decoded.comment.slice(0,60)+'"':'');res.style.display='block';}
+    if(input) input.value='';
+    loadMarketing();
+  }catch(e){
+    alert('Invalid token: '+e.message);
+  }
+}
+
+function checkReviewUrlParam(){
+  var params = new URLSearchParams(window.location.search);
+  var review = params.get('review');
+  if(!review) return;
+  try{
+    var post = JSON.parse(decodeURIComponent(escape(atob(review))));
+    showReviewerView(post);
+  }catch(e){ console.warn('Bad review param',e); }
+}
+
+function showReviewerView(post){
+  // Replace entire page with a clean reviewer view
+  document.body.innerHTML = `
+    <div style="max-width:600px;margin:40px auto;padding:20px;font-family:'Manrope',system-ui;color:#0C172C">
+      <div style="margin-bottom:24px">
+        <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6B7891;margin-bottom:4px">Al Laith — Content Review</div>
+        <h1 style="font-size:22px;font-weight:700;margin:0 0 4px">${esc(post.title)}</h1>
+        <div style="font-size:12px;color:#6B7891">${(post.platforms||[]).join(' · ')} &middot; ${esc(post.pillar)}</div>
+      </div>
+      ${post.hook?`<div style="font-size:15px;font-weight:600;color:#0071B7;margin-bottom:12px;padding:12px;background:#EFF6FF;border-radius:8px">${esc(post.hook)}</div>`:''}
+      <div style="font-size:14px;line-height:1.75;white-space:pre-wrap;background:#F2F6FA;padding:16px;border-radius:10px;margin-bottom:16px">${esc(post.caption||'(no caption)')}</div>
+      ${post.hashtags?`<div style="font-size:12px;color:#0082AF;margin-bottom:16px">${esc(post.hashtags)}</div>`:''}
+      ${post.cta?`<div style="font-size:13px;font-style:italic;color:#6B7891;margin-bottom:20px">CTA: ${esc(post.cta)}</div>`:''}
+      <div style="background:#fff;border:1px solid #D9E3EF;border-radius:10px;padding:18px;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6B7891;margin-bottom:10px">Your Decision</div>
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+          <button id="rev-approve" onclick="reviewDecide('approved')" style="flex:1;padding:10px;border-radius:8px;border:2px solid #D9E3EF;background:#fff;font-size:13px;font-weight:600;cursor:pointer">&#9989; Approve</button>
+          <button id="rev-changes" onclick="reviewDecide('changes')" style="flex:1;padding:10px;border-radius:8px;border:2px solid #D9E3EF;background:#fff;font-size:13px;font-weight:600;cursor:pointer">&#9997; Request Changes</button>
+        </div>
+        <textarea id="rev-comment" placeholder="Optional comment or change requests…" style="width:100%;border:1px solid #D9E3EF;border-radius:8px;padding:10px;font-size:13px;resize:vertical;min-height:70px;font-family:inherit;box-sizing:border-box"></textarea>
+      </div>
+      <div id="rev-token-box" style="display:none;background:#E9F2EC;border:1px solid #A7D7BA;border-radius:10px;padding:16px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#1F7A4D;margin-bottom:6px">Response Token — copy this and send to Janu</div>
+        <div id="rev-token-text" style="font-size:12px;font-family:monospace;word-break:break-all;margin-bottom:10px"></div>
+        <button onclick="copyRevToken()" style="padding:7px 14px;border-radius:7px;background:#1F7A4D;color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer">&#128203; Copy Token</button>
+      </div>
+    </div>`;
+
+  window._reviewPost = post;
+  window.reviewDecide = function(decision){
+    var comment = (document.getElementById('rev-comment')||{}).value||'';
+    var token   = btoa(unescape(encodeURIComponent(JSON.stringify({post_id:post.id,decision:decision,comment:comment,reviewed_at:new Date().toISOString()}))));
+    document.getElementById('rev-token-text').textContent = token;
+    document.getElementById('rev-token-box').style.display='block';
+    ['rev-approve','rev-changes'].forEach(function(id){var b=document.getElementById(id);if(b)b.style.background=decision==='approved'&&id==='rev-approve'?'#E9F2EC':decision==='changes'&&id==='rev-changes'?'#FEE2E2':'#fff';});
+  };
+  window.copyRevToken = function(){
+    var t=document.getElementById('rev-token-text').textContent;
+    navigator.clipboard.writeText(t).catch(()=>{var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();});
+    alert('Token copied! Send this to Janu so she can import it in the app.');
+  };
+}
+
+// ── Phase 1g: Intelligence screens ───────────────────────────────────────────
+var _intelMode = 'snapshot';
+var _intelTab  = 'signals';
+
+var COMPETITORS = [
+  {name:'Byrne Equipment Rental',    url:'https://www.byrne.ae',   lastResearched:null},
+  {name:'RSG / Al Rakha Scaffolding',url:'',                       lastResearched:null},
+  {name:'GAPS',                      url:'',                       lastResearched:null},
+  {name:'BRT Equipment Rental',      url:'',                       lastResearched:null},
+  {name:'Triton',                    url:'',                       lastResearched:null},
+  {name:'Speedy Gulf',               url:'',                       lastResearched:null},
+];
+
+var TREND_TOPICS = [
+  'UAE construction boom 2026','scaffolding safety standards GCC','IPAF certification UAE',
+  'equipment rental digital marketing','B2B LinkedIn content UAE','events infrastructure Gulf',
+  'access equipment trends','construction content marketing','telehandler market GCC',
+  'Al Laith scaffolding','ADIPEC 2026 content','UAE mega projects 2026',
+  'video content B2B Middle East','LinkedIn algorithm 2026','Instagram Reels B2B',
+];
+
+function loadIntelligence(){
+  switchIntelTab(_intelTab||'signals');
+  renderCompetitorList();
+  renderTrendChips();
+}
+
+function switchIntelTab(tab){
+  _intelTab = tab;
+  document.querySelectorAll('.intel-tab').forEach(el=>el.classList.toggle('active',el.dataset.itab===tab));
+  document.querySelectorAll('.intel-panel').forEach(el=>el.classList.toggle('active',el.id==='intel-'+tab));
+}
+
+function setIntelMode(mode){
+  _intelMode = mode;
+  document.querySelectorAll('.intel-mode-pill').forEach(el=>el.classList.toggle('active',el.dataset.mode===mode));
+  var label = $('intel-input-label');
+  var labels = {
+    snapshot:'Company name to research',gap:'Company to compare vs Al Laith',
+    trends:'Topic or trend to scan','benchmark':'Company to benchmark content against',
+    ideas:'Topic or sector for campaign ideas'
+  };
+  if(label) label.textContent = labels[mode]||'Query';
+}
+
+async function runIntelResearch(){
+  var query = ($('intel-query')||{}).value||'';
+  if(!query.trim()){ alert('Enter a company name or research topic first.'); return; }
+  var output = $('intel-output');
+  var status = $('intel-status');
+  if(output){ output.style.display='block'; output.className='intel-output loading'; output.textContent='Researching…'; }
+  if(status) status.textContent='Asking Claude…';
+  var modePrompts={
+    snapshot:'Produce a structured Company Snapshot for: '+query+'. Include: what they do, their market position, content strategy on LinkedIn/Instagram, strengths, and gaps vs Al Laith (UAE equipment rental, scaffolding, events). Format clearly with headers.',
+    gap:'Produce a Gap Analysis: compare "'+query+'" vs Al Laith Group (UAE equipment rental/scaffolding/events). Cover: positioning, content volume, platform presence, messaging, opportunities Al Laith can exploit. Be specific and actionable.',
+    trends:'Analyse this trend for Al Laith: '+query+'. Cover: what is driving it, who else is doing it, what content angle works for B2B UAE audience, and 3 specific post ideas Al Laith could create from it.',
+    benchmark:'Benchmark the content output of "'+query+'" for Al Laith\'s reference. Analyse: posting frequency, content formats used, top-performing themes, hashtag strategy, engagement patterns.',
+    ideas:'Generate 5 campaign content ideas for Al Laith Group (UAE equipment rental/scaffolding/events) based on this topic: '+query+'. For each idea: title, platform, format, hook, and brief production note.'
+  };
+  var prompt = modePrompts[_intelMode]||query;
+  try{
+    var res = await AlLaithAI.generate({type:'intelligence',context:{query:prompt,mode:_intelMode}});
+    var text = res.text||'';
+    if(output){ output.className='intel-output'; output.textContent=text; }
+    if(status) status.textContent='Done';
+    // Save to competitor record if snapshot/gap mode and recognisable company
+    var comp = COMPETITORS.find(c=>query.toLowerCase().includes(c.name.toLowerCase().split(' ')[0]));
+    if(comp&&(_intelMode==='snapshot'||_intelMode==='gap')) comp.lastResearched=new Date().toISOString();
+    renderCompetitorList();
+  }catch(e){
+    if(output){ output.className='intel-output'; output.textContent='Research failed: '+e.message+'\n\nAdd your Anthropic API key in Settings to enable live research.'; }
+    if(status) status.textContent='';
+  }
+}
+
+function clearIntelOutput(){
+  var output=$('intel-output'); if(output){output.style.display='none';output.textContent='';} var status=$('intel-status');if(status)status.textContent='';
+}
+
+function renderCompetitorList(){
+  var list=$('competitor-list'); if(!list) return;
+  list.innerHTML=COMPETITORS.map(function(c,i){
+    var last=c.lastResearched?new Date(c.lastResearched).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'Never';
+    return `<div class="intel-competitor-card">
+      <div style="flex:1">
+        <div class="intel-comp-name">${esc(c.name)}</div>
+        ${c.url?`<div style="font-size:11px;color:var(--blue)">${esc(c.url)}</div>`:''}
+      </div>
+      <span class="intel-comp-last">Last: ${last}</span>
+      <button class="btn btn-ghost btn-sm" onclick="researchCompetitor(${i})">&#128269; Research</button>
+    </div>`;
+  }).join('');
+}
+
+function researchCompetitor(idx){
+  var comp=COMPETITORS[idx]; if(!comp) return;
+  var q=$('intel-query'); if(q) q.value=comp.name;
+  switchIntelTab('signals');
+  setIntelMode('snapshot');
+  runIntelResearch();
+}
+
+function runFullCompScan(){
+  switchIntelTab('signals');
+  setIntelMode('gap');
+  var q=$('intel-query'); if(q) q.value='Al Laith vs key UAE competitors: '+COMPETITORS.slice(0,4).map(c=>c.name).join(', ');
+  runIntelResearch();
+}
+
+function renderTrendChips(){
+  var box=$('trend-chips'); if(!box) return;
+  box.innerHTML=TREND_TOPICS.map(function(t){
+    return `<span class="intel-trend-chip" onclick="useTrend('${esc(t)}')">${esc(t)}</span>`;
+  }).join('');
+}
+
+function useTrend(topic){
+  var ta=$('trend-query'); if(ta) ta.value=topic;
+  runTrendResearch();
+}
+
+async function runTrendResearch(){
+  var query=($('trend-query')||{}).value||'';
+  if(!query.trim()){ alert('Enter or click a trend topic first.'); return; }
+  var output=$('trend-output'),status=$('intel-status');
+  if(output){output.style.display='block';output.className='intel-output loading';output.textContent='Analysing trend…';}
+  var prompt='Analyse this trend for Al Laith (UAE equipment rental, scaffolding, events B2B marketing): "'+query+'". Cover: why it matters for this industry, what content angle works on LinkedIn and Instagram, competitor activity, and give 3 concrete post ideas Al Laith could create.';
+  try{
+    var res=await AlLaithAI.generate({type:'intelligence',context:{query:prompt,mode:'trends'}});
+    if(output){output.className='intel-output';output.textContent=res.text||'';}
+  }catch(e){
+    if(output){output.className='intel-output';output.textContent='Trend research failed: '+e.message;}
+  }
+}
+
+// ── Phase 1c–1g: patch apiCreatePost/Update to sync OS stats ─────────────────
+var _origCreate = typeof apiCreatePost==='function' ? apiCreatePost : null;
+var _origUpdate = typeof apiUpdatePost==='function' ? apiUpdatePost : null;
+var _origDelete = typeof apiDeletePost==='function' ? apiDeletePost : null;
+
+// Wrap save functions to trigger OS stats sync
+(function(){
+  var _create=apiCreatePost, _update=apiUpdatePost, _delete=apiDeletePost;
+  apiCreatePost=function(b){var r=_create(b);syncOsStats();return r;};
+  apiUpdatePost=function(id,b){var r=_update(id,b);syncOsStats();return r;};
+  apiDeletePost=function(id){var r=_delete(id);syncOsStats();return r;};
+})();
+
+// ── Phase 1c–1g: init additions ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',function(){
+  checkReviewUrlParam();
+  syncOsStats();
+});
 
 // ── Content Scorer — Phase 1b ────────────────────────────────────────────────
 var _scorerPostId   = null;
