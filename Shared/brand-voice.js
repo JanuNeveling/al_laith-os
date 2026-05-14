@@ -405,24 +405,36 @@ To activate: open browser console and call AlLaithAI.setKey('sk-ant-YOUR_KEY_HER
      CLAUDE API CALL
   ══════════════════════════════════════════════════════════════ */
   async function callClaude(userPrompt, systemPrompt, options) {
-    const key = CONFIG.apiKey;
-    if (!key) throw new Error('NO_API_KEY');
+    const body = {
+      model:      (options && options.model)     || CONFIG.model,
+      max_tokens: (options && options.maxTokens) || CONFIG.maxTokens,
+      system:     systemPrompt,
+      messages:   [{ role: 'user', content: userPrompt }],
+    };
 
-    const response = await fetch(CONFIG.apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type':      'application/json',
-        'x-api-key':         key,
-        'anthropic-version': CONFIG.apiVersion,
-        'anthropic-dangerous-allow-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model:      (options && options.model)     || CONFIG.model,
-        max_tokens: (options && options.maxTokens) || CONFIG.maxTokens,
-        system:     systemPrompt,
-        messages:   [{ role: 'user', content: userPrompt }],
-      }),
-    });
+    let response;
+    if (window.location.protocol === 'https:') {
+      // Deployed on Vercel — route through serverless proxy (key stays server-side)
+      response = await fetch('/api/claude', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(body),
+      });
+    } else {
+      // Local development — use API key from settings
+      const key = CONFIG.apiKey;
+      if (!key) throw new Error('NO_API_KEY');
+      response = await fetch(CONFIG.apiUrl, {
+        method:  'POST',
+        headers: {
+          'Content-Type':                        'application/json',
+          'x-api-key':                           key,
+          'anthropic-version':                   CONFIG.apiVersion,
+          'anthropic-dangerous-allow-browser-access': 'true',
+        },
+        body: JSON.stringify(body),
+      });
+    }
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({ error: { message: response.statusText } }));
@@ -446,7 +458,8 @@ To activate: open browser console and call AlLaithAI.setKey('sk-ant-YOUR_KEY_HER
     const builder    = PROMPTS[type];
     const userPrompt = builder ? builder(context) : (context.prompt || 'Generate content for Al Laith.');
     const sysPrompt  = getSystemPrompt(systemContext);
-    const isStub     = !CONFIG.apiKey;
+    // On Vercel (https:) always use the proxy — no local key needed
+    const isStub     = window.location.protocol !== 'https:' && !CONFIG.apiKey;
 
     if (isStub) {
       await new Promise(r => setTimeout(r, 380));

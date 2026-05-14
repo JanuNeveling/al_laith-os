@@ -2162,31 +2162,42 @@ function getBrandSystem() {
   return 'You are a social media content strategist for Al Laith Group, UAE equipment rental, scaffolding and events. Write direct, specific, grounded content. Never use: "world-class", "synergy", "cutting-edge", "pleased to announce". Always respond with valid JSON only.';
 }
 
-async function callClaude(userPrompt) {
-  // Prefer AlLaithAI key (set via setKey or loaded from storage on init)
-  const key = (window.AlLaithAI && AlLaithAI.CONFIG.apiKey) || getSetting('anthropic_api_key', '');
-  if (!key) throw Object.assign(new Error('NO_KEY'), {noKey: true});
-
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-      'anthropic-dangerous-allow-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
-      system: getBrandSystem(),
-      messages: [{role: 'user', content: userPrompt}]
-    })
-  });
-  if (!resp.ok) {
-    const err = await resp.json().catch(() => ({}));
-    throw new Error(err.error?.message || 'Anthropic API error ' + resp.status);
+// Universal Claude fetch — uses Vercel proxy on https:, direct API locally
+async function claudeFetch(body) {
+  if (window.location.protocol === 'https:') {
+    const r = await fetch('/api/claude', {
+      method: 'POST',
+      headers: {'content-type': 'application/json'},
+      body: JSON.stringify(body)
+    });
+    if (!r.ok) {
+      const e = await r.json().catch(() => ({}));
+      throw new Error(e.error?.message || 'API error ' + r.status);
+    }
+    return r.json();
   }
-  const data = await resp.json();
+  // Local dev: use API key from Settings
+  const key = (window.AlLaithAI && AlLaithAI.CONFIG && AlLaithAI.CONFIG.apiKey) || getSetting('anthropic_api_key', '');
+  if (!key) throw Object.assign(new Error('NO_KEY'), {noKey: true});
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-allow-browser-access': 'true'},
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) {
+    const e = await r.json().catch(() => ({}));
+    throw new Error(e.error?.message || 'API error ' + r.status);
+  }
+  return r.json();
+}
+
+async function callClaude(userPrompt) {
+  const data = await claudeFetch({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 1024,
+    system: getBrandSystem(),
+    messages: [{role: 'user', content: userPrompt}]
+  });
   return data.content[0].text;
 }
 
@@ -2232,8 +2243,7 @@ async function apiAI(endpoint,body){
       if(!assets.length){
         return {matches:[],note:'No assets in your Content Bank yet. Scan a folder in Content Bank first.'};
       }
-      const key=getSetting('anthropic_api_key','');
-      if(!key) return {matches:[],note:'Add your Anthropic API key in Settings to enable AI matching.'};
+      // Key handled by claudeFetch proxy — no browser key needed on Vercel
 
       // Prefer assets with thumbnails (vision match), fall back to text for others
       let photoAssets=assets.filter(a=>a.thumb64&&a.type==='photo');
@@ -2268,11 +2278,7 @@ async function apiAI(endpoint,body){
         '[{"asset_id":N,"filename":"...","score":85,"reason":"one sentence why this photo fits the post concept"}]'
       });
 
-      const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
-        headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
-        body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:600,messages:[{role:'user',content:msgContent}]})
-      });
-      const vdata=await resp.json();
+      const vdata=await claudeFetch({model:'claude-haiku-4-5-20251001',max_tokens:600,messages:[{role:'user',content:msgContent}]});
       const vtext=vdata.content?.[0]?.text||'[]';
       const results=safeJson(vtext,[]);
       if(!results.length) return {matches:[],note:'No strong visual matches found for this post concept. Try photos from a different pillar.'};
@@ -3176,9 +3182,6 @@ function hideScanOverlay(){
 
 /* ── AI Tagging ── */
 async function runAITagging(assets){
-  const key = getSetting('anthropic_api_key','');
-  if(!key) return;
-
   // Tag in batches of 4 images per API call
   const BATCH = 4;
   showScanOverlay(assets.length);
@@ -3213,12 +3216,7 @@ async function runAITagging(assets){
         '[{"tags":["scaffolding","construction","outdoor"],"pillar":"Products","description":"Steel scaffolding frames erected on construction site","division":"Construction"}]'
       });
 
-      const resp = await fetch('https://api.anthropic.com/v1/messages',{
-        method:'POST',
-        headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
-        body: JSON.stringify({model:'claude-haiku-4-5-20251001', max_tokens:1200, messages:[{role:'user', content:msgContent}]})
-      });
-      const data = await resp.json();
+      const data = await claudeFetch({model:'claude-haiku-4-5-20251001', max_tokens:1200, messages:[{role:'user', content:msgContent}]});
       const text = data.content?.[0]?.text || '[]';
       const results = safeJson(text, []);
 
@@ -3885,11 +3883,6 @@ function openPhotoMatchModal(assetId){
 function closePhotoMatchModal(){ $('photoMatchModal').classList.remove('open'); _photoMatchAssetId=null; }
 
 async function runPhotoMatch(assetId, asset){
-  const key=getSetting('anthropic_api_key','');
-  if(!key){
-    $('pmatch-results').innerHTML='<div class="loading-row">Add your Anthropic API key in Settings to enable vision matching.</div>';
-    return;
-  }
   if(!asset.thumb64){
     $('pmatch-results').innerHTML='<div class="loading-row">No thumbnail available for this asset. Re-scan with AI tagging, or add a Drive link.</div>';
     return;
@@ -3919,11 +3912,7 @@ async function runPhotoMatch(assetId, asset){
       }
     ];
 
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
-      headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:700,messages:[{role:'user',content:msgContent}]})
-    });
-    const data=await resp.json();
+    const data=await claudeFetch({model:'claude-haiku-4-5-20251001',max_tokens:700,messages:[{role:'user',content:msgContent}]});
     const raw=data.content?.[0]?.text||'[]';
     const matches=safeJson(raw,[]);
     renderPhotoMatchResults(assetId, matches);
@@ -3986,8 +3975,7 @@ async function linkPhotoToIdea(assetId, ideaId, ideaTitle){
   closePhotoMatchModal();
   setStatus('Linked! Generating post copy…');
 
-  const key=getSetting('anthropic_api_key','');
-  if(!key||!post) return;
+  if(!post) return;
 
   try{
     const msgContent=[];
@@ -4007,11 +3995,7 @@ async function linkPhotoToIdea(assetId, ideaId, ideaTitle){
       '"edit_notes":"LIGHTROOM DEVELOP MODULE — based on what you see in this photo:\\nExposure: [+/- value]\\nHighlights: [+/- value]\\nShadows: [+/- value]\\nWhites: [+/- value]\\nBlacks: [+/- value]\\nClarity: [+/- value]\\nDehaze: [value if haze present, else 0]\\nVibrance/Saturation: [values]\\nWhite Balance: [Temp shift warm/cool, Tint if needed]\\nHSL — if specific colours need work: [colour: hue/sat/lum adjustments]\\nVignette: [Light > Vignetting amount if needed]\\nCrop: [ratio e.g. 1:1 feed / 4:5 portrait / 16:9 story — and what to keep in frame]\\nPHOTOSHOP FINISHING — after Lightroom export:\\n- Open exported TIFF/JPG in PS\\n- Apply Photo-Forward formula: gradient overlay bottom #0C172C 85% opacity\\n- Headline text bottom-left: Arial Bold White [suggested size]px\\n- Logo CG Tech: top-right 80px, 50px inset ([white or blue version])\\n- Logo Al Laith: bottom-right 110px, 50px inset ([white or navy version])\\nExport: File > Export As > PNG + JPEG — 1080x1080 (feed) and 1080x1920 (story)"}'
     });
 
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
-      headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:900,messages:[{role:'user',content:msgContent}]})
-    });
-    const data=await resp.json();
+    const data=await claudeFetch({model:'claude-haiku-4-5-20251001',max_tokens:900,messages:[{role:'user',content:msgContent}]});
     const raw=data.content?.[0]?.text||'{}';
     const gen=safeJson(raw,{});
 
@@ -4038,8 +4022,6 @@ async function linkPhotoToIdea(assetId, ideaId, ideaTitle){
 async function createIdeaFromPhoto(assetId){
   const asset=getAssets().find(x=>x.id===assetId);
   if(!asset){alert('Asset not found.');return;}
-  const key=getSetting('anthropic_api_key','');
-  if(!key){alert('Add your Anthropic API key in Settings first.');return;}
   if(!asset.thumb64){alert('No thumbnail available for this photo. Re-scan or add a Drive link first.');return;}
 
   // Update modal to show progress
@@ -4087,11 +4069,7 @@ async function createIdeaFromPhoto(assetId){
       }
     ];
 
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
-      headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:900,messages:[{role:'user',content:msgContent}]})
-    });
-    const data=await resp.json();
+    const data=await claudeFetch({model:'claude-haiku-4-5-20251001',max_tokens:900,messages:[{role:'user',content:msgContent}]});
     const raw=data.content?.[0]?.text||'{}';
     const idea=safeJson(raw,null);
 
