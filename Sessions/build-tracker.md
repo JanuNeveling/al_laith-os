@@ -24,11 +24,11 @@
 |---|---|---|---|---|
 | 1a | Brand System replacement + Brand Voice Engine | zone1-content.html | ✅ | Shared/brand-voice.js imported; BRAND_SYSTEM → AlLaithAI.getSystemPrompt(); Voice Training UI added to Settings |
 | 1b | Content Scorer | zone1-content.html | ✅ | Modal scorecard — 5 dims (Hook/Clarity/CTA/PlatformFit/BrandVoice), colour-coded bars, weakest callout + fix suggestion, score persisted to post |
-| 1c | Repurpose Engine | zone1-content.html | 🔲 | Rewrite posts for new platforms |
-| 1d | Content Calendar | zone1-content.html | 🔲 | Drag/drop scheduling, month view |
-| 1e | OS Shell integration | zone1-content.html | 🔲 | Expose stats to shared storage for shell |
-| 1f | Live Approval Bridge | zone1-content.html | 🔲 | URL-encoded review, no backend |
-| 1g | Intelligence Zone screens | zone1-content.html | 🔲 | Signal Research, Trend Watch, Competitors |
+| 1c | Repurpose Engine | zone1-content.html | ✅ | AI rewrites caption for selected format (Reel/Carousel/LinkedIn/Facebook/Blog/Video/BTS), preview + copy + save as draft |
+| 1d | Content Calendar | zone1-content.html | ✅ | Click filled day opens post, click empty day opens Schedule modal to assign unscheduled posts |
+| 1e | OS Shell integration | zone1-content.html | ✅ | syncOsStats() wraps all save/delete ops, AlLaithOS.zone1.writeStats() called on every change |
+| 1f | Live Approval Bridge | zone1-content.html | ✅ | btoa-encoded URL review link, clean reviewer view, response token system, import token updates post status |
+| 1g | Intelligence Zone screens | zone1-content.html | ✅ | Signal Research (5 modes), Trend Watch (topic chips + deep research), Competitors watchlist (6 defaults + Research each) |
 
 ---
 
@@ -89,9 +89,9 @@
 ## Current Session
 
 **Session:** Phase 1 — Zone 1 Upgrades (in progress)
-**Task:** 1a ✅ → 1b ✅ → 1c Repurpose Engine → 1d Calendar → 1e OS Shell integration → 1f Approval Bridge → 1g Intelligence Screens
-**Status:** 1b complete
-**Next action:** Phase 1c — Repurpose Engine (rewrite posts for new platforms/formats)
+**Task:** Phase 1 COMPLETE (1a–1g all done)
+**Status:** All Zone 1 upgrades shipped
+**Next action:** Phase 2a — Zone 4 Intelligence Hub (zone4-intelligence.html) OR Phase 3a — Zone 2 Projects Hub (zone2-projects.html)
 
 ---
 
