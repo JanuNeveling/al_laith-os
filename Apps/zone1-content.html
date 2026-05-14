@@ -512,6 +512,36 @@
     /* Sheets export highlight */
     .sheets-preview { background:#f0faf0; border:1px solid #81C784; border-radius:6px; padding:10px; font-size:11px; font-family:monospace; word-break:break-all; max-height:120px; overflow-y:auto; color:#333; }
 
+    /* ── Content Scorer modal ── */
+    .scorer-overall { display:flex; align-items:center; gap:16px; padding:16px; border-radius:10px; margin-bottom:4px; }
+    .scorer-overall.sc-green { background:var(--good-bg); }
+    .scorer-overall.sc-amber { background:var(--warn-bg); }
+    .scorer-overall.sc-red   { background:var(--stuck-bg); }
+    .scorer-overall-num { font-size:52px; font-weight:800; line-height:1; font-family:var(--font-mono); letter-spacing:-0.03em; }
+    .scorer-overall.sc-green .scorer-overall-num { color:var(--ok); }
+    .scorer-overall.sc-amber .scorer-overall-num { color:var(--warn); }
+    .scorer-overall.sc-red   .scorer-overall-num { color:var(--stuck); }
+    .scorer-overall-label { font-size:13px; font-weight:600; color:var(--ink); line-height:1.5; }
+    .scorer-dim { padding:11px 0; border-bottom:1px solid var(--rule); }
+    .scorer-dim:last-of-type { border-bottom:none; }
+    .scorer-dim-weakest { background:var(--warn-bg); border-radius:8px; padding:11px 13px; margin:4px -4px; }
+    .scorer-dim-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:7px; }
+    .scorer-dim-label { font-size:13px; font-weight:600; color:var(--ink); }
+    .scorer-score-num { font-size:20px; font-weight:800; font-family:var(--font-mono); line-height:1; }
+    .scorer-score-num.sc-green { color:var(--ok); }
+    .scorer-score-num.sc-amber { color:var(--warn); }
+    .scorer-score-num.sc-red   { color:var(--stuck); }
+    .scorer-bar-track { height:6px; background:var(--rule); border-radius:99px; overflow:hidden; margin-bottom:5px; }
+    .scorer-bar-fill { height:100%; border-radius:99px; transition:width .5s cubic-bezier(.4,0,.2,1); }
+    .scorer-bar-fill.sc-green { background:var(--ok); }
+    .scorer-bar-fill.sc-amber { background:var(--warn); }
+    .scorer-bar-fill.sc-red   { background:var(--stuck); }
+    .scorer-dim-note { font-size:11px; color:var(--mute); line-height:1.4; }
+    .scorer-weakest-tag { font-size:10px; font-weight:700; color:var(--warn); text-transform:uppercase; letter-spacing:.07em; margin-top:5px; }
+    .scorer-fix-box { background:var(--paper-2); border:1px solid var(--rule-2); border-radius:8px; padding:13px 15px; margin-top:14px; }
+    .scorer-fix-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--mute); margin-bottom:5px; }
+    .scorer-fix-text { font-size:13px; color:var(--ink); line-height:1.55; }
+
 
     /* ── For Marketing ───────────────────────────────────── */
     .mkt-stats-bar { display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
@@ -1142,6 +1172,7 @@
         <div style="display:flex;gap:7px">
           <button class="btn btn-ghost btn-sm" id="repurpose-btn" style="display:none" onclick="openRepurposeModal()"><svg width="13" height="13"><use href="#i-recycle"/></svg> Repurpose</button>
           <button class="btn btn-ghost btn-sm" onclick="openMatchModal()"><svg width="13" height="13"><use href="#i-sparkles"/></svg> Match Assets</button>
+          <button class="btn btn-ghost btn-sm" onclick="openScorerModal()">&#11088; Score</button>
         </div>
       </div>
 
@@ -1291,6 +1322,7 @@
             <button class="btn btn-ghost" onclick="saveDraft()">Save Draft</button>
             <button class="btn btn-cta" onclick="markReady()"><svg width="12" height="12"><use href="#i-check"/></svg> Mark Ready</button>
             <button class="btn btn-ghost btn-sm" onclick="markPosted()" id="mark-posted-btn" style="display:none">Mark Posted</button>
+            <button class="btn btn-ghost btn-sm" onclick="openScorerModal()" title="Score this post's caption across 5 dimensions">&#11088; Score</button>
             <span id="c-save-status"></span>
           </div>
         </div>
@@ -1660,6 +1692,27 @@
     <div class="modal-body" id="mkt-feedback-list"></div>
     <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end">
       <button class="btn btn-ghost btn-sm" onclick="closeMktFeedback()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Content Scorer Modal — Phase 1b -->
+<div class="modal-overlay" id="scorerModal" onclick="if(event.target===this)closeScorerModal()">
+  <div class="modal" style="width:500px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">&#11088; Content Score</div>
+        <div class="modal-sub" id="scorer-sub">Scoring this post…</div>
+      </div>
+      <button class="modal-close" onclick="closeScorerModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="scorer-body">
+      <div class="loading-row" style="padding:32px 0">Asking Claude…</div>
+    </div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;align-items:center">
+      <span id="scorer-saved-note" style="font-size:11px;color:var(--ok);display:none;margin-right:auto">&#10003; Score saved to post</span>
+      <button class="btn btn-ghost btn-sm" id="scorer-retry-btn" style="display:none" onclick="retryScorer()">Re-score</button>
+      <button class="btn btn-ghost" onclick="closeScorerModal()">Close</button>
     </div>
   </div>
 </div>
@@ -2746,6 +2799,7 @@ function ideaRowHtml(post){
       ${primaryBtn}
       <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();editPost(${post.id})" title="Edit in Composer">✏</button>
       <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openMatchModal(${post.id})" title="Match to a photo">🔍</button>
+      ${post.caption?`<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openScorerModal(${post.id})" title="Score this post">⭐</button>`:''}
       <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();deleteIdea(${post.id})" title="Delete this idea" style="color:var(--danger)">🗑</button>
     </div>
   </div>`;
@@ -4641,6 +4695,147 @@ function buildMarketingPackHTML(posts){
     +'  var a=document.createElement(\'a\');a.href=url;a.download=\'al-laith-feedback-'+fileDate+'.json\';a.click();URL.revokeObjectURL(url);\n'
     +'}\n'
     +'<\/script></body></html>';
+}
+
+// ── Content Scorer — Phase 1b ────────────────────────────────────────────────
+var _scorerPostId   = null;
+var _scorerCaption  = '';
+var _scorerPlatform = '';
+
+function openScorerModal(postId) {
+  _scorerPostId = postId || null;
+  var caption = '', platform = 'Instagram', postTitle = '';
+
+  if (postId) {
+    // Called from idea row — load saved post
+    var post = getPosts().find(function(p){ return p.id === postId; });
+    if (!post) { alert('Post not found.'); return; }
+    caption  = post.caption || post.hook || post.snippet || '';
+    platform = (post.platforms && post.platforms[0]) || 'Instagram';
+    postTitle = post.title || '';
+    if (!caption) {
+      alert('This post has no caption yet. Open it in the Composer, write a caption, then score it.');
+      return;
+    }
+  } else {
+    // Called from Composer — read live fields
+    caption  = ($('c-caption') ? $('c-caption').value : '').trim();
+    var plEls = document.querySelectorAll('.checkbox-pill.active');
+    platform = plEls.length ? plEls[0].dataset.val : 'Instagram';
+    postTitle = ($('c-title') ? $('c-title').value : '').trim() || 'Draft';
+    if (!caption) {
+      alert('Write a caption first, then score it.');
+      return;
+    }
+  }
+
+  _scorerCaption  = caption;
+  _scorerPlatform = platform;
+
+  $('scorer-sub').textContent  = postTitle ? '“' + postTitle.slice(0,55) + '”' : 'Current draft';
+  $('scorer-body').innerHTML   = '<div class="loading-row" style="padding:32px 0">Asking Claude…</div>';
+  $('scorer-retry-btn').style.display  = 'none';
+  $('scorer-saved-note').style.display = 'none';
+  $('scorerModal').classList.add('open');
+
+  runScorer(caption, platform);
+}
+
+function closeScorerModal() {
+  $('scorerModal').classList.remove('open');
+}
+
+async function runScorer(caption, platform) {
+  try {
+    var result = await AlLaithAI.quick.score({ post: caption, platform: platform });
+    var data   = safeJson(result.text, null);
+    if (!data || !data.scores) throw new Error('Invalid scorer response — try again');
+    renderScorecard(data);
+    // Persist score on post object
+    if (_scorerPostId) {
+      var posts = getPosts();
+      var p = posts.find(function(x){ return x.id === _scorerPostId; });
+      if (p) { p.last_score = data; setPosts(posts); $('scorer-saved-note').style.display = 'inline'; }
+    }
+  } catch(e) {
+    if (e.noKey) {
+      // No API key — show realistic stub
+      var STUB_KEY = 'scorer';
+      var stubText = (window.AlLaithAI && AlLaithAI.STUBS && AlLaithAI.STUBS[STUB_KEY]) || '';
+      var stubData = safeJson(stubText, null);
+      if (stubData && stubData.scores) { renderScorecard(stubData); return; }
+    }
+    $('scorer-body').innerHTML = '<div class="loading-row" style="color:var(--danger);padding:24px 0">Score failed: ' + esc(e.message) + '</div>';
+    $('scorer-retry-btn').style.display = 'inline-flex';
+  }
+}
+
+function retryScorer() {
+  $('scorer-body').innerHTML  = '<div class="loading-row" style="padding:32px 0">Asking Claude…</div>';
+  $('scorer-retry-btn').style.display  = 'none';
+  $('scorer-saved-note').style.display = 'none';
+  runScorer(_scorerCaption, _scorerPlatform);
+}
+
+function scorerColorCls(score) {
+  if (score >= 8) return 'sc-green';
+  if (score >= 5) return 'sc-amber';
+  return 'sc-red';
+}
+
+function renderScorecard(data) {
+  var dims = [
+    { key:'hook',        label:'Hook Strength',  icon:'&#9889;', desc:'Does it stop the scroll?' },
+    { key:'clarity',     label:'Clarity',         icon:'&#127919;', desc:'Is the message obvious?' },
+    { key:'cta',         label:'Call to Action',  icon:'&#128073;', desc:'Is there a clear next step?' },
+    { key:'platformFit', label:'Platform Fit',    icon:'&#128241;', desc:'Right length &amp; format?' },
+    { key:'brandVoice',  label:'Brand Voice',     icon:'&#128309;', desc:'Sounds like Al Laith?' },
+  ];
+
+  var scores  = data.scores  || {};
+  var weakest = data.weakest || '';
+  var fix     = data.fix     || '';
+
+  // Overall = average of all 5
+  var total = 0, count = 0;
+  dims.forEach(function(d){ var s = scores[d.key]; if(s){ total += (s.score||0); count++; } });
+  var avg        = count ? total / count : 0;
+  var avgDisplay = Math.round(avg * 10) / 10;
+  var overallCls = scorerColorCls(Math.round(avg));
+
+  var dimsHtml = dims.map(function(d) {
+    var s     = scores[d.key] || {};
+    var score = s.score || 0;
+    var note  = s.note  || '';
+    var cls   = scorerColorCls(score);
+    var isW   = d.key === weakest;
+    return '<div class="scorer-dim' + (isW ? ' scorer-dim-weakest' : '') + '">'
+      + '<div class="scorer-dim-header">'
+      +   '<span class="scorer-dim-label">' + d.icon + ' ' + d.label + '</span>'
+      +   '<span class="scorer-score-num ' + cls + '">' + score + '<span style="font-size:11px;font-weight:500;opacity:.55">/10</span></span>'
+      + '</div>'
+      + '<div class="scorer-bar-track"><div class="scorer-bar-fill ' + cls + '" style="width:' + (score * 10) + '%"></div></div>'
+      + '<div class="scorer-dim-note">' + esc(note) + '</div>'
+      + (isW ? '<div class="scorer-weakest-tag">&#9888; Weakest dimension</div>' : '')
+      + '</div>';
+  }).join('');
+
+  var fixHtml = fix
+    ? '<div class="scorer-fix-box">'
+      + '<div class="scorer-fix-label">&#128161; Suggested fix</div>'
+      + '<div class="scorer-fix-text">' + esc(fix) + '</div>'
+      + '</div>'
+    : '';
+
+  $('scorer-body').innerHTML =
+    '<div class="scorer-overall ' + overallCls + '">'
+    + '<div class="scorer-overall-num">' + avgDisplay + '</div>'
+    + '<div class="scorer-overall-label">Overall Score<br><span style="font-size:11px;opacity:.65;font-weight:500">out of 10</span></div>'
+    + '</div>'
+    + '<div style="margin-top:14px">' + dimsHtml + '</div>'
+    + fixHtml;
+
+  $('scorer-retry-btn').style.display = 'inline-flex';
 }
 
 // ── Feedback modal ──────────────────────────────────────────────────────────
