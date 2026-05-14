@@ -29,7 +29,7 @@
   ─────────────────────────────────────────────────────────────── */
   const CONFIG = {
     apiKey:     '',
-    model:      'claude-haiku-4-5-20251001',
+    model:      'claude-3-5-haiku-20241022',
     maxTokens:  1500,
     apiUrl:     'https://api.anthropic.com/v1/messages',
     apiVersion: '2023-06-01',
