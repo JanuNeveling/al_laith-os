@@ -5442,8 +5442,134 @@ function openMktFeedback(id){
   const list=(meta.feedback||[]);
   $('mkt-feedback-title').textContent=post?post.title:'Post Feedback';
   $('mkt-feedback-list').innerHTML=list.length===0
-    ?'<div style="font-size:12px;color:var(--text-dim);font-style:italic;padding:8px 0">No feedback yet. Marketing adds comments via the downloaded Pack, then exports a feedback file which you import here.</div>'
+    ?'<div style="font-size:12px;color:var(--text-dim);font-style:italic;padding:8px 0">No feedback yet. Share the review link with your marketing team — they approve or request changes, then send you a token to import here.</div>'
     :list.map(function(f){
+      var dateStr='';
+      try{ dateStr=f.exported_at?new Date(f.exported_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''; }catch(e){}
       return '<div class="mkt-feedback-item">'
-        +'<div class="mkt-feedback-text">'+esc(f.feedback||'')+'</div>'
-        +'<div class="mkt-feedback-meta">'+(f.mkt_status||'')+' &middot; '+(f.exported_at?new Date(f.exported_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'
+        +'<div class="mkt-feedback-text">'+esc(f.feedback||'(no comment)')+'</div>'
+        +'<div class="mkt-feedback-meta">'+(f.mkt_status||'')+(dateStr?' &middot; '+dateStr:'')+'</div>'
+        +'</div>';
+    }).join('');
+  $('mktFeedbackModal').classList.add('open');
+}
+
+function closeMktFeedback(){
+  $('mktFeedbackModal').classList.remove('open');
+}
+
+function markMktPosted(id){
+  const all=getPosts(); const idx=all.findIndex(p=>p.id===id); if(idx<0) return;
+  all[idx].status='posted'; all[idx].updated_at=now(); setPosts(all);
+  syncOsStats(); loadMarketing();
+  toast('Marked as posted.','success');
+}
+
+function downloadMktPack(id){
+  const post=getPosts().find(p=>p.id===id); if(!post) return;
+  const m=getMktPost(id); m.downloads=(m.downloads||0)+1; setMktPost(id,m);
+  const caption=(post.caption||'(no caption)').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const hook=(post.hook||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const hashtags=(post.hashtags||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+esc(post.title)+'</title>'
+    +'<style>body{font-family:Manrope,system-ui;max-width:640px;margin:40px auto;padding:20px;color:#0C172C}'
+    +'.hook{font-size:16px;font-weight:600;color:#0071B7;padding:12px;background:#EFF6FF;border-radius:8px;margin-bottom:14px}'
+    +'.caption{font-size:14px;line-height:1.75;background:#F2F6FA;padding:16px;border-radius:10px;white-space:pre-wrap;margin-bottom:12px}'
+    +'.hashtags{font-size:12px;color:#0082AF;margin-bottom:16px}'
+    +'label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6B7891;margin:16px 0 6px}'
+    +'textarea{width:100%;border:1px solid #D9E3EF;border-radius:8px;padding:10px;font-size:13px;min-height:70px;font-family:inherit;box-sizing:border-box}'
+    +'.btn{padding:10px 18px;background:#0C172C;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-right:8px}'
+    +'#token-box{display:none;background:#E9F2EC;border:1px solid #A7D7BA;border-radius:10px;padding:16px;margin-top:16px}'
+    +'#token-text{font-size:12px;font-family:monospace;word-break:break-all;margin-bottom:10px}'
+    +'</style></head><body>'
+    +'<div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6B7891;margin-bottom:6px">Al Laith — Content Review Pack</div>'
+    +'<h1 style="font-size:22px;font-weight:700;margin:0 0 16px">'+esc(post.title)+'</h1>'
+    +(hook?'<div class="hook">'+hook+'</div>':'')
+    +'<div class="caption">'+caption+'</div>'
+    +(hashtags?'<div class="hashtags">'+hashtags+'</div>':'')
+    +'<div style="background:#fff;border:1px solid #D9E3EF;border-radius:10px;padding:18px;margin-top:16px">'
+    +'<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6B7891;margin-bottom:10px">Your Feedback</div>'
+    +'<div style="display:flex;gap:10px;margin-bottom:14px">'
+    +'<button class="btn" onclick="decide(\'approved\')">&#9989; Approve</button>'
+    +'<button class="btn" style="background:#B23B1C" onclick="decide(\'changes\')">&#9997; Request Changes</button>'
+    +'</div>'
+    +'<label>Comment (optional)</label>'
+    +'<textarea id="comment" placeholder="What needs changing? Or leave blank to approve…"></textarea>'
+    +'</div>'
+    +'<div id="token-box">'
+    +'<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#1F7A4D;margin-bottom:6px">Response Token — copy and send to Janu</div>'
+    +'<div id="token-text"></div>'
+    +'<button class="btn" style="background:#1F7A4D;margin-top:10px" onclick="copyTok()">&#128203; Copy Token</button>'
+    +'</div>'
+    +'<script>'
+    +'function decide(d){'
+    +'var c=document.getElementById("comment").value||"";'
+    +'var payload={post_id:'+id+',decision:d,comment:c,reviewed_at:new Date().toISOString()};'
+    +'var tok=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));'
+    +'document.getElementById("token-text").textContent=tok;'
+    +'document.getElementById("token-box").style.display="block";'
+    +'}'
+    +'function copyTok(){'
+    +'var t=document.getElementById("token-text").textContent;'
+    +'navigator.clipboard.writeText(t).catch(function(){var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();document.execCommand("copy");a.remove();});'
+    +'alert("Copied! Paste this token into Al Laith OS > For Marketing > Import Feedback.");'
+    +'}'
+    +'<\/script></body></html>';
+  const blob=new Blob([html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='al-laith-review-'+id+'.html'; a.click();
+  URL.revokeObjectURL(url);
+  loadMarketing();
+}
+
+function downloadAllApprovedPacks(){
+  const approved=getPosts().filter(p=>p.status==='approved');
+  if(!approved.length){alert('No approved posts yet.');return;}
+  approved.forEach(function(p,i){ setTimeout(function(){downloadMktPack(p.id);},i*300); });
+}
+
+function importMktFeedback(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const data=JSON.parse(ev.target.result);
+      const feedback=Array.isArray(data.feedback)?data.feedback:[];
+      feedback.forEach(function(f){
+        if(!f.post_id) return;
+        const m=getMktPost(f.post_id);
+        m.feedback=(m.feedback||[]).concat({feedback:f.feedback||'',mkt_status:f.mkt_status||'pending',exported_at:f.exported_at||new Date().toISOString()});
+        m.mkt_status=f.mkt_status||'pending';
+        setMktPost(f.post_id,m);
+        const posts=getPosts(); const idx=posts.findIndex(p=>p.id===f.post_id);
+        if(idx>=0&&f.mkt_status==='approved'){posts[idx].status='approved';setPosts(posts);}
+      });
+      loadMarketing(); toast('Feedback imported for '+feedback.length+' post(s).','success');
+    }catch(err){alert('Import failed: '+err.message);}
+  };
+  reader.readAsText(file);
+}
+
+function scanReadyToPost(){
+  const input=document.createElement('input'); input.type='file'; input.webkitdirectory=true; input.multiple=true;
+  input.onchange=function(e){
+    const files=Array.from(e.target.files).filter(f=>/\.(jpg|jpeg|png|gif|webp|mp4|mov)$/i.test(f.name));
+    if(!files.length){alert('No media files found.');return;}
+    const existing=getPosts(); const existingNames=new Set(existing.flatMap(p=>(p.finished_asset_links||[]).map(l=>l.split('/').pop())));
+    let added=0;
+    files.forEach(function(file){
+      if(existingNames.has(file.name)) return;
+      const post=mkPost({title:file.name.replace(/\.[^.]+$/,''),status:'ready',content_type:/\.(mp4|mov)$/i.test(file.name)?'video':'photo',finished_asset_links:[file.name]});
+      existing.push(post); added++;
+    });
+    setPosts(existing); syncOsStats(); loadMarketing();
+    toast(added+' post(s) added from folder.','success');
+  };
+  input.click();
+}
+
+
+
+</script>
+</body>
+</html>
