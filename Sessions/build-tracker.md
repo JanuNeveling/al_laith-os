@@ -23,7 +23,7 @@
 | Session | Task | File | Status | Notes |
 |---|---|---|---|---|
 | 1a | Brand System replacement + Brand Voice Engine | zone1-content.html | ✅ | Shared/brand-voice.js imported; BRAND_SYSTEM → AlLaithAI.getSystemPrompt(); Voice Training UI added to Settings |
-| 1b | Content Scorer | zone1-content.html | 🔲 | 5-dimension AI scoring |
+| 1b | Content Scorer | zone1-content.html | ✅ | Modal scorecard — 5 dims (Hook/Clarity/CTA/PlatformFit/BrandVoice), colour-coded bars, weakest callout + fix suggestion, score persisted to post |
 | 1c | Repurpose Engine | zone1-content.html | 🔲 | Rewrite posts for new platforms |
 | 1d | Content Calendar | zone1-content.html | 🔲 | Drag/drop scheduling, month view |
 | 1e | OS Shell integration | zone1-content.html | 🔲 | Expose stats to shared storage for shell |
@@ -89,9 +89,9 @@
 ## Current Session
 
 **Session:** Phase 1 — Zone 1 Upgrades (in progress)
-**Task:** 1a Brand Voice Engine ✅ → 1b Content Scorer → 1c Repurpose Engine → 1d Calendar → 1e OS Shell integration → 1f Approval Bridge → 1g Intelligence Screens
-**Status:** 1a complete
-**Next action:** Phase 1b — Content Scorer (5-dimension AI scoring for saved posts)
+**Task:** 1a ✅ → 1b ✅ → 1c Repurpose Engine → 1d Calendar → 1e OS Shell integration → 1f Approval Bridge → 1g Intelligence Screens
+**Status:** 1b complete
+**Next action:** Phase 1c — Repurpose Engine (rewrite posts for new platforms/formats)
 
 ---
 
