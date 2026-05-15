@@ -1002,7 +1002,7 @@ Write your explanation in a warm, clear, beginner-friendly way. Structure it as:
 Keep it encouraging and specific. No generic marketing textbook language.`;
 
     const data = await claudeFetch({
-      model:'claude-3-5-haiku-20241022', max_tokens:600,
+      model:'claude-haiku-4-5', max_tokens:600,
       messages:[{role:'user', content:prompt}]
     });
     const text = data.content?.[0]?.text || 'Could not generate explanation. Try again.';
@@ -1083,7 +1083,7 @@ ${node.notes || '[Add your personal notes here as you learn]'}
 Output ONLY the markdown content. No intro, no explanation, just the note.`;
 
     const data = await claudeFetch({
-      model:'claude-3-5-haiku-20241022', max_tokens:800,
+      model:'claude-haiku-4-5', max_tokens:800,
       messages:[{role:'user', content:prompt}]
     });
     const text = data.content?.[0]?.text || '';
