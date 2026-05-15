@@ -6,6 +6,43 @@
 <title>Zone 5 — Knowledge Hub | Al Laith OS</title>
 <link rel="stylesheet" href="../Shared/design-system.css">
 <style>
+/* ── Reset + base ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{display:flex;height:100vh;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px}
+
+/* ── Sidebar ── */
+.sidebar{width:220px;min-width:220px;height:100vh;background:var(--bg-2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+.sidebar-header{padding:20px 16px 14px;border-bottom:1px solid var(--border)}
+.sidebar-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+.logo-mark{width:32px;height:32px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;flex-shrink:0}
+.logo-title{font-weight:700;font-size:13px;line-height:1.2}
+.logo-sub{font-size:10px;color:var(--text-dim)}
+.sidebar-nav{flex:1;padding:12px 8px}
+.nav-section-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:0 8px;margin-bottom:4px;display:block}
+.nav-item{width:100%;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:none;background:transparent;color:var(--text-soft);font-size:13px;font-weight:500;cursor:pointer;text-align:left;transition:all .15s}
+.nav-item:hover{background:var(--surface-3);color:var(--text)}
+.nav-item.active{background:var(--primary-dim);color:var(--primary)}
+.nav-icon{width:18px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;font-size:10px;background:var(--surface-3);border-radius:10px;padding:2px 7px;color:var(--text-dim)}
+.sidebar-footer{padding:12px 8px;border-top:1px solid var(--border)}
+
+/* ── Main layout ── */
+.main-content{flex:1;overflow-y:auto;height:100vh}
+.page{display:none;padding:32px;min-height:100%}
+.page.active{display:block}
+.page-header{margin-bottom:24px}
+.page-title{font-size:22px;font-weight:700;color:var(--text)}
+.page-subtitle{font-size:13px;color:var(--text-dim);margin-top:4px}
+
+/* ── Form ── */
+.form-input{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;transition:border-color .15s}
+.form-input:focus{outline:none;border-color:var(--primary)}
+
+/* ── AI button ── */
+.btn-ai{background:linear-gradient(135deg,#7c3aed,var(--primary));color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s}
+.btn-ai:hover{opacity:.88}
+.btn-ai:disabled{opacity:.45;cursor:not-allowed}
+
 /* ── Zone 5 specific styles ── */
 .z5-progress-ring { display:flex; align-items:center; gap:16px; }
 .z5-ring-wrap { position:relative; width:72px; height:72px; flex-shrink:0; }
@@ -305,7 +342,7 @@
         <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px">Claude writes a full, structured Markdown note ready to drop straight into your Obsidian vault.</p>
         <button class="btn btn-ghost" id="obsidian-btn" onclick="generateObsidianNote()">📝 Generate note</button>
         <div class="obsidian-preview" id="obsidian-preview"></div>
-        <div id="obsidian-actions" style="display:none;margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <div id="obsidian-actions" style="display:none;margin-top:10px;gap:8px;flex-wrap:wrap">
           <button class="btn btn-primary btn-sm" onclick="downloadObsidianNote()">⬇️ Download .md</button>
           <button class="btn btn-ghost btn-sm" onclick="copyObsidianNote()">📋 Copy to clipboard</button>
         </div>

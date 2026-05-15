@@ -57,11 +57,11 @@
 
 | Session | Task | File | Status | Notes |
 |---|---|---|---|---|
-| 4a | Ask & Learn (Claude Tutor) | zone3-learning.html | 🔲 | Persistent chat history |
-| 4b | Resource Library | zone3-learning.html | 🔲 | Save + auto-summarise |
-| 4c | Topic Tracker | zone3-learning.html | 🔲 | Pre-loaded marketing topics |
-| 4d | Strategy Builder | zone3-learning.html | 🔲 | 30/60/90-day content strategy |
-| 4e | Growth Journal | zone3-learning.html | 🔲 | AI-reflected personal log |
+| 4a | Ask & Learn (Claude Tutor) | zone3-learning.html | ✅ | Persistent chat, 60-msg history, quick starters, system prompt |
+| 4b | Resource Library | zone3-learning.html | ✅ | Save URL/book/video, AI auto-summarise, link to topic |
+| 4c | Topic Tracker | zone3-learning.html | ✅ | 40 marketing topics, status + notes, search + filter |
+| 4d | Zone 5 Bridge | zone3-learning.html | ✅ | Send topics + resources to Z5; status mapped not-started/studying/got-it → Z5 |
+| 4e | Growth Journal | zone3-learning.html | ✅ | Entries with AI reflection, persisted to z3_journal |
 
 ---
 
@@ -88,10 +88,10 @@
 
 ## Current Session
 
-**Session:** Phase 5 — Zone 5 Knowledge Hub
-**Task:** Zone 5 complete — rebuilt as Obsidian companion
-**Status:** Shipped. 40 concepts, AI explain, Obsidian export, OS Shell linked.
-**Next action:** Phase 2 (Zone 4 Intelligence) or Phase 3 (Zone 2 Projects)
+**Session:** Phase 4 + Phase 5 — Zone 3 Learning Hub + Zone 5 Knowledge Hub
+**Task:** Both zones built, Zone 3↔Zone 5 bridge wired, OS Shell updated
+**Status:** Shipped. Zone 3: tutor chat, 40 topics, resources, journal, send-to-Z5. Zone 5: Obsidian companion, export. Both online.
+**Next action:** Phase 2 (Zone 2 Projects) or Phase 2 (Zone 4 Intelligence)
 
 ---
 
