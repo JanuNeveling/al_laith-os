@@ -4,11 +4,37 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Zone 5 — Knowledge Hub | Al Laith OS</title>
-<link rel="stylesheet" href="../Shared/design-system.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <style>
+/* ── OS Colour system (self-contained — no external CSS dependency) ── */
+:root{
+  --bg:          #060D1A;
+  --bg-2:        #08111F;
+  --surface:     #0C1729;
+  --surface-2:   #112038;
+  --surface-3:   #18304F;
+  --border:      rgba(140,175,230,0.10);
+  --border-mid:  rgba(140,175,230,0.16);
+  --border-strong:rgba(140,175,230,0.28);
+  --text:        #E9EFF8;
+  --text-soft:   #B7C5DC;
+  --text-dim:    #6E83A6;
+  --text-muted:  #475D80;
+  --primary:     #5B9BFF;
+  --primary-dim: rgba(91,155,255,0.12);
+  --warn:        #F59E0B;
+  --success:     #22C55E;
+  --danger:      #EF4444;
+  --zone-3:      #10B981;
+  --zone-3-dim:  rgba(16,185,129,0.15);
+  --zone-5:      #EC4899;
+  --zone-5-dim:  rgba(236,72,153,0.15);
+}
 /* ── Reset + base ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{display:flex;height:100vh;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px}
+body{display:flex;height:100vh;overflow:hidden;background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
 
 /* ── Sidebar ── */
 .sidebar{width:220px;min-width:220px;height:100vh;background:var(--bg-2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
@@ -352,8 +378,6 @@ body{display:flex;height:100vh;overflow:hidden;background:var(--bg);color:var(--
   </div>
 </div>
 
-<script src="../Shared/storage-schema.js"></script>
-<script src="../Shared/brand-voice.js"></script>
 <script>
 'use strict';
 
@@ -920,7 +944,7 @@ async function claudeFetch(body) {
     if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e.error?.message||'API error '+r.status); }
     return r.json();
   }
-  const key = (window.AlLaithAI && AlLaithAI.CONFIG && AlLaithAI.CONFIG.apiKey) || localStorage.getItem('al_laith_settings') && JSON.parse(localStorage.getItem('al_laith_settings')||'{}').anthropic_api_key || '';
+  const key = '';
   if (!key) throw Object.assign(new Error('NO_KEY'),{noKey:true});
   const r = await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',

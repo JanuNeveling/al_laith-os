@@ -796,7 +796,7 @@ function renderZones() {
     const href       = z.href || '#';
     const hrefAttr   = isClickable ? `href="${href}" target="_self"` : '';
     const pillClass  = isOnline ? 'live' : (z.status === 'building' ? 'build' : 'off');
-    const pillLabel  = isOnline ? 'Live' : (z.status === 'building' ? 'Building' : 'Offline');
+    const pillLabel  = isOnline ? 'Live' : (z.status === 'building' ? 'Coming Soon' : 'Offline');
     const offlineCls = !isClickable ? ' offline' : '';
     const liveCls    = isOnline ? ' live' : '';
 
@@ -818,6 +818,7 @@ function renderZones() {
       <div class="zone-body">
         <div class="zone-name">${esc(z.name)}</div>
         <div class="zone-desc">${esc(z.desc)}</div>
+        ${!isOnline ? `<div style="margin-top:8px;font-size:11px;color:var(--text-muted);font-family:var(--f-mono)">In development — coming soon</div>` : ''}
       </div>
       <div class="zone-stats">${statsHtml}</div>
       <div class="zone-go">${ICONS.arrowOut}</div>
