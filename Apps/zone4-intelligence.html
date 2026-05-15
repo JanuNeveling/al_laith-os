@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zone 4 — Intelligence | Al Laith OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+/* ── OS colour system (self-contained) ── */
+:root{
+  --bg:          #060D1A;
+  --bg-2:        #08111F;
+  --surface:     #0C1729;
+  --surface-2:   #112038;
+  --surface-3:   #18304F;
+  --border:      rgba(140,175,230,0.10);
+  --border-mid:  rgba(140,175,230,0.16);
+  --border-strong:rgba(140,175,230,0.28);
+  --text:        #E9EFF8;
+  --text-soft:   #B7C5DC;
+  --text-dim:    #6E83A6;
+  --text-muted:  #475D80;
+  --primary:     #5B9BFF;
+  --primary-dim: rgba(91,155,255,0.12);
+  --warn:        #F59E0B;
+  --success:     #22C55E;
+  --danger:      #EF4444;
+  --zone-4:      #EC4899;
+  --zone-4-dim:  rgba(236,72,153,0.12);
+  --zone-4-glow: rgba(236,72,153,0.20);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{display:flex;height:100vh;overflow:hidden;background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+
+/* ── Sidebar ── */
+.sidebar{width:230px;min-width:230px;height:100vh;background:var(--bg-2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+.sidebar-header{padding:20px 16px 14px;border-bottom:1px solid var(--border)}
+.sidebar-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+.logo-mark{width:32px;height:32px;background:var(--zone-4);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;flex-shrink:0}
+.logo-title{font-weight:700;font-size:13px;line-height:1.2}
+.logo-sub{font-size:10px;color:var(--text-dim)}
+.sidebar-nav{flex:1;padding:12px 8px}
+.nav-section-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:0 8px;margin:12px 0 4px;display:block}
+.nav-section-label:first-child{margin-top:0}
+.nav-item{width:100%;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:none;background:transparent;color:var(--text-soft);font-size:13px;font-weight:500;cursor:pointer;text-align:left;transition:all .15s;font-family:inherit}
+.nav-item:hover{background:var(--surface-3);color:var(--text)}
+.nav-item.active{background:var(--zone-4-dim);color:var(--zone-4)}
+.nav-icon{width:18px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;font-size:10px;background:var(--surface-3);border-radius:10px;padding:2px 7px;color:var(--text-dim)}
+.sidebar-footer{padding:12px 8px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px}
+
+/* ── Main layout ── */
+.main-content{flex:1;overflow-y:auto;height:100vh}
+.page{display:none;padding:32px;min-height:100%}
+.page.active{display:block}
+.page-header{margin-bottom:28px}
+.page-title{font-size:22px;font-weight:700}
+.page-subtitle{font-size:13px;color:var(--text-dim);margin-top:4px;line-height:1.6}
+
+/* ── Card ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px}
+.card-body{padding:20px}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card-title{font-size:13px;font-weight:700}
+
+/* ── Form elements ── */
+.form-input{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;transition:border-color .15s}
+.form-input:focus{outline:none;border-color:var(--zone-4)}
+.form-label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin-bottom:6px}
+textarea.form-input{resize:vertical;min-height:70px;line-height:1.6}
+.section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:8px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;font-family:inherit;font-size:12px;font-weight:600;line-height:1;border:1px solid transparent;border-radius:8px;cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none;user-select:none}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
+.btn-primary{background:var(--zone-4);color:#fff;border-color:var(--zone-4)}
+.btn-primary:hover{opacity:.88}
+.btn-blue{background:var(--primary);color:#fff}
+.btn-blue:hover{opacity:.88}
+.btn-ghost{background:transparent;color:var(--text-soft);border-color:var(--border)}
+.btn-ghost:hover{background:var(--surface-2);color:var(--text)}
+.btn-danger-ghost{background:transparent;color:var(--danger);border-color:var(--danger)}
+.btn-danger-ghost:hover{background:rgba(239,68,68,.1)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-xs{padding:3px 8px;font-size:10px}
+
+/* ── Mode pills ── */
+.mode-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.mode-pill{padding:5px 13px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-dim);transition:all .15s;font-family:inherit}
+.mode-pill:hover{border-color:var(--zone-4);color:var(--zone-4)}
+.mode-pill.active{background:var(--zone-4);color:#fff;border-color:var(--zone-4)}
+
+/* ── Mode description strip ── */
+.mode-desc{font-size:12px;color:var(--text-dim);margin-bottom:14px;padding:8px 12px;background:var(--surface-2);border-radius:8px;border:1px solid var(--border);line-height:1.6;min-height:32px}
+
+/* ── URL grid ── */
+.url-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+
+/* ── Research output ── */
+.research-output{background:var(--surface);border:1px solid var(--border-mid);border-radius:12px;padding:20px;min-height:100px;overflow-y:auto;max-height:560px;display:none}
+.research-output.loading{color:var(--text-dim);font-style:italic;display:block}
+/* Markdown rendering */
+.research-output h2{font-size:15px;font-weight:700;color:var(--zone-4);margin:20px 0 8px;padding-bottom:5px;border-bottom:2px solid var(--zone-4-dim)}
+.research-output h2:first-child{margin-top:0}
+.research-output h3{font-size:13px;font-weight:700;color:var(--text);margin:14px 0 6px}
+.research-output p{margin-bottom:10px;line-height:1.8;color:var(--text-soft)}
+.research-output ul,.research-output ol{padding-left:20px;margin-bottom:10px}
+.research-output li{margin-bottom:4px;line-height:1.75;color:var(--text-soft)}
+.research-output strong{font-weight:700;color:var(--text)}
+.research-output em{font-style:italic;color:var(--text-dim)}
+.research-output table{width:100%;border-collapse:collapse;margin:14px 0;font-size:12px}
+.research-output th{background:var(--zone-4);color:#fff;padding:8px 12px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.research-output td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--text-soft)}
+.research-output tr:nth-child(even) td{background:var(--surface-2)}
+.research-output hr{border:none;border-top:1px solid var(--border-mid);margin:16px 0}
+.research-output code{background:var(--surface-3);padding:1px 5px;border-radius:4px;font-size:12px;color:var(--zone-4)}
+
+/* ── Competitor cards ── */
+.comp-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;transition:border-color .15s}
+.comp-card:hover{border-color:var(--border-mid)}
+.comp-card-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.comp-name{font-size:14px;font-weight:700;flex:1}
+.comp-url{font-size:11px;color:var(--primary);margin-top:2px;word-break:break-all}
+.comp-status-pill{font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap;flex-shrink:0}
+.comp-status-active{background:rgba(34,197,94,.15);color:#22C55E;border:1px solid rgba(34,197,94,.3)}
+.comp-status-quiet{background:rgba(245,158,11,.12);color:var(--warn);border:1px solid rgba(245,158,11,.3)}
+.comp-status-unknown{background:var(--surface-2);color:var(--text-dim);border:1px solid var(--border)}
+.comp-meta{font-size:11px;color:var(--text-dim);margin-bottom:10px}
+.comp-summary{font-size:12px;color:var(--text-soft);line-height:1.7;margin-bottom:12px;padding:10px;background:var(--surface-2);border-radius:8px;display:none}
+.comp-summary.visible{display:block}
+.comp-actions{display:flex;gap:6px;flex-wrap:wrap}
+
+/* ── Trend report ── */
+.trend-report-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px}
+.trend-report-date{font-size:11px;color:var(--text-dim);margin-bottom:14px;font-weight:600}
+.trend-archive-item{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.trend-archive-item:hover{border-color:var(--border-mid);background:var(--surface-3)}
+
+/* ── Add competitor form ── */
+.add-comp-form{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
+
+/* ── Toast ── */
+.toast-container{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{padding:10px 16px;border-radius:10px;font-size:13px;font-weight:500;max-width:320px;animation:toastIn .2s ease}
+.toast-success{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#22C55E}
+.toast-info{background:rgba(91,155,255,.12);border:1px solid rgba(91,155,255,.25);color:var(--primary)}
+.toast-warn{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.25);color:var(--warn)}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ── Status banner ── */
+.status-banner{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:16px}
+.status-banner.success{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);color:#22C55E}
+.status-banner.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);color:var(--warn)}
+
+/* ── Empty state ── */
+.empty-state{text-align:center;padding:48px 20px;color:var(--text-dim)}
+.empty-state-icon{font-size:32px;margin-bottom:12px}
+.empty-state-title{font-size:14px;font-weight:600;color:var(--text-soft);margin-bottom:6px}
+.empty-state-text{font-size:13px;line-height:1.7}
+
+/* ── Inline row ── */
+.inline-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <a href="os-shell.html" class="sidebar-logo">
+      <div class="logo-mark">Z4</div>
+      <div>
+        <div class="logo-title">Al Laith OS</div>
+        <div class="logo-sub">Intelligence Zone</div>
+      </div>
+    </a>
+  </div>
+
+  <nav class="sidebar-nav">
+    <span class="nav-section-label">Research</span>
+    <button class="nav-item active" onclick="navigate('signal')">
+      <span class="nav-icon">🔍</span> Signal Research
+      <span class="nav-badge" id="nb-reports">0</span>
+    </button>
+    <button class="nav-item" onclick="navigate('trends')">
+      <span class="nav-icon">📈</span> Trend Watch
+      <span class="nav-badge" id="nb-trends">0</span>
+    </button>
+
+    <span class="nav-section-label">Tracking</span>
+    <button class="nav-item" onclick="navigate('competitors')">
+      <span class="nav-icon">🎯</span> Competitors
+      <span class="nav-badge" id="nb-comps">0</span>
+    </button>
+
+    <span class="nav-section-label">System</span>
+    <button class="nav-item" onclick="navigate('settings')">
+      <span class="nav-icon">⚙️</span> Settings
+      <span class="nav-badge" id="nb-api" style="display:none;background:rgba(34,197,94,.2);color:#22C55E">AI ON</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="zone1-content.html" class="btn btn-ghost btn-sm" style="justify-content:center">📝 Content Hub</a>
+    <a href="os-shell.html" class="btn btn-ghost btn-sm" style="justify-content:center">← Command Centre</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main-content">
+
+<!-- ── SIGNAL RESEARCH ── -->
+<div id="page-signal" class="page active">
+  <div class="page-header">
+    <h1 class="page-title">🔍 Signal Research</h1>
+    <p class="page-subtitle">Company intelligence, gap analysis, trend scans, and campaign ideas — all in one place.</p>
+  </div>
+
+  <div class="mode-row" id="mode-row">
+    <button class="mode-pill active" data-mode="snapshot" onclick="setMode('snapshot')">🔍 Company Snapshot</button>
+    <button class="mode-pill" data-mode="gap"      onclick="setMode('gap')">⚡ Gap Analysis</button>
+    <button class="mode-pill" data-mode="trends"   onclick="setMode('trends')">📈 Trend Scan</button>
+    <button class="mode-pill" data-mode="benchmark" onclick="setMode('benchmark')">📊 Content Benchmark</button>
+    <button class="mode-pill" data-mode="ideas"    onclick="setMode('ideas')">💡 Campaign Ideas</button>
+  </div>
+
+  <div class="mode-desc" id="mode-desc"></div>
+
+  <div class="card">
+    <div class="card-body">
+      <div style="margin-bottom:12px">
+        <label class="form-label" id="query-label">Company name to research</label>
+        <textarea class="form-input" id="signal-query" rows="2" placeholder="e.g. Byrne Equipment Rental"></textarea>
+      </div>
+
+      <div id="url-section" style="margin-bottom:12px">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin-bottom:8px">
+          Company Links <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted)">(optional — paste any you have)</span>
+        </div>
+        <div class="url-grid">
+          <div>
+            <label class="form-label" style="font-size:10px">Website</label>
+            <input id="url-website" class="form-input" placeholder="https://company.com" style="font-size:12px">
+          </div>
+          <div>
+            <label class="form-label" style="font-size:10px">Instagram</label>
+            <input id="url-ig" class="form-input" placeholder="https://instagram.com/..." style="font-size:12px">
+          </div>
+          <div>
+            <label class="form-label" style="font-size:10px">LinkedIn</label>
+            <input id="url-li" class="form-input" placeholder="https://linkedin.com/company/..." style="font-size:12px">
+          </div>
+          <div>
+            <label class="form-label" style="font-size:10px">Facebook</label>
+            <input id="url-fb" class="form-input" placeholder="https://facebook.com/..." style="font-size:12px">
+          </div>
+        </div>
+      </div>
+
+      <div class="inline-row">
+        <button class="btn btn-primary" onclick="runResearch()">🔍 Run Research</button>
+        <button class="btn btn-ghost" onclick="clearResearch()">Clear</button>
+        <button class="btn btn-ghost btn-sm" id="copy-btn" style="display:none" onclick="copyReport()">📋 Copy Report</button>
+        <button class="btn btn-ghost btn-sm" id="save-btn" style="display:none" onclick="saveReport()">💾 Save Report</button>
+        <span id="research-status" style="font-size:12px;color:var(--text-dim)"></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="research-output" class="research-output"></div>
+</div>
+
+<!-- ── TREND WATCH ── -->
+<div id="page-trends" class="page">
+  <div class="page-header">
+    <h1 class="page-title">📈 Trend Watch</h1>
+    <p class="page-subtitle">Auto-generated weekly intelligence on UAE/GCC industry and marketing trends relevant to Al Laith.</p>
+  </div>
+
+  <div class="inline-row" style="margin-bottom:20px">
+    <button class="btn btn-primary" onclick="generateTrendReport()">📈 Generate This Week's Report</button>
+    <button class="btn btn-ghost btn-sm" onclick="copyTrendReport()">📋 Copy</button>
+    <span id="trend-status" style="font-size:12px;color:var(--text-dim)"></span>
+  </div>
+
+  <div id="trend-current" style="margin-bottom:24px"></div>
+
+  <div id="trend-archive-section" style="display:none">
+    <div class="section-label">Past Reports</div>
+    <div id="trend-archive"></div>
+  </div>
+</div>
+
+<!-- ── COMPETITORS ── -->
+<div id="page-competitors" class="page">
+  <div class="page-header">
+    <h1 class="page-title">🎯 Competitor Watchlist</h1>
+    <p class="page-subtitle">Track UAE/GCC competitors. Research any company or run a full gap analysis against Al Laith.</p>
+  </div>
+
+  <!-- Add competitor -->
+  <div class="add-comp-form">
+    <div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--text-soft)">Add Competitor</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end">
+      <div>
+        <label class="form-label" style="font-size:10px">Company Name</label>
+        <input id="new-comp-name" class="form-input" placeholder="e.g. Speedy Gulf" style="font-size:12px">
+      </div>
+      <div>
+        <label class="form-label" style="font-size:10px">Website (optional)</label>
+        <input id="new-comp-url" class="form-input" placeholder="https://..." style="font-size:12px">
+      </div>
+      <div>
+        <label class="form-label" style="font-size:10px">Sector (optional)</label>
+        <input id="new-comp-sector" class="form-input" placeholder="e.g. Equipment Rental" style="font-size:12px">
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="addCompetitor()" style="height:36px">+ Add</button>
+    </div>
+  </div>
+
+  <div class="inline-row" style="margin-bottom:16px">
+    <button class="btn btn-ghost btn-sm" onclick="scanAllCompetitors()">🔍 Scan All (Gap Analysis)</button>
+  </div>
+
+  <div id="comp-list"></div>
+</div>
+
+<!-- ── SETTINGS ── -->
+<div id="page-settings" class="page">
+  <div class="page-header">
+    <h1 class="page-title">⚙️ Settings</h1>
+    <p class="page-subtitle">Configure your API key and Zone 4 preferences.</p>
+  </div>
+
+  <div id="settings-status-banner" style="margin-bottom:20px"></div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header"><span class="card-title">Anthropic API Key</span></div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:14px;line-height:1.6">
+        Required when running locally. On Vercel, the key is stored server-side.
+        Your key is saved in your browser only — shared across all Al Laith OS zones.
+      </p>
+      <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:10px">
+        <div style="flex:1">
+          <label class="form-label">API Key</label>
+          <input type="password" id="settings-key-input" class="form-input" placeholder="sk-ant-api03-…" autocomplete="off">
+        </div>
+        <button class="btn btn-primary" onclick="saveApiKey()">Save</button>
+        <button class="btn btn-danger-ghost" onclick="clearApiKey()">Clear</button>
+      </div>
+      <p style="font-size:11px;color:var(--text-muted)">
+        Get your key at <strong style="color:var(--text-dim)">console.anthropic.com</strong> → API Keys
+      </p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">About Zone 4</span></div>
+    <div class="card-body">
+      <div style="font-size:13px;color:var(--text-soft);line-height:1.9">
+        <p style="margin-bottom:10px">Zone 4 is your competitive intelligence hub. It covers:</p>
+        <ul style="padding-left:18px;line-height:2.2">
+          <li><strong>Signal Research</strong> — 5 modes: Company Snapshot, Gap Analysis, Trend Scan, Content Benchmark, Campaign Ideas</li>
+          <li><strong>Trend Watch</strong> — Weekly auto-report of UAE/GCC industry and marketing trends</li>
+          <li><strong>Competitor Watchlist</strong> — Track and research UAE competitors against Al Laith</li>
+        </ul>
+        <p style="margin-top:12px;color:var(--text-dim)">All research uses the Al Laith brand context as baseline. Gap Analysis reports compare against Al Laith's public profiles.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toasts"></div>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════
+   STORAGE
+══════════════════════════════════════════════════════════════ */
+const KEYS = {
+  apiKey:      'anthropic_api_key',    // shared across all zones
+  reports:     'os:z4:reports',
+  competitors: 'os:z4:competitors',
+  trends:      'os:z4:trends',
+  stats:       'os:z4:stats',
+};
+
+function ls(key)          { try{ return JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){ return []; } }
+function lsObj(key)       { try{ return JSON.parse(localStorage.getItem(key)||'{}'); }catch(e){ return {}; } }
+function lsSave(key, val) { try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+function lsGet(key)       { return localStorage.getItem(key)||''; }
+function lsSet(key, val)  { localStorage.setItem(key, val); }
+
+function getReports()     { return ls(KEYS.reports); }
+function saveReport_(r)   { const all=getReports(); const i=all.findIndex(x=>x.id===r.id); if(i>=0) all[i]=r; else all.unshift(r); lsSave(KEYS.reports, all.slice(0,50)); }
+function getTrends()      { return ls(KEYS.trends); }
+function saveTrend_(t)    { const all=getTrends(); all.unshift(t); lsSave(KEYS.trends, all.slice(0,20)); }
+function getCompetitors() { return ls(KEYS.competitors); }
+function saveCompetitors(list) { lsSave(KEYS.competitors, list); writeStats(); }
+
+function writeStats(){
+  const all = getReports();
+  const comps = getCompetitors();
+  lsSave(KEYS.stats, {
+    reports: all.length,
+    competitors: comps.length,
+    lastResearch: all[0] ? all[0].date : null,
+    updatedAt: Date.now()
+  });
+}
+
+const DEFAULT_COMPETITORS = [
+  { id:'comp_byrne',   name:'Byrne Equipment Rental',    url:'https://www.byrne.ae',          sector:'Equipment Rental', lastResearched:null, summary:'', status:'unknown' },
+  { id:'comp_rsg',     name:'RSG / Al Rakha Scaffolding',url:'',                              sector:'Scaffolding',      lastResearched:null, summary:'', status:'unknown' },
+  { id:'comp_gaps',    name:'GAPS',                      url:'',                              sector:'Equipment Rental', lastResearched:null, summary:'', status:'unknown' },
+  { id:'comp_brt',     name:'BRT Equipment Rental',      url:'',                              sector:'Equipment Rental', lastResearched:null, summary:'', status:'unknown' },
+  { id:'comp_triton',  name:'Triton',                    url:'',                              sector:'Events/Scaffolding',lastResearched:null, summary:'', status:'unknown' },
+  { id:'comp_speedy',  name:'Speedy Gulf',               url:'',                              sector:'Equipment Rental', lastResearched:null, summary:'', status:'unknown' },
+];
+
+function seedCompetitors(){
+  if(!getCompetitors().length) saveCompetitors(DEFAULT_COMPETITORS);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   API KEY
+══════════════════════════════════════════════════════════════ */
+function getApiKey(){ return lsGet(KEYS.apiKey); }
+
+function saveApiKey(){
+  const val = (document.getElementById('settings-key-input')||{}).value||'';
+  if(!val.trim()){ toast('Please enter an API key','warn'); return; }
+  lsSet(KEYS.apiKey, val.trim());
+  updateApiBadge();
+  renderSettingsPage();
+  toast('API key saved — AI is now active','success');
+}
+
+function clearApiKey(){
+  localStorage.removeItem(KEYS.apiKey);
+  const inp = document.getElementById('settings-key-input');
+  if(inp) inp.value = '';
+  updateApiBadge();
+  renderSettingsPage();
+  toast('API key cleared','info');
+}
+
+function updateApiBadge(){
+  const badge = document.getElementById('nb-api');
+  if(!badge) return;
+  const active = window.location.protocol==='https:' || !!getApiKey();
+  badge.style.display = active ? 'inline-block' : 'none';
+}
+
+function renderSettingsPage(){
+  const banner = document.getElementById('settings-status-banner');
+  const inp    = document.getElementById('settings-key-input');
+  if(!banner) return;
+  if(inp && getApiKey()) inp.value = getApiKey();
+  const onVercel = window.location.protocol==='https:';
+  const hasKey   = !!getApiKey();
+  if(onVercel){
+    banner.innerHTML = `<div class="status-banner success"><span style="font-size:16px">✅</span><div><strong>Running on Vercel</strong> — AI is active via server-side proxy. No key needed here.</div></div>`;
+    document.getElementById('settings-key-input').closest('.card').style.display='none';
+  } else if(hasKey){
+    banner.innerHTML = `<div class="status-banner success"><span style="font-size:16px">✅</span><div><strong>API key is set</strong> — AI features are active.</div></div>`;
+    document.getElementById('settings-key-input').closest('.card').style.display='';
+  } else {
+    banner.innerHTML = `<div class="status-banner warn"><span style="font-size:16px">⚠️</span><div><strong>No API key set</strong> — AI features are disabled. Enter your Anthropic API key below.</div></div>`;
+    document.getElementById('settings-key-input').closest('.card').style.display='';
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   AI PROXY
+══════════════════════════════════════════════════════════════ */
+const AI_MODEL = 'claude-haiku-4-5';
+
+async function claudeFetch(body){
+  if(window.location.protocol==='https:'){
+    const r = await fetch('/api/claude',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.error?.message||'API error '+r.status); }
+    return r.json();
+  }
+  const key = getApiKey();
+  if(!key) throw Object.assign(new Error('No API key — go to Settings to add your Anthropic API key'),{noKey:true});
+  const r = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-allow-browser-access':'true'},
+    body:JSON.stringify(body)
+  });
+  if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.error?.message||'API error '+r.status); }
+  return r.json();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   INTELLIGENCE PROMPTS
+══════════════════════════════════════════════════════════════ */
+const AL_LAITH_REFS = `Al Laith Group reference sources (use ONLY these for Al Laith comparison — do not infer from other sources):
+- Website: https://allaith.com
+- Instagram: https://www.instagram.com/allaithgroup/
+- LinkedIn: https://www.linkedin.com/company/allaithgroup/posts/?feedView=all
+- Facebook: https://www.facebook.com/allaithgroupME`;
+
+const FORMATTING_RULES = `
+FORMATTING RULES:
+- Use clear markdown headings (## for sections, ### for subsections)
+- Use bullet points and numbered lists throughout
+- Use **bold** for key terms, company names, important findings
+- Use markdown tables where comparison data exists
+- Every unfamiliar industry term or service category should be briefly explained in plain language in a "(note: ...)" inline annotation — the reader is still learning the industry
+- Separate observed facts from interpretation: label as "What I observed:" and "What this likely means:" where relevant
+- Professional, analytical, decision-ready tone — not academic, not casual
+- No filler. Every sentence earns its place.`;
+
+function buildSystemPrompt(){
+  return `You are a strategic intelligence analyst and marketing researcher for Al Laith Group — a UAE/GCC company specialising in equipment rental (generators, forklifts, MEWPs, crowd barriers), scaffolding (construction, events, oil & gas), and events infrastructure (structures, staging, AV, rigging).
+
+The user is Janu, Al Laith's marketing lead who is still learning the industry. Explain unfamiliar terms automatically in plain language. Do not assume deep prior knowledge.
+
+Be specific, structured, and evidence-backed. Separate facts from interpretation. Cite sources when referencing web-derived information.`;
+}
+
+function buildResearchPrompt(mode, query, urls){
+  const sourceBlock = (urls.website||urls.ig||urls.li||urls.fb) ?
+    `\nSources provided for this research:\n${urls.website?'- Website: '+urls.website+'\n':''}${urls.ig?'- Instagram: '+urls.ig+'\n':''}${urls.li?'- LinkedIn: '+urls.li+'\n':''}${urls.fb?'- Facebook: '+urls.fb+'\n':''}\nUse these as your primary reference points. Where you cannot directly access them, draw on your training knowledge and clearly note which findings are based on training knowledge vs observed sources.` :
+    `\nNo specific URLs provided. Use your training knowledge for this company. Clearly note when findings are based on training knowledge.`;
+
+  if(mode==='snapshot') return `${sourceBlock}
+
+Produce a structured Company Signal Report for: **${query}**
+
+## Company Snapshot
+Concise overview: what they do, company size signals, geographic presence, years active, notable milestones.
+
+## How They Position Themselves
+Tagline, messaging angle, what they lead with. What promise or identity are they projecting?
+
+## Target Audience (Hypotheses)
+Who they appear to be selling to. Based on language, imagery, case studies, platforms used.
+
+## Key Products and Services Promoted
+List what they visibly emphasise — only what is actively promoted. Group by category.
+
+## Website Observations
+Structure, messaging, UX signals, key pages, CTAs, proof points (client logos, project photos, certifications), anything notable.
+
+## Social Media Presence
+For each platform observed: posting frequency estimate, content themes, format mix, engagement signals, tone, what they do well or poorly.
+
+## Messaging Themes
+Ideas, values, or proof points that appear repeatedly. What they want to be known for.
+
+## Content Strengths
+What they do particularly well in their marketing and content.
+
+## Content Weaknesses and Gaps
+Where their marketing appears weak, inconsistent, or missing.
+
+## SWOT Analysis
+| | Strengths | Weaknesses |
+|---|---|---|
+| **Internal** | [list] | [list] |
+
+| | Opportunities | Threats (for Al Laith) |
+|---|---|---|
+| **External** | [list] | [list] |
+
+## Quick Summary for Al Laith
+2–3 sentences: what does this company represent from Al Laith's perspective — opportunity, threat, or neutral reference?
+
+${FORMATTING_RULES}`;
+
+  if(mode==='gap') return `You are writing an Al Laith-facing Gap Analysis report, prepared FOR Al Laith leadership, marketing, and business development. Write from the perspective of an analyst advising Al Laith directly.
+
+${AL_LAITH_REFS}
+${sourceBlock}
+
+Produce a Gap Analysis comparing: **${query}** vs Al Laith Group
+
+## Executive Summary
+3–5 sentences: key findings, most important gap or opportunity, single most urgent recommendation.
+
+## Comparison Baseline
+Brief reminder of Al Laith's visible positioning, services, and channel presence (based on the Al Laith references above).
+
+## Target Company Overview
+Who is ${query}? What do they do, who do they serve, how do they present themselves?
+
+## Overlap Analysis
+Where do the two companies compete or appear to serve the same audience? Specific sectors, services, geography.
+
+## Gap Findings
+
+### Where ${query} Appears Stronger Than Al Laith
+For each gap:
+**What I observed:** [evidence]
+**What this likely means for Al Laith:** [interpretation]
+**Recommended action for Al Laith:** [specific, actionable]
+
+### Where Al Laith Appears Stronger Than ${query}
+For each advantage:
+**What I observed:** [evidence]
+**How Al Laith can press this advantage:** [specific action]
+
+### Channel and Content Gaps
+Compare platform presence, posting frequency, content quality and themes.
+
+### Messaging and Positioning Gaps
+Where does the competitor's messaging reach audiences Al Laith's current messaging may not?
+
+## Opportunities for Al Laith
+Numbered list of concrete, actionable opportunities — marketing, positioning, content, services, channels. Prioritised by impact.
+
+## Risks for Al Laith to Monitor
+Where is this competitor gaining momentum?
+
+## Prioritised Recommendations
+| Priority | Recommendation | Rationale | Suggested Timeline |
+|---|---|---|---|
+| 1 | | | |
+| 2 | | | |
+| 3 | | | |
+
+## Report Notes
+State clearly which findings are based on observed/provided sources vs training knowledge.
+
+${FORMATTING_RULES}
+Format this as a PDF-ready deliverable, as if it will be presented to Al Laith leadership.`;
+
+  if(mode==='trends') return `${sourceBlock}
+
+Analyse this trend or topic for Al Laith (UAE equipment rental, scaffolding, events B2B marketing): **${query}**
+
+## What Is This Trend?
+Plain explanation — what it is, where it comes from, why it matters right now.
+
+## Why It Matters for Al Laith's Industry
+Impact on equipment rental, scaffolding, or events marketing in the UAE/GCC context.
+
+## Who Is Already Acting on It?
+Competitors or industry players visibly engaging with this trend.
+
+## Content Opportunities for Al Laith
+Specific content Al Laith could create to capitalise on this.
+
+| Platform | Format | Angle |
+|---|---|---|
+| | | |
+
+## 5 Specific Post Ideas for Al Laith
+For each: topic, platform, format, hook line, brief production note.
+
+## Risks or Considerations
+Anything Al Laith should be cautious about with this trend.
+
+${FORMATTING_RULES}`;
+
+  if(mode==='benchmark') return `${sourceBlock}
+
+Produce a Content Benchmark for: **${query}** — for Al Laith's reference.
+
+## Content Volume and Consistency
+Estimated posting frequency per platform. Consistency signals.
+
+## Format Mix
+What content formats do they use? Estimated percentage breakdown.
+
+## Top-Performing Content Themes
+What topics appear most frequently? What gets the most visible engagement?
+
+## Hashtag and Discovery Strategy
+What hashtag approach? Geographic, industry, branded?
+
+## Engagement Signals
+Qualitative engagement assessment. What content performs best?
+
+## Tone and Voice
+How do they write and communicate? Formal, casual, technical, inspirational?
+
+## Benchmark vs Al Laith
+
+| Metric | ${query} | Al Laith (estimated) | Gap |
+|---|---|---|---|
+| Posting frequency | | | |
+| Format variety | | | |
+| Engagement quality | | | |
+| Messaging clarity | | | |
+| Visual consistency | | | |
+
+${FORMATTING_RULES}`;
+
+  if(mode==='ideas') return `Generate 6 campaign content ideas for Al Laith Group (UAE equipment rental, scaffolding, events B2B marketing) based on this topic or sector: **${query}**
+
+For each idea:
+
+### Idea [N]: [Title]
+- **Platform:**
+- **Format:**
+- **Hook:** (first line or visual concept that stops the scroll)
+- **Content angle:**
+- **Why it works for Al Laith:**
+- **Production note:** (what's needed to create it — assets, people, location)
+
+---
+
+After the 6 ideas:
+
+## Which 2 to Prioritise First — and Why
+
+${FORMATTING_RULES}`;
+
+  return `Research: ${query}. Be specific, structured, and direct. Context: Al Laith is a UAE/GCC equipment rental, scaffolding, and events company.`;
+}
+
+function buildTrendPrompt(){
+  const week = getWeekLabel();
+  return `Generate a weekly intelligence briefing for Al Laith Group (UAE/GCC equipment rental, scaffolding, events B2B marketing) for the week of ${week}.
+
+## Weekly Intelligence Briefing — ${week}
+
+### Top 5 UAE/GCC Industry Trends
+For each trend: what it is, why it matters for Al Laith's sectors, and one immediate action Al Laith should consider.
+
+1.
+2.
+3.
+4.
+5.
+
+### Top 5 Content & Marketing Trends
+Trends in B2B content marketing, social media, and platform behaviour relevant to Al Laith's channels (LinkedIn, Instagram, Facebook).
+
+1.
+2.
+3.
+4.
+5.
+
+### Trend Radar
+
+| Trend | Relevance to Al Laith | Time Horizon | Recommended Action |
+|---|---|---|---|
+| | High/Medium/Low | Now / 3m / 6m / 12m+ | |
+| | | | |
+| | | | |
+| | | | |
+| | | | |
+
+### This Week's Priority Signal
+The single most important trend or development Al Laith should act on in the next 30 days — and why.
+
+${FORMATTING_RULES}`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MARKDOWN RENDERER
+══════════════════════════════════════════════════════════════ */
+function renderMarkdown(text){
+  const html = text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^\|(.+)\|$/gm, line => '<TR>' + line.slice(1,-1).split('|').map(c=>'<TD>'+c.trim()+'</TD>').join('') + '</TR>')
+    .replace(/^\|[-| :]+\|$/gm,'<TBREAK>')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h2>$1</h2>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`(.+?)`/g,'<code>$1</code>')
+    .replace(/^---+$/gm,'<hr>')
+    .replace(/^[-•] (.+)$/gm,'<li>$1</li>')
+    .replace(/^  [-•] (.+)$/gm,'<li style="margin-left:16px">$1</li>')
+    .replace(/^\d+\. (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li[^>]*>.*?<\/li>\n?)+/g, m=>'<ul>'+m+'</ul>')
+    .replace(/((<TR>.*?<\/TR>\n?)+)/g, m=>{
+      const rows=(m.match(/<TR>.*?<\/TR>/g)||[]);
+      if(!rows.length) return m;
+      const head=rows[0].replace(/<TR>/,'<thead><tr>').replace(/<\/TR>/,'</tr></thead>').replace(/<TD>/g,'<th>').replace(/<\/TD>/g,'</th>');
+      const body=rows.slice(1).map(r=>r.replace(/<TR>/,'<tr>').replace(/<\/TR>/,'</tr>')).join('');
+      return '<table>'+head+(body?'<tbody>'+body+'</tbody>':'')+'</table>';
+    })
+    .replace(/<TBREAK>\n?/g,'')
+    .split('\n').map(line=>{
+      if(!line.trim()) return '<br>';
+      if(/^<(h[23]|ul|ol|li|table|thead|tbody|tr|th|td|hr|br)/.test(line.trim())) return line;
+      return '<p>'+line+'</p>';
+    }).join('\n')
+    .replace(/(<br>\s*){3,}/g,'<br><br>');
+  return html;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════════════════ */
+let currentPage = 'signal';
+
+function navigate(page){
+  currentPage = page;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pageEl = document.getElementById('page-'+page);
+  if(pageEl) pageEl.classList.add('active');
+  const navMap = {signal:0, trends:1, competitors:2, settings:3};
+  const navItems = document.querySelectorAll('.nav-item');
+  if(navItems[navMap[page]]) navItems[navMap[page]].classList.add('active');
+
+  if(page==='settings')     renderSettingsPage();
+  if(page==='competitors')  renderCompetitors();
+  if(page==='trends')       renderTrendsPage();
+  updateBadges();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SIGNAL RESEARCH
+══════════════════════════════════════════════════════════════ */
+let currentMode = 'snapshot';
+let lastReportText = '';
+
+const MODE_LABELS = {
+  snapshot: 'Company name to research',
+  gap:      'Company name to compare vs Al Laith',
+  trends:   'Trend or topic to analyse',
+  benchmark:'Company to benchmark content against',
+  ideas:    'Topic, sector, or campaign theme'
+};
+
+const MODE_DESCS = {
+  snapshot: 'Full structured report: positioning, audience, services, website & social observations, messaging themes, content strengths/weaknesses, SWOT, and a quick summary for Al Laith.',
+  gap:      'Al Laith-facing deliverable. Compares the target company against Al Laith's public profiles — gaps, overlaps, opportunities, risks, and prioritised recommendations. PDF-ready format.',
+  trends:   'Analyses a trend or topic for relevance to Al Laith's industry — with specific content ideas and production notes.',
+  benchmark:'Audits a company's content output: frequency, formats, themes, tone, engagement signals, and a comparison table vs Al Laith.',
+  ideas:    'Generates 6 campaign content ideas for Al Laith based on a topic, sector, or theme — with hooks, platforms, formats, and production notes.'
+};
+
+function setMode(mode){
+  currentMode = mode;
+  document.querySelectorAll('.mode-pill').forEach(p=>p.classList.toggle('active',p.dataset.mode===mode));
+  const ql   = document.getElementById('query-label');
+  const desc = document.getElementById('mode-desc');
+  const urls = document.getElementById('url-section');
+  if(ql)   ql.textContent  = MODE_LABELS[mode]||'Query';
+  if(desc) desc.textContent = MODE_DESCS[mode]||'';
+  if(urls) urls.style.display = ['snapshot','gap','benchmark'].includes(mode) ? 'block' : 'none';
+}
+
+async function runResearch(){
+  const query   = (document.getElementById('signal-query')||{}).value||'';
+  const website = (document.getElementById('url-website')||{}).value||'';
+  const ig      = (document.getElementById('url-ig')||{}).value||'';
+  const li      = (document.getElementById('url-li')||{}).value||'';
+  const fb      = (document.getElementById('url-fb')||{}).value||'';
+  if(!query.trim()){ toast('Enter a company name or topic first','warn'); return; }
+
+  const out    = document.getElementById('research-output');
+  const status = document.getElementById('research-status');
+  const copyBtn= document.getElementById('copy-btn');
+  const saveBtn= document.getElementById('save-btn');
+
+  out.className = 'research-output loading';
+  out.innerHTML = '<em>Research in progress — this may take 15–30 seconds for a full report…</em>';
+  if(status)  status.textContent = 'Asking Claude…';
+  if(copyBtn) copyBtn.style.display = 'none';
+  if(saveBtn) saveBtn.style.display = 'none';
+
+  try{
+    const userPrompt = buildResearchPrompt(currentMode, query, {website,ig,li,fb});
+    const data = await claudeFetch({
+      model: AI_MODEL, max_tokens: 2000,
+      system: buildSystemPrompt(),
+      messages: [{role:'user', content: userPrompt}]
+    });
+    const text = data.content?.[0]?.text || 'No response received.';
+    lastReportText = text;
+    out.className = 'research-output';
+    out.innerHTML = renderMarkdown(text);
+    if(status)  status.textContent = 'Done';
+    if(copyBtn) copyBtn.style.display = 'inline-flex';
+    if(saveBtn) saveBtn.style.display = 'inline-flex';
+    // Auto-tag competitor if we recognise the name
+    tagCompetitorResearched(query);
+  }catch(e){
+    out.className = 'research-output';
+    out.innerHTML = `<p><strong style="color:var(--danger)">Research failed:</strong> ${e.message}</p><p style="color:var(--text-dim);margin-top:8px">Check your API key in Settings and try again.</p>`;
+    if(status) status.textContent = '';
+  }
+}
+
+function clearResearch(){
+  const out = document.getElementById('research-output');
+  if(out){ out.className='research-output'; out.innerHTML=''; out.style.display='none'; }
+  document.getElementById('signal-query').value='';
+  document.getElementById('url-website').value='';
+  document.getElementById('url-ig').value='';
+  document.getElementById('url-li').value='';
+  document.getElementById('url-fb').value='';
+  document.getElementById('research-status').textContent='';
+  document.getElementById('copy-btn').style.display='none';
+  document.getElementById('save-btn').style.display='none';
+  lastReportText = '';
+}
+
+function copyReport(){
+  const out = document.getElementById('research-output');
+  if(!out) return;
+  navigator.clipboard.writeText(out.innerText||'').then(()=>toast('Report copied to clipboard','success')).catch(()=>toast('Select the text manually to copy','info'));
+}
+
+function saveReport(){
+  if(!lastReportText) return;
+  const query = document.getElementById('signal-query').value||'Research';
+  const report = {
+    id: 'rpt_'+Date.now(),
+    date: new Date().toISOString(),
+    mode: currentMode,
+    query: query,
+    text: lastReportText
+  };
+  saveReport_(report);
+  updateBadges();
+  toast('Report saved to your research archive','success');
+}
+
+function tagCompetitorResearched(query){
+  const comps = getCompetitors();
+  const q = query.toLowerCase();
+  const comp = comps.find(c => c.name.toLowerCase().split(' ').some(w => w.length>3 && q.includes(w)));
+  if(comp){
+    comp.lastResearched = new Date().toISOString();
+    if(currentMode==='snapshot'||currentMode==='gap'){
+      comp.summary = 'Last researched: '+new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    }
+    saveCompetitors(comps);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TREND WATCH
+══════════════════════════════════════════════════════════════ */
+function getWeekLabel(){
+  const d = new Date();
+  const start = new Date(d);
+  start.setDate(d.getDate() - d.getDay() + 1);
+  return start.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+}
+
+function getThisWeekKey(){
+  const d = new Date();
+  const start = new Date(d);
+  start.setDate(d.getDate() - d.getDay() + 1);
+  return start.toISOString().slice(0,10);
+}
+
+async function generateTrendReport(){
+  const status = document.getElementById('trend-status');
+  const current= document.getElementById('trend-current');
+  if(status)  status.textContent = 'Generating weekly report…';
+  if(current) current.innerHTML  = '<div style="padding:32px;text-align:center;color:var(--text-dim);font-style:italic">Analysing trends — this may take 20–30 seconds…</div>';
+
+  try{
+    const data = await claudeFetch({
+      model: AI_MODEL, max_tokens: 2000,
+      system: buildSystemPrompt(),
+      messages: [{role:'user', content: buildTrendPrompt()}]
+    });
+    const text = data.content?.[0]?.text || '';
+    const report = {
+      id:   'trend_'+Date.now(),
+      week: getThisWeekKey(),
+      date: new Date().toISOString(),
+      text: text
+    };
+    saveTrend_(report);
+    if(status) status.textContent = 'Generated '+new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    renderTrendsPage();
+    updateBadges();
+    toast('Weekly trend report generated','success');
+  }catch(e){
+    if(current) current.innerHTML = `<div style="padding:20px;color:var(--danger)">Failed: ${e.message}. Check your API key in Settings.</div>`;
+    if(status)  status.textContent = '';
+  }
+}
+
+function copyTrendReport(){
+  const current = document.getElementById('trend-current');
+  if(!current) return;
+  navigator.clipboard.writeText(current.innerText||'').then(()=>toast('Report copied','success')).catch(()=>toast('Select manually to copy','info'));
+}
+
+function renderTrendsPage(){
+  const all     = getTrends();
+  const current = document.getElementById('trend-current');
+  const archive = document.getElementById('trend-archive');
+  const archSec = document.getElementById('trend-archive-section');
+
+  if(!all.length){
+    if(current) current.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon">📈</div>
+      <div class="empty-state-title">No trend reports yet</div>
+      <div class="empty-state-text">Click "Generate This Week's Report" to create your first weekly intelligence briefing.</div>
+    </div>`;
+    if(archSec) archSec.style.display='none';
+    return;
+  }
+
+  const latest = all[0];
+  if(current){
+    current.innerHTML = `<div class="trend-report-card">
+      <div class="trend-report-date">📅 Week of ${new Date(latest.date).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+      <div class="research-output" style="display:block;max-height:none;border:none;padding:0;background:transparent">${renderMarkdown(latest.text)}</div>
+    </div>`;
+  }
+
+  const past = all.slice(1);
+  if(past.length && archSec){
+    archSec.style.display = 'block';
+    archive.innerHTML = past.map((r,i)=>`
+      <div class="trend-archive-item" onclick="expandTrend(${i+1})">
+        <span style="font-size:13px;font-weight:600">Week of ${new Date(r.date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</span>
+        <span style="font-size:11px;color:var(--text-dim)">View report →</span>
+      </div>`).join('');
+  } else if(archSec){
+    archSec.style.display='none';
+  }
+}
+
+function expandTrend(idx){
+  const all = getTrends();
+  const r = all[idx];
+  if(!r) return;
+  const current = document.getElementById('trend-current');
+  if(current) current.innerHTML = `<div class="trend-report-card">
+    <div style="margin-bottom:12px">
+      <button class="btn btn-ghost btn-sm" onclick="renderTrendsPage()">← Latest Report</button>
+    </div>
+    <div class="trend-report-date">📅 Week of ${new Date(r.date).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+    <div class="research-output" style="display:block;max-height:none;border:none;padding:0;background:transparent">${renderMarkdown(r.text)}</div>
+  </div>`;
+  current.scrollIntoView({behavior:'smooth'});
+}
+
+/* ══════════════════════════════════════════════════════════════
+   COMPETITOR WATCHLIST
+══════════════════════════════════════════════════════════════ */
+function addCompetitor(){
+  const name   = (document.getElementById('new-comp-name')||{}).value||'';
+  const url    = (document.getElementById('new-comp-url')||{}).value||'';
+  const sector = (document.getElementById('new-comp-sector')||{}).value||'';
+  if(!name.trim()){ toast('Enter a company name','warn'); return; }
+  const comps = getCompetitors();
+  if(comps.find(c=>c.name.toLowerCase()===name.trim().toLowerCase())){ toast('Already in your watchlist','info'); return; }
+  comps.push({ id:'comp_'+Date.now(), name:name.trim(), url:url.trim(), sector:sector.trim(), lastResearched:null, summary:'', status:'unknown' });
+  saveCompetitors(comps);
+  document.getElementById('new-comp-name').value='';
+  document.getElementById('new-comp-url').value='';
+  document.getElementById('new-comp-sector').value='';
+  renderCompetitors();
+  toast(name.trim()+' added to watchlist','success');
+}
+
+function removeCompetitor(id){
+  if(!confirm('Remove this competitor from your watchlist?')) return;
+  saveCompetitors(getCompetitors().filter(c=>c.id!==id));
+  renderCompetitors();
+  toast('Competitor removed','info');
+}
+
+function researchComp(id, mode){
+  const comp = getCompetitors().find(c=>c.id===id);
+  if(!comp) return;
+  navigate('signal');
+  document.getElementById('signal-query').value = comp.name;
+  if(comp.url)   document.getElementById('url-website').value = comp.url;
+  setMode(mode||'snapshot');
+  setTimeout(()=>runResearch(), 100);
+}
+
+function scanAllCompetitors(){
+  navigate('signal');
+  const names = getCompetitors().slice(0,5).map(c=>c.name).join(', ');
+  document.getElementById('signal-query').value = 'Al Laith vs UAE competitors: '+names;
+  setMode('gap');
+  setTimeout(()=>runResearch(), 100);
+}
+
+function setCompStatus(id, status){
+  const comps = getCompetitors();
+  const comp = comps.find(c=>c.id===id);
+  if(comp){ comp.status=status; saveCompetitors(comps); renderCompetitors(); }
+}
+
+function renderCompetitors(){
+  const list  = document.getElementById('comp-list');
+  const comps = getCompetitors();
+  if(!comps.length){
+    list.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon">🎯</div>
+      <div class="empty-state-title">No competitors tracked yet</div>
+      <div class="empty-state-text">Add your first competitor using the form above.</div>
+    </div>`;
+    return;
+  }
+
+  const statusPill = {
+    active:  '<span class="comp-status-pill comp-status-active">● Active</span>',
+    quiet:   '<span class="comp-status-pill comp-status-quiet">● Quiet</span>',
+    unknown: '<span class="comp-status-pill comp-status-unknown">? Unknown</span>'
+  };
+
+  list.innerHTML = comps.map(c=>{
+    const lastDate = c.lastResearched ? new Date(c.lastResearched).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : 'Never researched';
+    return `<div class="comp-card" id="cc-${c.id}">
+      <div class="comp-card-head">
+        <div style="flex:1">
+          <div class="comp-name">${escHtml(c.name)}</div>
+          ${c.sector?`<div style="font-size:11px;color:var(--text-dim);margin-top:2px">${escHtml(c.sector)}</div>`:''}
+          ${c.url?`<div class="comp-url">${escHtml(c.url)}</div>`:''}
+        </div>
+        ${statusPill[c.status]||statusPill.unknown}
+      </div>
+      <div class="comp-meta">
+        🕐 Last researched: ${lastDate}
+        <span style="margin-left:12px">Status:
+          <select onchange="setCompStatus('${c.id}',this.value)" style="background:var(--surface-2);border:1px solid var(--border);border-radius:4px;color:var(--text-soft);font-size:10px;padding:1px 4px;margin-left:4px">
+            <option value="unknown" ${c.status==='unknown'?'selected':''}>Unknown</option>
+            <option value="active"  ${c.status==='active' ?'selected':''}>Active</option>
+            <option value="quiet"   ${c.status==='quiet'  ?'selected':''}>Quiet</option>
+          </select>
+        </span>
+      </div>
+      ${c.summary?`<div class="comp-summary visible" id="cs-${c.id}">${escHtml(c.summary)}</div>`:`<div class="comp-summary" id="cs-${c.id}"></div>`}
+      <div class="comp-actions">
+        <button class="btn btn-primary btn-sm" onclick="researchComp('${c.id}','snapshot')">🔍 Snapshot</button>
+        <button class="btn btn-ghost btn-sm" onclick="researchComp('${c.id}','gap')">⚡ Gap Analysis</button>
+        <button class="btn btn-ghost btn-sm" onclick="researchComp('${c.id}','benchmark')">📊 Benchmark</button>
+        <button class="btn btn-danger-ghost btn-sm" onclick="removeCompetitor('${c.id}')" style="margin-left:auto">Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BADGES + TOAST + UTILS
+══════════════════════════════════════════════════════════════ */
+function updateBadges(){
+  const nb = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  nb('nb-reports', getReports().length||'0');
+  nb('nb-trends',  getTrends().length||'0');
+  nb('nb-comps',   getCompetitors().length||'0');
+}
+
+function toast(msg, type='info'){
+  const tc = document.getElementById('toasts');
+  const el = document.createElement('div');
+  const cls = {success:'toast-success',info:'toast-info',warn:'toast-warn'};
+  el.className = 'toast '+(cls[type]||'toast-info');
+  el.textContent = msg;
+  tc.appendChild(el);
+  setTimeout(()=>el.remove(), 3200);
+}
+
+function escHtml(str){
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════ */
+seedCompetitors();
+setMode('snapshot');
+updateBadges();
+updateApiBadge();
+</script>
+</body>
+</html>
