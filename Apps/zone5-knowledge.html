@@ -64,6 +64,18 @@ body{display:flex;height:100vh;overflow:hidden;background:var(--bg);color:var(--
 .form-input{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;transition:border-color .15s}
 .form-input:focus{outline:none;border-color:var(--primary)}
 
+/* ── Buttons (self-contained) ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;font-family:inherit;font-size:12px;font-weight:500;line-height:1;border:1px solid transparent;border-radius:8px;cursor:pointer;transition:background .15s,color .15s,border-color .15s;white-space:nowrap;text-decoration:none;user-select:none}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
+.btn-primary{background:var(--primary);color:#fff;font-weight:600}
+.btn-primary:hover{opacity:.88}
+.btn-ghost{background:transparent;color:var(--text-soft);border-color:var(--border)}
+.btn-ghost:hover{background:var(--surface-2);color:var(--text)}
+.btn-danger-ghost{background:transparent;color:var(--danger);border-color:var(--danger)}
+.btn-danger-ghost:hover{background:rgba(239,68,68,.1)}
+.btn-sm{padding:5px 10px;font-size:11px}
+
 /* ── AI button ── */
 .btn-ai{background:linear-gradient(135deg,#7c3aed,var(--primary));color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s}
 .btn-ai:hover{opacity:.88}
