@@ -834,11 +834,11 @@ const MODE_LABELS = {
 };
 
 const MODE_DESCS = {
-  snapshot: 'Full structured report: positioning, audience, services, website & social observations, messaging themes, content strengths/weaknesses, SWOT, and a quick summary for Al Laith.',
-  gap:      'Al Laith-facing deliverable. Compares the target company against Al Laith's public profiles — gaps, overlaps, opportunities, risks, and prioritised recommendations. PDF-ready format.',
-  trends:   'Analyses a trend or topic for relevance to Al Laith's industry — with specific content ideas and production notes.',
-  benchmark:'Audits a company's content output: frequency, formats, themes, tone, engagement signals, and a comparison table vs Al Laith.',
-  ideas:    'Generates 6 campaign content ideas for Al Laith based on a topic, sector, or theme — with hooks, platforms, formats, and production notes.'
+  snapshot: `Full structured report: positioning, audience, services, website & social observations, messaging themes, content strengths/weaknesses, SWOT, and a quick summary for Al Laith.`,
+  gap:      `Al Laith-facing deliverable. Compares the target company against Al Laith's public profiles — gaps, overlaps, opportunities, risks, and prioritised recommendations. PDF-ready format.`,
+  trends:   `Analyses a trend or topic for relevance to Al Laith's industry — with specific content ideas and production notes.`,
+  benchmark:`Audits a company's content output: frequency, formats, themes, tone, engagement signals, and a comparison table vs Al Laith.`,
+  ideas:    `Generates 6 campaign content ideas for Al Laith based on a topic, sector, or theme — with hooks, platforms, formats, and production notes.`
 };
 
 function setMode(mode){
@@ -881,6 +881,7 @@ async function runResearch(){
     const text = data.content?.[0]?.text || 'No response received.';
     lastReportText = text;
     out.className = 'research-output';
+    out.style.display = 'block';
     out.innerHTML = renderMarkdown(text);
     if(status)  status.textContent = 'Done';
     if(copyBtn) copyBtn.style.display = 'inline-flex';
@@ -889,6 +890,7 @@ async function runResearch(){
     tagCompetitorResearched(query);
   }catch(e){
     out.className = 'research-output';
+    out.style.display = 'block';
     out.innerHTML = `<p><strong style="color:var(--danger)">Research failed:</strong> ${e.message}</p><p style="color:var(--text-dim);margin-top:8px">Check your API key in Settings and try again.</p>`;
     if(status) status.textContent = '';
   }
