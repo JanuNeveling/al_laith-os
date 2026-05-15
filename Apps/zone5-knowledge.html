@@ -280,41 +280,41 @@ body{display:flex;height:100vh;overflow:hidden;background:var(--bg);color:var(--
 
     <div class="card" style="margin-bottom:20px">
       <div class="card-body">
-        <h3 style="font-weight:600;margin-bottom:8px">How to import into Obsidian</h3>
-        <ol style="font-size:13px;color:var(--text-secondary);line-height:2;padding-left:18px">
-          <li>Open Obsidian → your vault folder</li>
-          <li>Create a folder called <strong>Al Laith Marketing Brain</strong></li>
-          <li>Download files below and drag them into that folder</li>
-          <li>Open Graph View (left sidebar icon) to see your knowledge web</li>
-          <li>Concepts with notes you've written will be richest — fill those in first</li>
+        <h3 style="font-weight:600;margin-bottom:8px">Setup guide — do this once</h3>
+        <ol style="font-size:13px;color:var(--text-dim);line-height:2.2;padding-left:18px">
+          <li><strong>Step 1:</strong> Click <em>Download Vault Structure</em> below — saves 5 files (hub + 4 category notes)</li>
+          <li><strong>Step 2:</strong> Create a folder in your Obsidian vault called <strong>Al Laith Marketing Brain</strong></li>
+          <li><strong>Step 3:</strong> Drag all 5 files into that folder</li>
+          <li><strong>Step 4:</strong> In Obsidian Graph View settings → Groups → add <code>tag:#mastered</code> (green), <code>tag:#studying</code> (amber), <code>tag:#not-started</code> (grey)</li>
+          <li><strong>After that:</strong> Export individual concepts as you learn them — they'll link into the structure automatically</li>
         </ol>
       </div>
     </div>
 
     <div class="export-grid">
+      <div class="export-card" style="border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.04)">
+        <div style="font-size:28px">🗂️</div>
+        <div class="export-card-title">Download Vault Structure</div>
+        <div class="export-card-desc">Downloads 5 files: a hub note + 4 category notes, all pre-wired with [[wiki links]] and colour tags. Do this first — it sets up your graph hierarchy.</div>
+        <button class="btn btn-primary" onclick="exportStructure()">⬇️ Download Structure (5 files)</button>
+      </div>
       <div class="export-card">
         <div style="font-size:28px">📦</div>
         <div class="export-card-title">Export All 40 Concepts</div>
-        <div class="export-card-desc">Downloads every concept as a single bundled Markdown file. Open it in Obsidian or split into individual notes.</div>
-        <button class="btn btn-primary" onclick="exportAll()">⬇️ Download All (.md)</button>
+        <div class="export-card-desc">Downloads every concept as individual .md files with correct frontmatter tags. Each one links back to its category and the hub.</div>
+        <button class="btn btn-ghost" onclick="exportAll()">⬇️ Download All (.md)</button>
       </div>
       <div class="export-card">
         <div style="font-size:28px">✍️</div>
         <div class="export-card-title">Export My Notes Only</div>
-        <div class="export-card-desc">Downloads only concepts where you've written personal notes — your actual knowledge, not the pre-built content.</div>
+        <div class="export-card-desc">Downloads only concepts where you've written personal notes — your actual knowledge in your own words.</div>
         <button class="btn btn-ghost" onclick="exportNotes()">⬇️ Download My Notes</button>
       </div>
       <div class="export-card">
         <div style="font-size:28px">🟢</div>
-        <div class="export-card-title">Export Understood Concepts</div>
-        <div class="export-card-desc">Only the concepts you've marked as Understood — your mastered knowledge map.</div>
+        <div class="export-card-title">Export Mastered Concepts</div>
+        <div class="export-card-desc">Only the concepts you've marked as Understood — tagged <code>#mastered</code> so they show green in your graph view.</div>
         <button class="btn btn-ghost" onclick="exportByStatus('understood')">⬇️ Download Mastered</button>
-      </div>
-      <div class="export-card">
-        <div style="font-size:28px">🔗</div>
-        <div class="export-card-title">Export Index File</div>
-        <div class="export-card-desc">A master index note that links to every concept — perfect as the home page of your Obsidian vault.</div>
-        <button class="btn btn-ghost" onclick="exportIndex()">⬇️ Download Index</button>
       </div>
     </div>
 
@@ -1106,12 +1106,52 @@ Output ONLY the markdown content. No intro, no explanation, just the note.`;
   }
 }
 
+/* ── Frontmatter + hierarchy helpers ─────────────────────── */
+const CAT_FULL = {
+  social:   'Social Media Strategy',
+  brand:    'Brand & Voice',
+  b2b:      'B2B & UAE Market',
+  strategy: 'Strategy & Planning',
+};
+const CAT_DESCS = {
+  social:   'How to create, plan, and distribute content across Instagram, LinkedIn, and Facebook for Al Laith.',
+  brand:    "Al Laith's visual identity, brand voice, and how to communicate consistently across every platform.",
+  b2b:      "Understanding the GCC market, B2B buyer psychology, and Al Laith's competitive position.",
+  strategy: 'High-level marketing strategy, content planning, and performance measurement.',
+};
+const CAT_ICONS_S = { social:'📱', brand:'🎙️', b2b:'🌍', strategy:'🧭' };
+const STATUS_ICON  = s => ({ 'not-started':'⚫', learning:'🟡', understood:'🟢' }[s||'not-started']);
+
+function buildFrontmatter(concept, node) {
+  const statusTag = { 'not-started':'not-started', learning:'studying', understood:'mastered' }[node.status||'not-started'];
+  const related = (concept.related||[])
+    .map(rid => { const rc = CONCEPTS.find(c=>c.id===rid); return rc ? `[[${rc.title}]]` : ''; })
+    .filter(Boolean);
+  const lines = [
+    '---',
+    `tags: [${statusTag}, marketing, al-laith-os]`,
+    `status: ${statusTag}`,
+    `category: "[[${CAT_FULL[concept.cat]}]]"`,
+  ];
+  if (related.length) lines.push(`related: [${related.join(', ')}]`);
+  lines.push('source: Al Laith OS Knowledge Hub', '---');
+  return lines.join('\n');
+}
+
+function wrapWithFrontmatter(concept, node, content) {
+  const body = content.replace(/^---[\s\S]*?---\n?/, '').trim();
+  return buildFrontmatter(concept, node) + '\n\n' + body;
+}
+
 function generateStubNote(concept, node) {
-  const relatedTitles = (concept.related || []).map(rid => {
-    const rc = CONCEPTS.find(c => c.id === rid);
-    return rc ? `[[${rc.title}]]` : '';
-  }).filter(Boolean).join(', ');
-  return `# ${concept.title}
+  const relatedTitles = (concept.related || [])
+    .map(rid => { const rc = CONCEPTS.find(c=>c.id===rid); return rc ? `[[${rc.title}]]` : ''; })
+    .filter(Boolean).join(', ');
+  return `${buildFrontmatter(concept, node)}
+
+# ${concept.title}
+
+**Category:** [[${CAT_FULL[concept.cat]}]] · [[Marketing Knowledge Map]]
 
 ## What It Is
 ${concept.desc}
@@ -1120,21 +1160,21 @@ ${concept.desc}
 ${concept.allaith}
 
 ## Related Concepts
-${relatedTitles}
+${relatedTitles || '(none linked yet)'}
 
 ## My Notes
 ${node.notes || '[Add your personal notes here as you learn]'}
 
 ---
-*Category: ${CAT_LABELS[concept.cat]}*
-*Source: Al Laith OS Knowledge Hub*
-*Last updated: ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}*`;
+*Source: Al Laith OS Knowledge Hub · Last updated: ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}*`;
 }
 
 function downloadObsidianNote() {
   const concept = CONCEPTS.find(c => c.id === state.currentId);
   const node = getNode(state.currentId);
-  const content = node.ai_obsidian_note || generateStubNote(concept, node);
+  const raw = node.ai_obsidian_note || generateStubNote(concept, node);
+  // Always stamp fresh frontmatter so status tag matches current state
+  const content = node.ai_obsidian_note ? wrapWithFrontmatter(concept, node, raw) : raw;
   downloadMd(concept.title + '.md', content);
 }
 
@@ -1175,21 +1215,22 @@ function renderExportGrid() {
 function exportSingle(id) {
   const concept = CONCEPTS.find(c => c.id === id);
   const node = getNode(id);
-  const content = node.ai_obsidian_note || generateStubNote(concept, node);
+  const raw = node.ai_obsidian_note || generateStubNote(concept, node);
+  const content = node.ai_obsidian_note ? wrapWithFrontmatter(concept, node, raw) : raw;
   downloadMd(concept.title + '.md', content);
 }
 
 function exportAll() {
-  const lines = [];
-  lines.push('# Al Laith Marketing Brain — Complete Knowledge Map\n');
-  lines.push(`*Exported: ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}*\n`);
-  lines.push('---\n');
-  CONCEPTS.forEach(c => {
-    const node = getNode(c.id);
-    lines.push(node.ai_obsidian_note || generateStubNote(c, node));
-    lines.push('\n---\n');
+  // Download each concept as its own .md file (staggered to avoid browser blocking)
+  CONCEPTS.forEach((c, i) => {
+    setTimeout(() => {
+      const node = getNode(c.id);
+      const raw = node.ai_obsidian_note || generateStubNote(c, node);
+      const content = node.ai_obsidian_note ? wrapWithFrontmatter(c, node, raw) : raw;
+      downloadMd(c.title + '.md', content);
+    }, i * 120);
   });
-  downloadMd('Al Laith Marketing Brain — All Concepts.md', lines.join('\n'));
+  toast('Downloading 40 concept files — drag them all into your vault folder', 'success');
 }
 
 function exportNotes() {
@@ -1231,6 +1272,72 @@ function exportIndex() {
   });
   lines.push('\n---\n*Generated by Al Laith OS Knowledge Hub*\n');
   downloadMd('Marketing Brain — Index.md', lines.join(''));
+}
+
+function exportStructure() {
+  const cats = ['social','brand','b2b','strategy'];
+
+  // ── 1. Hub note ──────────────────────────────────────────
+  const hubLines = [
+    '---',
+    'tags: [hub, marketing-os, al-laith-os]',
+    'status: active',
+    '---',
+    '',
+    '# Marketing Knowledge Map',
+    '',
+    '> Your Al Laith marketing knowledge web. Everything you learn flows into this map.',
+    '',
+    '## Categories',
+    '',
+  ];
+  cats.forEach(cat => {
+    const total = CONCEPTS.filter(c=>c.cat===cat).length;
+    const done  = CONCEPTS.filter(c=>c.cat===cat && getNode(c.id).status==='understood').length;
+    hubLines.push(`- ${CAT_ICONS_S[cat]} [[${CAT_FULL[cat]}]] — ${done}/${total} mastered`);
+  });
+  hubLines.push('', '## All Concepts', '');
+  cats.forEach(cat => {
+    hubLines.push(`### ${CAT_ICONS_S[cat]} ${CAT_FULL[cat]}`, '');
+    CONCEPTS.filter(c=>c.cat===cat).forEach(c => {
+      hubLines.push(`- ${STATUS_ICON(getNode(c.id).status)} [[${c.title}]]`);
+    });
+    hubLines.push('');
+  });
+  hubLines.push('---', '*Generated by Al Laith OS Knowledge Hub*');
+  downloadMd('Marketing Knowledge Map.md', hubLines.join('\n'));
+
+  // ── 2. Category notes (staggered to avoid browser blocking) ──
+  cats.forEach((cat, i) => {
+    setTimeout(() => {
+      const concepts = CONCEPTS.filter(c=>c.cat===cat);
+      const lines = [
+        '---',
+        `tags: [category, ${cat}, marketing-os, al-laith-os]`,
+        'status: active',
+        '---',
+        '',
+        `# ${CAT_ICONS_S[cat]} ${CAT_FULL[cat]}`,
+        '',
+        `> ${CAT_DESCS[cat]}`,
+        '',
+        '← Back to [[Marketing Knowledge Map]]',
+        '',
+        '## Concepts in This Category',
+        '',
+      ];
+      concepts.forEach(c => {
+        lines.push(`- ${STATUS_ICON(getNode(c.id).status)} [[${c.title}]]`);
+      });
+      lines.push('', '## Suggested Learning Path', '');
+      lines.push('Work through these in order — each builds on the previous:', '');
+      concepts.forEach((c, idx) => lines.push(`${idx + 1}. [[${c.title}]]`));
+      lines.push('', '---', '*Generated by Al Laith OS Knowledge Hub*');
+      downloadMd(CAT_FULL[cat] + '.md', lines.join('\n'));
+    }, (i + 1) * 500);
+  });
+
+  toast('Downloading 5 vault files — drag them all into your Obsidian vault folder', 'success');
 }
 
 function downloadMd(filename, content) {
