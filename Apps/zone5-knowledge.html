@@ -948,6 +948,8 @@ function saveNotes() {
 /* ══════════════════════════════════════════════════════════════
    AI FEATURES
 ══════════════════════════════════════════════════════════════ */
+function getApiKey(){ return localStorage.getItem('anthropic_api_key')||''; } // shared with Zone 1
+
 async function claudeFetch(body) {
   if (window.location.protocol === 'https:') {
     const r = await fetch('/api/claude', {
@@ -956,8 +958,8 @@ async function claudeFetch(body) {
     if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e.error?.message||'API error '+r.status); }
     return r.json();
   }
-  const key = '';
-  if (!key) throw Object.assign(new Error('NO_KEY'),{noKey:true});
+  const key = getApiKey();
+  if (!key) throw Object.assign(new Error('NO_KEY — add your API key in Zone 3 Settings'),{noKey:true});
   const r = await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-allow-browser-access':'true'},

@@ -19,12 +19,21 @@ module.exports = async function handler(req, res) {
   if (!apiKey) {
     return res.status(500).json({
       error: {
-        message: 'ANTHROPIC_API_KEY is not set. Go to Vercel → Project → Settings → Environment Variables and add it, then redeploy.'
+        message: 'ANTHROPIC_API_KEY is not set. Go to Vercel → Project → Settings → Environment Variables → add ANTHROPIC_API_KEY → Redeploy.'
       }
     });
   }
 
   try {
+    // Ensure we have a proper body object (Vercel auto-parses JSON bodies)
+    let body = req.body;
+    if (typeof body === 'string') {
+      try { body = JSON.parse(body); } catch(e) { /* leave as-is */ }
+    }
+    if (!body || !body.model) {
+      return res.status(400).json({ error: { message: 'Invalid request body — model is required.' } });
+    }
+
     const upstream = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -32,7 +41,7 @@ module.exports = async function handler(req, res) {
         'anthropic-version': '2023-06-01',
         'content-type':      'application/json',
       },
-      body: JSON.stringify(req.body),
+      body: JSON.stringify(body),
     });
 
     const data = await upstream.json();

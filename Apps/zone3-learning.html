@@ -226,6 +226,12 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.6}
     <button class="nav-item" onclick="navigate('zone5')">
       <span class="nav-icon">🕸️</span> Send to Zone 5
     </button>
+
+    <div class="nav-section-label" style="margin-top:12px">System</div>
+    <button class="nav-item" onclick="navigate('settings')">
+      <span class="nav-icon">⚙️</span> Settings
+      <span class="nav-badge" id="nb-ai-status" style="display:none;background:rgba(16,185,129,.2);color:var(--zone-3)">AI ON</span>
+    </button>
   </nav>
 
   <div class="sidebar-footer">
@@ -411,6 +417,58 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.6}
       <div>
         <div class="section-label" style="margin-bottom:10px">Resources to send</div>
         <div id="z5-resources-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SETTINGS ── -->
+  <div id="page-settings" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Settings</h1>
+      <p class="page-subtitle">Configure your API key and preferences for Zone 3.</p>
+    </div>
+
+    <!-- Status banner -->
+    <div id="settings-status" style="margin-bottom:20px"></div>
+
+    <!-- Local API Key Section -->
+    <div id="settings-local-section">
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-body" style="padding:20px">
+          <h3 style="font-weight:600;margin-bottom:4px">Anthropic API Key</h3>
+          <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px;line-height:1.6">
+            Required when running locally. On Vercel, the key is stored server-side and you don't need to enter it here.
+            Your key is saved in your browser only — never sent anywhere except directly to Anthropic.
+          </p>
+          <div style="display:flex;gap:10px;align-items:flex-end">
+            <div style="flex:1">
+              <label class="form-label">API Key</label>
+              <input type="password" class="form-input" id="settings-api-key" placeholder="sk-ant-api03-…" autocomplete="off">
+            </div>
+            <button class="btn btn-primary" onclick="saveApiKey()">Save Key</button>
+            <button class="btn btn-danger-ghost" onclick="clearApiKey()">Clear</button>
+          </div>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:10px">
+            Get your key at <strong>console.anthropic.com</strong> → API Keys. Use a key starting with <code style="background:var(--surface-3);padding:1px 5px;border-radius:4px">sk-ant-</code>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body" style="padding:20px">
+        <h3 style="font-weight:600;margin-bottom:8px">About AI in Zone 3</h3>
+        <div style="font-size:13px;color:var(--text-soft);line-height:1.9">
+          <p style="margin-bottom:8px">AI powers the following features in this zone:</p>
+          <ul style="padding-left:18px;line-height:2.2">
+            <li><strong>Ask Claude</strong> — your personal marketing tutor</li>
+            <li><strong>Topic explanations</strong> — plain-English breakdowns of each concept</li>
+            <li><strong>Q&A</strong> — ask anything about a specific topic</li>
+            <li><strong>Resource summaries</strong> — auto-summarise links you save</li>
+            <li><strong>Journal reflections</strong> — Claude reflects on your learning entries</li>
+          </ul>
+          <p style="margin-top:12px;color:var(--text-dim)">Everything else (topics, resources, journal, Zone 5 export) works without AI.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -630,7 +688,7 @@ function navigate(page){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const pageEl = document.getElementById('page-'+page);
   if(pageEl) pageEl.classList.add('active');
-  const navMap = {tutor:0,topics:1,resources:2,journal:3,zone5:4};
+  const navMap = {tutor:0,topics:1,resources:2,journal:3,zone5:4,settings:5};
   const navItems = document.querySelectorAll('.nav-item');
   if(navItems[navMap[page]]) navItems[navMap[page]].classList.add('active');
 
@@ -638,7 +696,65 @@ function navigate(page){
   if(page==='resources') renderResources();
   if(page==='journal') renderJournal();
   if(page==='zone5') renderZ5Preview();
+  if(page==='settings') renderSettingsPage();
   updateBadges();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   API KEY MANAGEMENT
+══════════════════════════════════════════════════════════════ */
+const API_KEY_STORAGE = 'anthropic_api_key'; // shared with Zone 1 — one key works everywhere
+
+function getApiKey(){ return localStorage.getItem(API_KEY_STORAGE)||''; }
+function saveApiKey(){
+  const val = (document.getElementById('settings-api-key')||{}).value||'';
+  if(!val.trim()){ toast('Please enter an API key','info'); return; }
+  localStorage.setItem(API_KEY_STORAGE, val.trim());
+  updateAiBadge();
+  renderSettingsPage();
+  toast('API key saved — AI features are now active','success');
+}
+function clearApiKey(){
+  localStorage.removeItem(API_KEY_STORAGE);
+  const inp = document.getElementById('settings-api-key');
+  if(inp) inp.value = '';
+  updateAiBadge();
+  renderSettingsPage();
+  toast('API key removed','info');
+}
+function updateAiBadge(){
+  const badge = document.getElementById('nb-ai-status');
+  if(!badge) return;
+  const hasKey = window.location.protocol==='https:' || !!getApiKey();
+  badge.style.display = hasKey ? 'inline-block' : 'none';
+}
+function renderSettingsPage(){
+  const status = document.getElementById('settings-status');
+  if(!status) return;
+  // Pre-fill the input if a key already exists
+  const inp = document.getElementById('settings-api-key');
+  if(inp && getApiKey()) inp.value = getApiKey();
+  const onVercel = window.location.protocol==='https:';
+  const hasKey = !!getApiKey();
+  if(onVercel){
+    status.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);border-radius:10px;font-size:13px;color:var(--zone-3)">
+      <span style="font-size:16px">✅</span>
+      <div><strong>Running on Vercel</strong> — AI is active via the server-side proxy. No key needed here.</div>
+    </div>`;
+    document.getElementById('settings-local-section').style.display = 'none';
+  } else if(hasKey){
+    status.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);border-radius:10px;font-size:13px;color:var(--zone-3)">
+      <span style="font-size:16px">✅</span>
+      <div><strong>API key is set</strong> — AI features are active.</div>
+    </div>`;
+    document.getElementById('settings-local-section').style.display = 'block';
+  } else {
+    status.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;font-size:13px;color:var(--warn)">
+      <span style="font-size:16px">⚠️</span>
+      <div><strong>No API key set</strong> — AI features are disabled. Enter your Anthropic API key below to enable them.</div>
+    </div>`;
+    document.getElementById('settings-local-section').style.display = 'block';
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -650,10 +766,11 @@ async function claudeFetch(body){
     if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||'API error '+r.status);}
     return r.json();
   }
-  const key = '';
-  if(!key) throw Object.assign(new Error('NO_KEY'),{noKey:true});
+  const key = getApiKey();
+  if(!key) throw Object.assign(new Error('NO_KEY — open Settings to add your Anthropic API key'),{noKey:true});
   const r = await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-allow-browser-access':'true'},
+    method:'POST',
+    headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-allow-browser-access':'true'},
     body:JSON.stringify(body)
   });
   if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||'API error '+r.status);}
@@ -726,7 +843,7 @@ async function sendChat(){
     saveChatHistory(chatMessages);
   }catch(e){
     el.querySelector('.msg-typing')?.remove();
-    const errMsg = e.noKey ? 'AI tutor needs the API configured in Vercel to work. The rest of the zone (topics, resources, journal) works without AI.' : 'Error: '+e.message;
+    const errMsg = e.noKey ? '⚙️ No API key set. Go to Settings (sidebar) → enter your Anthropic API key to activate the AI tutor.' : 'Error: '+e.message;
     chatMessages.push({role:'assistant',content:errMsg});
     renderChatMessages();
   }finally{
@@ -880,7 +997,7 @@ async function explainTopic(){
     out.textContent = data.content?.[0]?.text||'Could not generate. Try again.';
     btn.textContent = '✨ Re-explain';
   }catch(e){
-    out.textContent = e.noKey ? 'AI features need the API configured in Vercel. The concept description above is the pre-written explanation.' : 'Error: '+e.message;
+    out.textContent = e.noKey ? '⚙️ No API key set. Go to Settings in the sidebar to add your Anthropic API key.' : 'Error: '+e.message;
     btn.textContent = '✨ Explain this to me';
   }finally{ btn.disabled = false; }
 }
@@ -1144,6 +1261,7 @@ function toast(msg, type='info'){
 populateTopicSelect();
 initChat();
 updateBadges();
+updateAiBadge();
 </script>
 </body>
 </html>
