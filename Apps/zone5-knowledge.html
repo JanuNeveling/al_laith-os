@@ -371,7 +371,10 @@ body{display:flex;height:100vh;overflow:hidden;background:var(--bg);color:var(--
       <div class="concept-section">
         <div class="concept-section-label">🤖 Ask Claude</div>
         <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px">Get a beginner-friendly explanation with real-world brand examples and a practical exercise.</p>
-        <button class="btn btn-ai" id="explain-btn" onclick="askClaude()">✨ Explain this concept to me</button>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+          <button class="btn btn-ai" id="explain-btn" onclick="askClaude()">✨ Explain this concept to me</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearAllExplanations()" style="color:var(--text-dim);font-size:11px">↺ Reset all cached explanations</button>
+        </div>
         <div class="ai-output-box" id="ai-explanation"></div>
       </div>
 
@@ -967,6 +970,18 @@ async function claudeFetch(body) {
   });
   if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e.error?.message||'API error '+r.status); }
   return r.json();
+}
+
+function clearAllExplanations(){
+  if(!confirm('Clear all cached AI explanations? They will be regenerated fresh with the new neutral prompt next time you click Explain.')) return;
+  const nodes = getNodes().map(n => Object.assign({}, n, { ai_explanation:'' }));
+  setNodes(nodes);
+  // Also clear current view
+  const aiBox = document.getElementById('ai-explanation');
+  if(aiBox){ aiBox.textContent=''; aiBox.classList.remove('visible'); }
+  const btn = document.getElementById('explain-btn');
+  if(btn) btn.textContent = '✨ Explain this concept to me';
+  alert('Done — all cached explanations cleared. Click Explain on any concept for a fresh explanation.');
 }
 
 async function askClaude() {
