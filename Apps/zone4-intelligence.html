@@ -197,6 +197,10 @@ textarea.form-input{resize:vertical;min-height:70px;line-height:1.6}
       <span class="nav-badge" id="nb-comps">0</span>
     </button>
 
+    <button class="nav-item" onclick="navigate('report')">
+      <span class="nav-icon">📄</span> Weekly Report
+    </button>
+
     <span class="nav-section-label">System</span>
     <button class="nav-item" onclick="navigate('settings')">
       <span class="nav-icon">⚙️</span> Settings
@@ -324,9 +328,66 @@ textarea.form-input{resize:vertical;min-height:70px;line-height:1.6}
 
   <div class="inline-row" style="margin-bottom:16px">
     <button class="btn btn-ghost btn-sm" onclick="scanAllCompetitors()">🔍 Scan All (Gap Analysis)</button>
+    <button class="btn btn-ghost btn-sm" onclick="resetCompetitors()" style="margin-left:auto;color:var(--text-dim)">↺ Reset to defaults (9)</button>
   </div>
 
   <div id="comp-list"></div>
+</div>
+
+<!-- ── WEEKLY REPORT ── -->
+<div id="page-report" class="page">
+  <div class="page-header">
+    <h1 class="page-title">📄 Weekly Intelligence Report</h1>
+    <p class="page-subtitle">Analyses all 9 competitors + UAE market trends + global B2B marketing. One click — downloads as a Word doc ready for Google Docs.</p>
+  </div>
+
+  <!-- Generate -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-body">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700;margin-bottom:6px">Generate This Week's Report</div>
+          <div style="font-size:12px;color:var(--text-dim);line-height:2">
+            ✦ 9 competitors — brand, social media, content strategy, gaps, threat level<br>
+            ✦ UAE market trends — platforms, buyer behaviour, opportunities<br>
+            ✦ Global B2B marketing trends — LinkedIn, video, what Al Laith should steal<br>
+            ✦ Executive summary — 6 sharp bullets
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0;align-items:center">
+          <button class="btn btn-primary" id="rpt-gen-btn" onclick="generateWeeklyReport()">📄 Generate Report</button>
+          <button class="btn btn-ghost" id="rpt-dl-btn" style="display:none" onclick="downloadWeeklyReport()">⬇️ Download .docx</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div id="rpt-progress-wrap" style="display:none;margin-bottom:16px">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Progress</span>
+        <span id="rpt-pct" style="font-size:12px;color:var(--text-dim)"></span>
+      </div>
+      <div class="card-body" style="padding:12px 16px">
+        <div id="rpt-log" style="font-size:12px;font-family:monospace;line-height:2.1;max-height:280px;overflow-y:auto"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview -->
+  <div id="rpt-preview-wrap" style="display:none">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Report Preview</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="copyWeeklyReport()">📋 Copy all</button>
+          <button class="btn btn-primary btn-sm" onclick="downloadWeeklyReport()">⬇️ Download .docx</button>
+        </div>
+      </div>
+      <div id="rpt-preview" class="research-output" style="display:block;max-height:640px;border:none;border-radius:0 0 12px 12px;padding:24px 28px"></div>
+    </div>
+  </div>
 </div>
 
 <!-- ── SETTINGS ── -->
@@ -388,6 +449,7 @@ textarea.form-input{resize:vertical;min-height:70px;line-height:1.6}
 ══════════════════════════════════════════════════════════════ */
 const KEYS = {
   apiKey:      'anthropic_api_key',    // shared across all zones
+  tavilyKey:   'z4_tavily_key',
   reports:     'os:z4:reports',
   competitors: 'os:z4:competitors',
   trends:      'os:z4:trends',
@@ -419,12 +481,15 @@ function writeStats(){
 }
 
 const DEFAULT_COMPETITORS = [
-  { id:'comp_byrne',   name:'Byrne Equipment Rental',    url:'https://www.byrne.ae',          sector:'Equipment Rental', lastResearched:null, summary:'', status:'unknown' },
-  { id:'comp_rsg',     name:'RSG / Al Rakha Scaffolding',url:'',                              sector:'Scaffolding',      lastResearched:null, summary:'', status:'unknown' },
-  { id:'comp_gaps',    name:'GAPS',                      url:'',                              sector:'Equipment Rental', lastResearched:null, summary:'', status:'unknown' },
-  { id:'comp_brt',     name:'BRT Equipment Rental',      url:'',                              sector:'Equipment Rental', lastResearched:null, summary:'', status:'unknown' },
-  { id:'comp_triton',  name:'Triton',                    url:'',                              sector:'Events/Scaffolding',lastResearched:null, summary:'', status:'unknown' },
-  { id:'comp_speedy',  name:'Speedy Gulf',               url:'',                              sector:'Equipment Rental', lastResearched:null, summary:'', status:'unknown' },
+  { id:'comp_byrne',   name:'Byrne Equipment Rental',      url:'https://www.byrne.ae',               sector:'Equipment Rental',                 lastResearched:null, summary:'', status:'unknown' },
+  { id:'comp_aes',     name:'All Events Services (AES)',    url:'https://www.alleventsservices.com',  sector:'Events Infrastructure',            lastResearched:null, summary:'', status:'unknown' },
+  { id:'comp_altrad',  name:'Altrad Group',                 url:'https://www.altrad.com',             sector:'Scaffolding & Industrial Services', lastResearched:null, summary:'', status:'unknown' },
+  { id:'comp_bsw',     name:'Brandsafway',                  url:'https://www.brandsafway.com',        sector:'Scaffolding & Access',             lastResearched:null, summary:'', status:'unknown' },
+  { id:'comp_alimak',  name:'Alimak',                       url:'https://www.alimak.com',             sector:'Vertical Access & Hoists',         lastResearched:null, summary:'', status:'unknown' },
+  { id:'comp_manlift', name:'Manlift',                      url:'https://www.manlift.ae',             sector:'Aerial Work Platforms',            lastResearched:null, summary:'', status:'unknown' },
+  { id:'comp_arg',     name:'Access Rental Gulf',           url:'https://www.accessrentalgulf.com',   sector:'Access Equipment Rental',          lastResearched:null, summary:'', status:'unknown' },
+  { id:'comp_johnson', name:'Johnson Arabia',               url:'https://www.johnsonarabia.com',      sector:'Industrial Services & Equipment',  lastResearched:null, summary:'', status:'unknown' },
+  { id:'comp_arena',   name:'Arena',                        url:'https://www.arena.ae',               sector:'Events Infrastructure',            lastResearched:null, summary:'', status:'unknown' },
 ];
 
 function seedCompetitors(){
@@ -809,13 +874,14 @@ function navigate(page){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const pageEl = document.getElementById('page-'+page);
   if(pageEl) pageEl.classList.add('active');
-  const navMap = {signal:0, trends:1, competitors:2, settings:3};
+  const navMap = {signal:0, trends:1, competitors:2, report:3, settings:4};
   const navItems = document.querySelectorAll('.nav-item');
   if(navItems[navMap[page]]) navItems[navMap[page]].classList.add('active');
 
   if(page==='settings')     renderSettingsPage();
   if(page==='competitors')  renderCompetitors();
   if(page==='trends')       renderTrendsPage();
+  if(page==='report')       renderReportPage();
   updateBadges();
 }
 
@@ -1171,6 +1237,445 @@ function toast(msg, type='info'){
 
 function escHtml(str){
   return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   COMPETITOR RESET
+══════════════════════════════════════════════════════════════ */
+function resetCompetitors(){
+  if(!confirm('Replace your current competitor list with the 9 default companies?')) return;
+  saveCompetitors(DEFAULT_COMPETITORS);
+  renderCompetitors();
+  toast('Competitor list reset to defaults','success');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   WEEKLY REPORT
+══════════════════════════════════════════════════════════════ */
+const WEEKLY_COMPETITORS = [
+  { name:'Byrne Equipment Rental',    sector:'Equipment Rental',                 website:'https://www.byrne.ae',             linkedin:'https://www.linkedin.com/company/byrne-equipment-rental',  instagram:'https://www.instagram.com/byrne_equipment' },
+  { name:'All Events Services (AES)', sector:'Events Infrastructure',            website:'https://www.alleventsservices.com',linkedin:'https://www.linkedin.com/company/all-events-services',     instagram:'https://www.instagram.com/alleventsservices' },
+  { name:'Altrad Group',              sector:'Scaffolding & Industrial Services', website:'https://www.altrad.com',           linkedin:'https://www.linkedin.com/company/altrad',                  instagram:'https://www.instagram.com/altradgroup' },
+  { name:'Brandsafway',               sector:'Scaffolding & Access',             website:'https://www.brandsafway.com',      linkedin:'https://www.linkedin.com/company/brandsafway',             instagram:'https://www.instagram.com/brandsafway' },
+  { name:'Alimak',                    sector:'Vertical Access & Hoists',         website:'https://www.alimak.com',           linkedin:'https://www.linkedin.com/company/alimak-group',            instagram:'https://www.instagram.com/alimakgroup' },
+  { name:'Manlift',                   sector:'Aerial Work Platforms',            website:'https://www.manlift.ae',           linkedin:'https://www.linkedin.com/company/manlift-middle-east',     instagram:'https://www.instagram.com/manlift_me' },
+  { name:'Access Rental Gulf',        sector:'Access Equipment Rental',          website:'https://www.accessrentalgulf.com', linkedin:'https://www.linkedin.com/company/access-rental-gulf',      instagram:'' },
+  { name:'Johnson Arabia',            sector:'Industrial Services & Equipment',  website:'https://www.johnsonarabia.com',    linkedin:'https://www.linkedin.com/company/johnson-arabia',          instagram:'' },
+  { name:'Arena',                     sector:'Events Infrastructure',            website:'https://www.arena.ae',             linkedin:'https://www.linkedin.com/company/arena-middle-east',       instagram:'https://www.instagram.com/arenagroupme' },
+];
+
+let _weeklyReportData = null;
+
+/* ── Tavily key ──────────────────────────────────────────────── */
+function getTavilyKey(){ return lsGet(KEYS.tavilyKey); }
+
+function saveTavilyKey(){
+  const val = (document.getElementById('rpt-tavily-input')||{}).value||'';
+  if(!val.trim()){ toast('Enter your Tavily key first','warn'); return; }
+  lsSet(KEYS.tavilyKey, val.trim());
+  renderReportPage();
+  toast('Tavily key saved — live social search enabled','success');
+}
+
+function clearTavilyKey(){
+  localStorage.removeItem(KEYS.tavilyKey);
+  const inp = document.getElementById('rpt-tavily-input');
+  if(inp) inp.value='';
+  renderReportPage();
+  toast('Tavily key cleared','info');
+}
+
+function renderReportPage(){
+  // nothing to init — report page is ready on load
+}
+
+/* ── Tavily search ───────────────────────────────────────────── */
+async function tavilySearch(query){
+  const key = getTavilyKey();
+  if(!key) return '';
+  try{
+    const r = await fetch('https://api.tavily.com/search',{
+      method:'POST',
+      headers:{'content-type':'application/json'},
+      body:JSON.stringify({ api_key:key, query, search_depth:'advanced', max_results:4, include_answer:true })
+    });
+    if(!r.ok) return '';
+    const data = await r.json();
+    const lines = [];
+    if(data.answer) lines.push('Summary: '+data.answer);
+    for(const res of (data.results||[])){
+      lines.push('Source: '+res.url);
+      lines.push((res.content||'').slice(0,400));
+    }
+    return lines.join('\n');
+  }catch(e){ return ''; }
+}
+
+async function searchCompSocial(comp){
+  try{
+    const yr = new Date().getFullYear();
+    const queries = [
+      `"${comp.name}" marketing social media ${yr}`,
+      `"${comp.name}" LinkedIn content posts ${yr}`,
+      `"${comp.name}" Instagram ${yr}`,
+    ];
+    const results = [];
+    for(const q of queries){
+      const r = await tavilySearch(q);
+      if(r) results.push(`--- ${q} ---\n${r}`);
+    }
+    return results.join('\n\n');
+  }catch(e){ return ''; }
+}
+
+async function searchTrendsLive(){
+  try{
+    const yr  = new Date().getFullYear();
+    const mon = new Date().toLocaleString('en',{month:'long'});
+    const uaeResults=[], b2bResults=[];
+    for(const q of [
+      `UAE equipment rental scaffolding events B2B marketing ${mon} ${yr}`,
+      `UAE construction companies LinkedIn Instagram marketing ${yr}`,
+    ]){ const r=await tavilySearch(q); if(r) uaeResults.push(r); }
+    for(const q of [
+      `B2B marketing trends LinkedIn Instagram ${mon} ${yr}`,
+      `B2B social media content strategy what is working ${yr}`,
+    ]){ const r=await tavilySearch(q); if(r) b2bResults.push(r); }
+    return { uae:uaeResults.join('\n\n'), b2b:b2bResults.join('\n\n') };
+  }catch(e){ return {uae:'',b2b:''}; }
+}
+
+/* ── Prompts ─────────────────────────────────────────────────── */
+function wkCompPrompt(comp){
+  return `You are a B2B marketing analyst for Al Laith Group (UAE equipment rental, scaffolding, events).
+Analyse the marketing of **${comp.name}** (${comp.sector}, UAE/GCC market).
+Website: ${comp.website||'unknown'} | LinkedIn: ${comp.linkedin||'unknown'} | Instagram: ${comp.instagram||'none'}
+
+Draw on everything you know about this company — their website, LinkedIn presence, Instagram content, campaigns, messaging, and public profile. Be as specific as possible.
+
+Use EXACTLY these headers:
+
+## ${comp.name} — Marketing Intelligence
+
+### Brand Positioning
+How they position themselves. Key messages and value props. 3 sentences.
+
+### Social Media Presence
+Platforms active on, posting frequency, content types, tone. Reference real post themes if live data available.
+
+### Content Strategy
+What content themes they lead with. What formats dominate. What works and what does not.
+
+### Marketing Strengths
+2-3 specific things they do well. Reference actual content if live data available.
+
+### Weaknesses & Gaps
+Where they fall short. Where Al Laith could clearly differentiate.
+
+### Threat Level for Al Laith
+Low / Medium / High — one sentence.
+
+Direct and specific. No filler. Plain business English.`;
+}
+
+function wkUAEPrompt(){
+  const mon = new Date().toLocaleString('en',{month:'long',year:'numeric'});
+  return `You are a B2B marketing analyst for the UAE/GCC market.
+Write a UAE marketing trends report for ${mon} using EXACTLY these headers:
+
+## UAE Market Marketing Trends — ${mon}
+
+### Sector Overview
+State of B2B marketing in UAE equipment rental, scaffolding, and events infrastructure.
+
+### Social Media Landscape
+Which platforms UAE B2B industrial companies are most active on. What content gets traction.
+
+### LinkedIn in the UAE
+How UAE construction/industrial companies use LinkedIn. Post formats, engagement patterns.
+
+### Instagram & Visual Content
+How this sector uses Instagram and short-form video. What approaches work.
+
+### Top 4 Opportunities for Al Laith Right Now
+Four specific, actionable opportunities Al Laith should move on this week.
+
+Specific and actionable. For a marketing manager making decisions this week.`;
+}
+
+function wkB2BPrompt(){
+  const mon = new Date().toLocaleString('en',{month:'long',year:'numeric'});
+  return `You are a global B2B marketing strategist briefing Al Laith Group's marketing team.
+Write a global B2B marketing trends briefing for ${mon} using EXACTLY these headers:
+
+## Global B2B Marketing Trends — ${mon}
+
+### The Biggest Shift Right Now
+The single most significant change in global B2B marketing this quarter.
+
+### LinkedIn & Social Selling
+What leading B2B companies are doing on LinkedIn that is working. Specific tactics and formats.
+
+### Short-Form Video for B2B
+How B2B companies use Instagram Reels, TikTok, YouTube Shorts. What works.
+
+### Content Marketing That Converts
+Formats and approaches winning in B2B content globally.
+
+### What Al Laith Should Steal This Week
+5 specific, implementable tactics from global B2B leaders Al Laith can use in UAE now. Name real companies where possible.`;
+}
+
+function wkExecPrompt(compSummaries, uaeSnippet, b2bSnippet){
+  return `You are a CMO writing a weekly intelligence briefing for Al Laith Group.
+Write exactly 6 bullet points — the sharpest insights from this week's research.
+
+COMPETITORS: ${compSummaries}
+UAE MARKET: ${uaeSnippet.slice(0,500)}
+GLOBAL B2B: ${b2bSnippet.slice(0,500)}
+
+Rules:
+- Exactly 6 bullets. No headers. No intro.
+- Each bullet: one punchy sentence, max 25 words.
+- Start each with an emoji.
+- Mix: 2 competitor insights, 2 trend insights, 2 action recommendations for Al Laith.
+- Reference specific companies or tactics from the research where possible.`;
+}
+
+/* ── Progress logger ─────────────────────────────────────────── */
+function rptLog(msg, type='info'){
+  const log = document.getElementById('rpt-log');
+  if(!log) return;
+  const colors={info:'var(--text-soft)',success:'var(--success)',warn:'var(--warn)',dim:'var(--text-dim)'};
+  const icons ={info:'→',success:'✅',warn:'⚠️',dim:'  '};
+  const line = document.createElement('div');
+  line.style.color = colors[type]||colors.info;
+  line.textContent = (icons[type]||'→')+' '+msg;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+function rptPct(n){
+  const el=document.getElementById('rpt-pct');
+  if(el) el.textContent=n+'%';
+}
+
+/* ── Main generator ──────────────────────────────────────────── */
+async function generateWeeklyReport(){
+  const genBtn   = document.getElementById('rpt-gen-btn');
+  const dlBtn    = document.getElementById('rpt-dl-btn');
+  const progWrap = document.getElementById('rpt-progress-wrap');
+  const prevWrap = document.getElementById('rpt-preview-wrap');
+  const logEl    = document.getElementById('rpt-log');
+  const previewEl= document.getElementById('rpt-preview');
+
+  if(genBtn)   genBtn.disabled=true;
+  if(dlBtn)    dlBtn.style.display='none';
+  if(progWrap) progWrap.style.display='block';
+  if(prevWrap) prevWrap.style.display='none';
+  if(logEl)    logEl.innerHTML='';
+  _weeklyReportData=null;
+
+  const weekLabel = 'Week of '+new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const total     = WEEKLY_COMPETITORS.length+3;
+  let done=0;
+
+  try{
+    rptLog(`Generating report for ${weekLabel}…`,'dim');
+    rptLog(`${WEEKLY_COMPETITORS.length} competitors + UAE trends + Global B2B + Exec summary`,'dim');
+
+    /* Step 1 — one Claude call per competitor */
+    const compReports=[];
+    let compSummaries='';
+
+    for(const comp of WEEKLY_COMPETITORS){
+      rptLog(`[${done+1}/${total}] ${comp.name}…`);
+      const data = await claudeFetch({
+        model: AI_MODEL,
+        max_tokens: 1200,
+        messages:[{role:'user', content:wkCompPrompt(comp)}]
+      });
+      const text = data.content?.[0]?.text||'';
+      compReports.push({name:comp.name, text});
+      compSummaries+=`\n${comp.name}: ${text.slice(0,200)}…`;
+      done++;
+      rptPct(Math.round(done/total*100));
+      rptLog('  ✅ Done','success');
+    }
+
+    /* Step 2 — UAE trends */
+    rptLog(`[${done+1}/${total}] UAE market trends…`);
+    const uaeData   = await claudeFetch({ model:AI_MODEL, max_tokens:1500, messages:[{role:'user',content:wkUAEPrompt()}] });
+    const uaeTrends = uaeData.content?.[0]?.text||'';
+    done++; rptPct(Math.round(done/total*100));
+    rptLog('  ✅ Done','success');
+
+    /* Step 3 — global B2B */
+    rptLog(`[${done+1}/${total}] Global B2B trends…`);
+    const b2bData   = await claudeFetch({ model:AI_MODEL, max_tokens:1500, messages:[{role:'user',content:wkB2BPrompt()}] });
+    const globalB2B = b2bData.content?.[0]?.text||'';
+    done++; rptPct(Math.round(done/total*100));
+    rptLog('  ✅ Done','success');
+
+    /* Step 4 — exec summary */
+    rptLog(`[${done+1}/${total}] Executive summary…`);
+    const exData      = await claudeFetch({ model:AI_MODEL, max_tokens:400, messages:[{role:'user',content:wkExecPrompt(compSummaries,uaeTrends,globalB2B)}] });
+    const execSummary = exData.content?.[0]?.text||'';
+    done++; rptPct(100);
+    rptLog('  ✅ Done','success');
+
+    /* Store + render */
+    _weeklyReportData={weekLabel,execSummary,compReports,uaeTrends,globalB2B};
+    if(previewEl) previewEl.innerHTML=buildReportPreview(_weeklyReportData);
+    if(prevWrap)  prevWrap.style.display='block';
+    if(dlBtn)     dlBtn.style.display='inline-flex';
+    rptLog('Report ready — click ⬇️ Download .docx','success');
+    toast('Weekly report ready!','success');
+
+  }catch(e){
+    rptLog('Error: '+e.message,'warn');
+    if(e.noKey) rptLog('Go to Settings and add your Anthropic API key','warn');
+    toast('Report failed','warn');
+  }finally{
+    if(genBtn) genBtn.disabled=false;
+  }
+}
+
+function buildReportPreview(data){
+  const parts=[];
+  parts.push(`<h2>${escHtml(data.weekLabel)}</h2>`);
+  parts.push('<h3 style="color:var(--text)">Executive Summary</h3>');
+  for(const l of data.execSummary.split('\n').filter(l=>l.trim()))
+    parts.push(`<p>${escHtml(l.trim())}</p>`);
+  parts.push('<hr>');
+  parts.push('<h2>Section 1 — Competitor Marketing</h2>');
+  for(const {text} of data.compReports){ parts.push(renderMarkdown(text)); parts.push('<hr>'); }
+  parts.push('<h2>Section 2 — UAE Market Trends</h2>');
+  parts.push(renderMarkdown(data.uaeTrends));
+  parts.push('<hr>');
+  parts.push('<h2>Section 3 — Global B2B Trends</h2>');
+  parts.push(renderMarkdown(data.globalB2B));
+  return parts.join('\n');
+}
+
+function copyWeeklyReport(){
+  const el=document.getElementById('rpt-preview');
+  if(!el) return;
+  navigator.clipboard.writeText(el.innerText||'')
+    .then(()=>toast('Report copied to clipboard','success'))
+    .catch(()=>toast('Select the text manually to copy','info'));
+}
+
+/* ── .docx download ──────────────────────────────────────────── */
+async function downloadWeeklyReport(){
+  if(!_weeklyReportData){ toast('Generate a report first','warn'); return; }
+  const btn=document.getElementById('rpt-dl-btn');
+  if(btn){ btn.disabled=true; btn.textContent='Building…'; }
+  try{
+    await buildDocxAndDownload(_weeklyReportData);
+  }catch(e){
+    toast('Download failed: '+e.message,'warn');
+    console.error(e);
+  }finally{
+    if(btn){ btn.disabled=false; btn.innerHTML='⬇️ Download .docx'; }
+  }
+}
+
+async function buildDocxAndDownload(data){
+  /* Load docx.js from CDN if not already present */
+  if(!window.docx){
+    await new Promise((res,rej)=>{
+      const s=document.createElement('script');
+      s.src='https://unpkg.com/docx@8.5.0/build/index.js';
+      s.onload=res; s.onerror=()=>rej(new Error('Could not load docx library — check internet connection'));
+      document.head.appendChild(s);
+    });
+  }
+
+  const {Document,Packer,Paragraph,TextRun,HeadingLevel,AlignmentType} = window.docx;
+  const NAVY='1A2B4A', GOLD='C99E3A', GREY='666666', LGREY='999999', GREEN='16A34A';
+
+  const children=[];
+
+  /* Cover page */
+  const cp=(text,size,opts={})=>new Paragraph({
+    alignment:AlignmentType.CENTER,
+    spacing:{after:opts.after||200},
+    children:[new TextRun({text,size,bold:opts.bold||false,color:opts.color||NAVY,italics:opts.italic||false})]
+  });
+  children.push(new Paragraph({spacing:{before:1440,after:0},children:[]}));
+  children.push(cp('AL LAITH GROUP',56,{bold:true,after:240}));
+  children.push(cp('Weekly Marketing Intelligence Brief',36,{color:GOLD,after:320}));
+  children.push(cp(data.weekLabel,24,{color:GREY,after:200}));
+  children.push(cp(data.hasTavily?'✅ Includes live social media research':'Based on AI knowledge base',18,{color:data.hasTavily?GREEN:LGREY,italic:true,after:200}));
+  children.push(cp('Prepared by Al Laith Business OS  ·  Confidential',16,{color:LGREY,italic:true}));
+  children.push(new Paragraph({pageBreakBefore:true,children:[]}));
+
+  /* Helper: markdown text → docx paragraphs */
+  function mdParas(text){
+    const out=[];
+    for(const line of text.split('\n')){
+      const s=line.trim();
+      if(!s){ out.push(new Paragraph({spacing:{after:60},children:[]})); continue; }
+      if(s.startsWith('### ')){
+        out.push(new Paragraph({heading:HeadingLevel.HEADING_3,children:[new TextRun({text:s.slice(4),bold:true,size:22,color:NAVY})]}));
+      } else if(s.startsWith('## ')){
+        out.push(new Paragraph({heading:HeadingLevel.HEADING_2,children:[new TextRun({text:s.slice(3),bold:true,size:26,color:NAVY})]}));
+      } else if(s.startsWith('# ')){
+        out.push(new Paragraph({heading:HeadingLevel.HEADING_1,children:[new TextRun({text:s.slice(2),bold:true,size:32,color:NAVY})]}));
+      } else if(s.startsWith('- ')||s.startsWith('• ')){
+        out.push(new Paragraph({bullet:{level:0},spacing:{after:60},children:[new TextRun({text:s.slice(2),size:20})]}));
+      } else {
+        const runs=[];
+        s.split('**').forEach((p,i)=>{ if(p) runs.push(new TextRun({text:p,bold:i%2===1,size:20})); });
+        out.push(new Paragraph({spacing:{after:120},children:runs}));
+      }
+    }
+    return out;
+  }
+
+  function sectionTitle(text){
+    return new Paragraph({heading:HeadingLevel.HEADING_1,spacing:{after:200},children:[new TextRun({text,bold:true,size:36,color:NAVY})]});
+  }
+  function divider(){
+    return new Paragraph({spacing:{after:160},children:[new TextRun({text:'─'.repeat(60),size:14,color:GOLD})]});
+  }
+
+  /* Executive Summary */
+  children.push(sectionTitle('Executive Summary'));
+  children.push(new Paragraph({spacing:{after:160},children:[new TextRun({text:`Top insights and actions — ${data.weekLabel}`,size:20,color:GREY,italics:true})]}));
+  for(const l of data.execSummary.split('\n').filter(l=>l.trim()))
+    children.push(new Paragraph({bullet:{level:0},spacing:{after:80},children:[new TextRun({text:l.trim(),size:22})]}));
+  children.push(new Paragraph({pageBreakBefore:true,children:[]}));
+
+  /* Section 1 — Competitors */
+  children.push(sectionTitle('Section 1 — Competitor Social Media & Marketing'));
+  children.push(new Paragraph({spacing:{after:160},children:[new TextRun({text:`Live intelligence on ${data.compReports.length} competitors. ${data.weekLabel}.`,size:20,color:GREY,italics:true})]}));
+  for(const {text} of data.compReports){
+    children.push(...mdParas(text));
+    children.push(divider());
+  }
+  children.push(new Paragraph({pageBreakBefore:true,children:[]}));
+
+  /* Section 2 — UAE Trends */
+  children.push(sectionTitle('Section 2 — UAE Market Trends'));
+  children.push(...mdParas(data.uaeTrends));
+  children.push(new Paragraph({pageBreakBefore:true,children:[]}));
+
+  /* Section 3 — Global B2B */
+  children.push(sectionTitle('Section 3 — Global B2B Marketing Trends'));
+  children.push(...mdParas(data.globalB2B));
+
+  /* Build + trigger download */
+  const doc  = new Document({sections:[{properties:{},children}]});
+  const blob = await Packer.toBlob(doc);
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `Al Laith Intelligence Brief — ${new Date().toISOString().slice(0,10)}.docx`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Report downloaded!','success');
 }
 
 /* ══════════════════════════════════════════════════════════════

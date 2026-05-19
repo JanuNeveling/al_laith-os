@@ -36,9 +36,10 @@
 
 | Session | Task | File | Status | Notes |
 |---|---|---|---|---|
-| 2a | Zone 4 shell + Signal Research screen | zone4-intelligence.html | 🔲 | 5 research modes |
-| 2b | Trend Watch + auto-generation | zone4-intelligence.html | 🔲 | Weekly auto-report |
-| 2c | Competitor Watchlist + gap analysis | zone4-intelligence.html | 🔲 | Default competitor list |
+| 2a | Zone 4 shell + Signal Research screen | zone4-intelligence.html | ✅ | 5 research modes, Settings page, shared API key |
+| 2b | Trend Watch + auto-generation | zone4-intelligence.html | ✅ | Weekly trend briefing, save to localStorage |
+| 2c | Competitor Watchlist + gap analysis | zone4-intelligence.html | ✅ | 6 default UAE competitors, gap analysis mode |
+| 2d | Weekly Intelligence Report automation | Scripts/weekly_intelligence_report.py | ✅ | Python script + Windows Task Scheduler; runs every Monday 08:00; outputs .docx to Desktop; ~$0.08/run |
 
 ---
 
