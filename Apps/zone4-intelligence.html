@@ -356,7 +356,7 @@ textarea.form-input{resize:vertical;min-height:70px;line-height:1.6}
         </div>
         <div style="display:flex;gap:8px;flex-shrink:0;align-items:center">
           <button class="btn btn-primary" id="rpt-gen-btn" onclick="generateWeeklyReport()">📄 Generate Report</button>
-          <button class="btn btn-ghost" id="rpt-dl-btn" style="display:none" onclick="downloadWeeklyReport()">⬇️ Download .docx</button>
+          <button class="btn btn-ghost" id="rpt-dl-btn" style="display:none" onclick="downloadWeeklyReport()">⬇️ Download Report</button>
         </div>
       </div>
     </div>
@@ -382,7 +382,7 @@ textarea.form-input{resize:vertical;min-height:70px;line-height:1.6}
         <span class="card-title">Report Preview</span>
         <div style="display:flex;gap:8px">
           <button class="btn btn-ghost btn-sm" onclick="copyWeeklyReport()">📋 Copy all</button>
-          <button class="btn btn-primary btn-sm" onclick="downloadWeeklyReport()">⬇️ Download .docx</button>
+          <button class="btn btn-primary btn-sm" onclick="downloadWeeklyReport()">⬇️ Download Report</button>
         </div>
       </div>
       <div id="rpt-preview" class="research-output" style="display:block;max-height:640px;border:none;border-radius:0 0 12px 12px;padding:24px 28px"></div>
@@ -1529,7 +1529,7 @@ async function generateWeeklyReport(){
     if(previewEl) previewEl.innerHTML=buildReportPreview(_weeklyReportData);
     if(prevWrap)  prevWrap.style.display='block';
     if(dlBtn)     dlBtn.style.display='inline-flex';
-    rptLog('Report ready — click ⬇️ Download .docx','success');
+    rptLog('Report ready — click ⬇️ Download Report','success');
     toast('Weekly report ready!','success');
 
   }catch(e){
@@ -1567,112 +1567,123 @@ function copyWeeklyReport(){
 }
 
 /* ── .docx download ──────────────────────────────────────────── */
-async function downloadWeeklyReport(){
+function downloadWeeklyReport(){
   if(!_weeklyReportData){ toast('Generate a report first','warn'); return; }
   const btn=document.getElementById('rpt-dl-btn');
   if(btn){ btn.disabled=true; btn.textContent='Building…'; }
   try{
-    await buildDocxAndDownload(_weeklyReportData);
+    buildHtmlAndDownload(_weeklyReportData);
   }catch(e){
     toast('Download failed: '+e.message,'warn');
-    console.error(e);
   }finally{
-    if(btn){ btn.disabled=false; btn.innerHTML='⬇️ Download .docx'; }
+    if(btn){ btn.disabled=false; btn.innerHTML='⬇️ Download Report'; }
   }
 }
 
-async function buildDocxAndDownload(data){
-  /* Load docx.js from CDN if not already present */
-  if(!window.docx){
-    await new Promise((res,rej)=>{
-      const s=document.createElement('script');
-      s.src='https://unpkg.com/docx@8.5.0/build/index.js';
-      s.onload=res; s.onerror=()=>rej(new Error('Could not load docx library — check internet connection'));
-      document.head.appendChild(s);
-    });
-  }
-
-  const {Document,Packer,Paragraph,TextRun,HeadingLevel,AlignmentType} = window.docx;
-  const NAVY='1A2B4A', GOLD='C99E3A', GREY='666666', LGREY='999999', GREEN='16A34A';
-
-  const children=[];
-
-  /* Cover page */
-  const cp=(text,size,opts={})=>new Paragraph({
-    alignment:AlignmentType.CENTER,
-    spacing:{after:opts.after||200},
-    children:[new TextRun({text,size,bold:opts.bold||false,color:opts.color||NAVY,italics:opts.italic||false})]
-  });
-  children.push(new Paragraph({spacing:{before:1440,after:0},children:[]}));
-  children.push(cp('AL LAITH GROUP',56,{bold:true,after:240}));
-  children.push(cp('Weekly Marketing Intelligence Brief',36,{color:GOLD,after:320}));
-  children.push(cp(data.weekLabel,24,{color:GREY,after:200}));
-  children.push(cp(data.hasTavily?'✅ Includes live social media research':'Based on AI knowledge base',18,{color:data.hasTavily?GREEN:LGREY,italic:true,after:200}));
-  children.push(cp('Prepared by Al Laith Business OS  ·  Confidential',16,{color:LGREY,italic:true}));
-  children.push(new Paragraph({pageBreakBefore:true,children:[]}));
-
-  /* Helper: markdown text → docx paragraphs */
-  function mdParas(text){
-    const out=[];
-    for(const line of text.split('\n')){
+function mdToHtml(text){
+  /* Convert markdown to clean HTML */
+  return text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h2>$1</h2>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/^[-•] (.+)$/gm,'<li>$1</li>')
+    .replace(/^\d+\. (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>.*<\/li>\n?)+/g,m=>'<ul>'+m+'</ul>')
+    .replace(/^---+$/gm,'<hr>')
+    .split('\n').map(line=>{
       const s=line.trim();
-      if(!s){ out.push(new Paragraph({spacing:{after:60},children:[]})); continue; }
-      if(s.startsWith('### ')){
-        out.push(new Paragraph({heading:HeadingLevel.HEADING_3,children:[new TextRun({text:s.slice(4),bold:true,size:22,color:NAVY})]}));
-      } else if(s.startsWith('## ')){
-        out.push(new Paragraph({heading:HeadingLevel.HEADING_2,children:[new TextRun({text:s.slice(3),bold:true,size:26,color:NAVY})]}));
-      } else if(s.startsWith('# ')){
-        out.push(new Paragraph({heading:HeadingLevel.HEADING_1,children:[new TextRun({text:s.slice(2),bold:true,size:32,color:NAVY})]}));
-      } else if(s.startsWith('- ')||s.startsWith('• ')){
-        out.push(new Paragraph({bullet:{level:0},spacing:{after:60},children:[new TextRun({text:s.slice(2),size:20})]}));
-      } else {
-        const runs=[];
-        s.split('**').forEach((p,i)=>{ if(p) runs.push(new TextRun({text:p,bold:i%2===1,size:20})); });
-        out.push(new Paragraph({spacing:{after:120},children:runs}));
-      }
-    }
-    return out;
-  }
+      if(!s||s==='<br>') return '<br>';
+      if(/^<(h[23]|ul|li|hr)/.test(s)) return s;
+      return '<p>'+s+'</p>';
+    }).join('\n');
+}
 
-  function sectionTitle(text){
-    return new Paragraph({heading:HeadingLevel.HEADING_1,spacing:{after:200},children:[new TextRun({text,bold:true,size:36,color:NAVY})]});
-  }
-  function divider(){
-    return new Paragraph({spacing:{after:160},children:[new TextRun({text:'─'.repeat(60),size:14,color:GOLD})]});
-  }
+function buildHtmlAndDownload(data){
+  const dateStr = new Date().toISOString().slice(0,10);
 
-  /* Executive Summary */
-  children.push(sectionTitle('Executive Summary'));
-  children.push(new Paragraph({spacing:{after:160},children:[new TextRun({text:`Top insights and actions — ${data.weekLabel}`,size:20,color:GREY,italics:true})]}));
-  for(const l of data.execSummary.split('\n').filter(l=>l.trim()))
-    children.push(new Paragraph({bullet:{level:0},spacing:{after:80},children:[new TextRun({text:l.trim(),size:22})]}));
-  children.push(new Paragraph({pageBreakBefore:true,children:[]}));
+  const execHtml = data.execSummary.split('\n')
+    .filter(l=>l.trim())
+    .map(l=>`<div class="exec-item">${escHtml(l.trim())}</div>`)
+    .join('');
 
-  /* Section 1 — Competitors */
-  children.push(sectionTitle('Section 1 — Competitor Social Media & Marketing'));
-  children.push(new Paragraph({spacing:{after:160},children:[new TextRun({text:`Live intelligence on ${data.compReports.length} competitors. ${data.weekLabel}.`,size:20,color:GREY,italics:true})]}));
-  for(const {text} of data.compReports){
-    children.push(...mdParas(text));
-    children.push(divider());
-  }
-  children.push(new Paragraph({pageBreakBefore:true,children:[]}));
+  const compsHtml = data.compReports.map(({name,text})=>
+    `<div class="comp-section">${mdToHtml(text)}</div><hr class="gold-hr">`
+  ).join('');
 
-  /* Section 2 — UAE Trends */
-  children.push(sectionTitle('Section 2 — UAE Market Trends'));
-  children.push(...mdParas(data.uaeTrends));
-  children.push(new Paragraph({pageBreakBefore:true,children:[]}));
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Al Laith Intelligence Brief — ${data.weekLabel}</title>
+<style>
+  body{font-family:Georgia,'Times New Roman',serif;max-width:860px;margin:0 auto;padding:40px;color:#1a1a2e;line-height:1.75;font-size:14px}
+  .cover{text-align:center;padding:80px 0 60px;border-bottom:4px solid #C99E3A;margin-bottom:50px;page-break-after:always}
+  .cover-label{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#999;margin-bottom:24px;font-family:Arial,sans-serif}
+  .cover-title{font-size:40px;font-weight:bold;color:#1A2B4A;margin:0 0 16px}
+  .cover-sub{font-size:22px;color:#C99E3A;margin:0 0 24px}
+  .cover-week{font-size:15px;color:#666}
+  .cover-conf{font-size:12px;color:#aaa;margin-top:20px;font-style:italic}
+  h1{color:#1A2B4A;font-size:24px;border-bottom:3px solid #C99E3A;padding-bottom:8px;margin-top:50px;font-family:Arial,sans-serif}
+  h2{color:#1A2B4A;font-size:18px;margin-top:30px;font-family:Arial,sans-serif}
+  h3{color:#1A2B4A;font-size:15px;margin-top:20px;font-family:Arial,sans-serif}
+  p{margin:8px 0;color:#2a2a3e}
+  ul{padding-left:22px;margin:10px 0}
+  li{margin-bottom:5px;color:#2a2a3e}
+  strong{color:#1A2B4A}
+  .exec-item{padding:10px 14px;margin:6px 0;border-left:4px solid #C99E3A;background:#fdf9f0;font-size:15px}
+  .comp-section{margin-bottom:10px}
+  .gold-hr{border:none;border-top:2px solid #C99E3A;margin:30px 0}
+  hr{border:none;border-top:1px solid #ddd;margin:20px 0}
+  .section-intro{font-size:13px;color:#666;font-style:italic;margin-bottom:20px}
+  .page-break{page-break-after:always;height:0}
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+  th{background:#1A2B4A;color:white;padding:9px 12px;text-align:left;font-family:Arial,sans-serif}
+  td{padding:8px 12px;border-bottom:1px solid #e0e0e0;vertical-align:top}
+  tr:nth-child(even) td{background:#f9f8f5}
+  @media print{body{padding:20px}.cover{page-break-after:always}}
+</style>
+</head>
+<body>
 
-  /* Section 3 — Global B2B */
-  children.push(sectionTitle('Section 3 — Global B2B Marketing Trends'));
-  children.push(...mdParas(data.globalB2B));
+<div class="cover">
+  <div class="cover-label">Al Laith Group</div>
+  <div class="cover-title">Weekly Marketing<br>Intelligence Brief</div>
+  <div class="cover-sub">${escHtml(data.weekLabel)}</div>
+  <div class="cover-week">Prepared by Al Laith Business OS</div>
+  <div class="cover-conf">Confidential — Internal Use Only</div>
+</div>
 
-  /* Build + trigger download */
-  const doc  = new Document({sections:[{properties:{},children}]});
-  const blob = await Packer.toBlob(doc);
+<h1>Executive Summary</h1>
+<p class="section-intro">Top insights and actions — ${escHtml(data.weekLabel)}</p>
+${execHtml}
+
+<div class="page-break"></div>
+
+<h1>Section 1 — Competitor Marketing &amp; Social Media</h1>
+<p class="section-intro">Analysis of ${data.compReports.length} key UAE competitors in equipment rental, scaffolding, and events infrastructure.</p>
+${compsHtml}
+
+<div class="page-break"></div>
+
+<h1>Section 2 — UAE Market Trends</h1>
+${mdToHtml(data.uaeTrends)}
+
+<div class="page-break"></div>
+
+<h1>Section 3 — Global B2B Marketing Trends</h1>
+${mdToHtml(data.globalB2B)}
+
+</body>
+</html>`;
+
+  const blob = new Blob([html],{type:'text/html;charset=utf-8'});
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href     = url;
-  a.download = `Al Laith Intelligence Brief — ${new Date().toISOString().slice(0,10)}.docx`;
+  a.download = `Al Laith Intelligence Brief — ${dateStr}.html`;
   a.click();
   URL.revokeObjectURL(url);
   toast('Report downloaded!','success');
