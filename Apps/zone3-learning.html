@@ -247,15 +247,15 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.6}
   <div id="page-tutor" class="page active">
     <div class="page-header">
       <h1 class="page-title">Ask Claude</h1>
-      <p class="page-subtitle">Your personal marketing tutor — ask anything about marketing, Al Laith's strategy, or a concept you're learning.</p>
+      <p class="page-subtitle">Your personal marketing tutor — ask anything about marketing, strategy, or a concept you're learning.</p>
     </div>
 
     <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <span style="font-size:12px;color:var(--text-dim)">Quick starters:</span>
       <button class="filter-btn" onclick="quickPrompt('Explain content pillars to me like I\'m a complete beginner')">Content pillars</button>
-      <button class="filter-btn" onclick="quickPrompt('What makes a good LinkedIn post for a B2B company like Al Laith?')">LinkedIn for B2B</button>
-      <button class="filter-btn" onclick="quickPrompt('How should Al Laith use Instagram differently from LinkedIn?')">Instagram vs LinkedIn</button>
-      <button class="filter-btn" onclick="quickPrompt('What is brand voice and how does Al Laith\'s work?')">Brand voice</button>
+      <button class="filter-btn" onclick="quickPrompt('What makes a great LinkedIn post for a B2B company? Give me real examples.')">LinkedIn for B2B</button>
+      <button class="filter-btn" onclick="quickPrompt('How is Instagram used differently from LinkedIn in marketing? Use brand examples.')">Instagram vs LinkedIn</button>
+      <button class="filter-btn" onclick="quickPrompt('What is brand voice? Show me examples of strong brand voices like Nike or Apple.')">Brand voice</button>
       <button class="filter-btn" onclick="quickPrompt('Give me a beginner marketing study plan for the next 30 days')">30-day plan</button>
     </div>
 
@@ -263,7 +263,7 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.6}
       <div class="chat-messages" id="chat-messages">
         <div class="msg">
           <div class="msg-avatar ai">🤖</div>
-          <div class="msg-bubble">Hi Janu! I'm your Al Laith marketing tutor. Ask me anything — from basic concepts to specific strategy questions for Al Laith's UAE market. What would you like to understand today?</div>
+          <div class="msg-bubble">Hi! I'm your marketing tutor. Ask me anything — from basic concepts to real-world strategy questions. I'll use examples from brands like Nike, Apple, Airbnb, and Red Bull to make things click. What would you like to understand today?</div>
         </div>
       </div>
       <div class="chat-input-row">
@@ -341,7 +341,7 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.6}
         </div>
         <div>
           <label class="form-label">Your notes / what you got from it</label>
-          <textarea class="form-input" id="res-notes" rows="3" placeholder="Key takeaways, why it's useful for Al Laith…"></textarea>
+          <textarea class="form-input" id="res-notes" rows="3" placeholder="Key takeaways, what you got from it, ideas it sparked…"></textarea>
         </div>
         <div style="display:flex;gap:8px">
           <button class="btn btn-primary" onclick="saveResource()">Save resource</button>
@@ -495,7 +495,7 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.6}
       </div>
 
       <div>
-        <div class="section-label">Al Laith angle</div>
+        <div class="section-label">Real-world example</div>
         <div style="background:rgba(50,159,205,.08);border:1px solid rgba(50,159,205,.2);border-radius:10px;padding:14px;font-size:13px;line-height:1.7" id="tp-allaith"></div>
       </div>
 
@@ -778,7 +778,7 @@ async function claudeFetch(body){
 }
 
 const AI_MODEL = 'claude-haiku-4-5';
-const AL_LAITH_CONTEXT = 'Al Laith Group is a UAE/GCC company specialising in equipment rental (generators, forklifts, MEWPs, crowd barriers, buggies), scaffolding (construction, events, oil & gas), and events infrastructure (structures, staging, AV, rigging). The student is Janu, the marketing lead — a complete beginner learning marketing from scratch.';
+const TUTOR_CONTEXT = 'You are a knowledgeable and encouraging marketing tutor. Teach marketing concepts clearly and practically using well-known real-world brand examples — Nike, Apple, Airbnb, Red Bull, Coca-Cola, Dove, Patagonia, HubSpot, Canva, and others. Do not bring up any specific company the student works for. Focus on universal marketing principles, illustrated with recognisable global examples.';
 
 /* ══════════════════════════════════════════════════════════════
    TUTOR CHAT
@@ -788,7 +788,7 @@ let chatMessages = [];
 function initChat(){
   chatMessages = getChatHistory();
   if(!chatMessages.length){
-    chatMessages = [{role:'assistant',content:'Hi Janu! I\'m your Al Laith marketing tutor. Ask me anything — from basic concepts to specific strategy questions for Al Laith\'s UAE market. What would you like to understand today?'}];
+    chatMessages = [{role:'assistant',content:'Hi! I\'m your marketing tutor. Ask me anything — from basic concepts to real-world strategy questions. I\'ll use examples from brands like Nike, Apple, Airbnb, and Red Bull to make things click. What would you like to understand today?'}];
   }
   renderChatMessages();
 }
@@ -833,7 +833,7 @@ async function sendChat(){
     const history = chatMessages.slice(-10).filter(m=>m.role!=='assistant'||chatMessages.indexOf(m)>0);
     const data = await claudeFetch({
       model: AI_MODEL, max_tokens: 700,
-      system: `You are a friendly, clear marketing tutor for Janu, the marketing lead at Al Laith Group. ${AL_LAITH_CONTEXT}\n\nGuide the student in simple language. Use Al Laith examples. Be encouraging but specific. When explaining concepts, always connect them to Al Laith\'s actual business — equipment rental, scaffolding, UAE B2B market. Keep answers focused and actionable, not overwhelming.`,
+      system: `${TUTOR_CONTEXT}\n\nGuide the student in simple language. Use real-world brand examples (Nike, Apple, Airbnb, Red Bull, HubSpot, etc.) to illustrate concepts. Be encouraging but specific. Keep answers focused and actionable, not overwhelming.`,
       messages: history.map(m=>({role:m.role,content:m.content}))
     });
     const reply = data.content?.[0]?.text||'I couldn\'t generate a response. Please try again.';
@@ -991,8 +991,8 @@ async function explainTopic(){
   try{
     const data = await claudeFetch({
       model: AI_MODEL, max_tokens: 500,
-      system: `You are a friendly marketing tutor. ${AL_LAITH_CONTEXT} Explain concepts clearly, simply, and always connect to Al Laith.`,
-      messages:[{role:'user',content:`Explain "${topic.title}" to me as a complete marketing beginner. Keep it simple and practical. Al Laith context: ${topic.allaith}\n\nGive me: 1) plain English definition, 2) why it matters for Al Laith, 3) one practical first step.`}]
+      system: `${TUTOR_CONTEXT} Explain concepts clearly and simply, using well-known brand examples.`,
+      messages:[{role:'user',content:`Explain "${topic.title}" to me as a complete marketing beginner. Keep it simple and practical.\n\nGive me: 1) plain English definition, 2) a real-world brand example that shows it in action (e.g. Nike, Apple, Airbnb, Red Bull), 3) one practical first step to apply this concept.`}]
     });
     out.textContent = data.content?.[0]?.text||'Could not generate. Try again.';
     btn.textContent = '✨ Re-explain';
@@ -1020,7 +1020,7 @@ async function sendTopicQuestion(){
   try{
     const data = await claudeFetch({
       model: AI_MODEL, max_tokens: 500,
-      system: `You are a marketing tutor. ${AL_LAITH_CONTEXT} Answer questions about marketing concepts, always connecting to Al Laith where relevant.`,
+      system: `${TUTOR_CONTEXT} Answer questions about marketing concepts clearly, using real-world brand examples to illustrate your points.`,
       messages:[{role:'user',content:`About the marketing concept "${topic.title}": ${q}`}]
     });
     out.textContent = data.content?.[0]?.text||'';
@@ -1072,8 +1072,8 @@ async function aiSummariseResource(){
   try{
     const data = await claudeFetch({
       model: AI_MODEL, max_tokens: 300,
-      system: `You are a marketing learning assistant. ${AL_LAITH_CONTEXT}`,
-      messages:[{role:'user',content:`Summarise this marketing resource for Al Laith's marketing lead:\nTitle: ${title}\nURL: ${url||'N/A'}\nNotes: ${notes||'None provided'}\n\nWrite 2-3 sentences: what it covers, why it's useful for Al Laith, and one key takeaway.`}]
+      system: `${TUTOR_CONTEXT}`,
+      messages:[{role:'user',content:`Summarise this marketing resource for a marketing student:\nTitle: ${title}\nURL: ${url||'N/A'}\nNotes: ${notes||'None provided'}\n\nWrite 2-3 sentences: what it covers, what marketing principle it teaches, and one key takeaway.`}]
     });
     const summary = data.content?.[0]?.text||'';
     document.getElementById('res-notes').value = (notes?notes+'\n\n':'') + '[AI Summary]: ' + summary;
@@ -1147,7 +1147,7 @@ async function saveAndReflect(){
   try{
     const data = await claudeFetch({
       model: AI_MODEL, max_tokens: 300,
-      system: `You are a supportive marketing learning coach. ${AL_LAITH_CONTEXT} Give warm, specific, encouraging reflections on learning journal entries. Connect their learning to marketing concepts they can explore next.`,
+      system: `${TUTOR_CONTEXT} You are also a supportive learning coach. Give warm, specific, encouraging reflections on learning journal entries. Connect their learning to marketing concepts and real brand examples they can explore next.`,
       messages:[{role:'user',content:`My learning journal entry:\n\n${text}\n\nGive me a brief, warm reflection (3-4 sentences): acknowledge what I learned, connect it to a relevant marketing concept, and suggest one thing to explore or try next.`}]
     });
     reflection = data.content?.[0]?.text||'';
@@ -1256,8 +1256,15 @@ function toast(msg, type='info'){
 }
 
 /* ══════════════════════════════════════════════════════════════
-   INIT
+   INIT — migrate: clear any cached Al Laith chat history
 ══════════════════════════════════════════════════════════════ */
+(function migrateChat(){
+  const cached = ls(Z3_CHAT_KEY);
+  if(cached.some(m=>typeof m.content==='string'&&/al laith/i.test(m.content))){
+    lsSave(Z3_CHAT_KEY, []);
+  }
+})();
+
 populateTopicSelect();
 initChat();
 updateBadges();
