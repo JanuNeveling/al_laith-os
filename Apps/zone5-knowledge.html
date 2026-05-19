@@ -370,7 +370,7 @@ body{display:flex;height:100vh;overflow:hidden;background:var(--bg);color:var(--
 
       <div class="concept-section">
         <div class="concept-section-label">🤖 Ask Claude</div>
-        <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px">Get a beginner-friendly explanation with Al Laith examples and practical first steps.</p>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px">Get a beginner-friendly explanation with real-world brand examples and a practical exercise.</p>
         <button class="btn btn-ai" id="explain-btn" onclick="askClaude()">✨ Explain this concept to me</button>
         <div class="ai-output-box" id="ai-explanation"></div>
       </div>
@@ -979,27 +979,25 @@ async function askClaude() {
   box.textContent = 'Claude is thinking…';
   box.classList.add('visible');
   try {
-    const prompt = `You are a marketing teacher. The student is a complete beginner working in marketing for Al Laith Group — a UAE company in equipment rental, scaffolding, and events.
+    const prompt = `You are a brilliant marketing teacher. Your student is learning marketing from scratch and wants to genuinely understand the fundamentals — not tied to any specific company or industry.
 
 Explain the marketing concept: "${concept.title}"
-
-Their context: ${concept.allaith}
 
 Write your explanation in a warm, clear, beginner-friendly way. Structure it as:
 
 **What it means in plain English:**
-[2–3 sentences, no jargon]
+2–3 sentences. No jargon. Explain it like you would to someone who has never studied marketing.
 
-**Why it matters for Al Laith specifically:**
-[2–3 sentences connecting to their real work]
+**Why it matters:**
+2–3 sentences on why marketers care about this and what goes wrong when it's ignored.
 
-**A practical first step to apply it:**
-[One specific, actionable thing they can do this week]
+**How it works in practice:**
+A concrete, real-world example using a well-known brand (e.g. Nike, Apple, Airbnb, Red Bull) to make it tangible.
 
-**A quick example:**
-[One concrete example in the Al Laith context]
+**A practical exercise to learn it:**
+One specific thing the student can do or observe this week to understand this concept firsthand.
 
-Keep it encouraging and specific. No generic marketing textbook language.`;
+Keep it engaging, specific, and grounded in real examples. Avoid generic textbook language.`;
 
     const data = await claudeFetch({
       model:'claude-haiku-4-5', max_tokens:600,
