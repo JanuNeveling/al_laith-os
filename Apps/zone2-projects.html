@@ -25,6 +25,7 @@ body{display:flex;height:100vh;overflow:hidden;background:var(--bg);color:var(--
 .sidebar-header{padding:20px 16px 14px;border-bottom:1px solid var(--border)}
 .sidebar-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
 .logo-mark{width:32px;height:32px;background:var(--zone-2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:#000;flex-shrink:0}
+.sidebar-logo-img{height:28px;object-fit:contain;flex-shrink:0;filter:brightness(0) invert(1)}
 .logo-title{font-weight:700;font-size:13px;line-height:1.2}
 .logo-sub{font-size:10px;color:var(--text-dim)}
 .sidebar-nav{flex:1;padding:12px 8px}
@@ -159,7 +160,9 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.6}
 <aside class="sidebar">
   <div class="sidebar-header">
     <a href="os-shell.html" class="sidebar-logo">
-      <div class="logo-mark">Z2</div>
+      <img src="assets/al-laith-logo.png" alt="Al Laith" class="sidebar-logo-img"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="logo-mark" style="display:none">Z2</div>
       <div>
         <div class="logo-title">Al Laith OS</div>
         <div class="logo-sub">Projects</div>
@@ -846,12 +849,21 @@ function renderCS(){
 function openNewCSPicker(){
   const jobs = getJobs();
   if(!jobs.length){ toast('Log a job first','warn'); navigate('jobs'); return; }
-  const names = jobs.map((j,i)=>`${i+1}. ${j.title}`).join('\n');
-  const pick = prompt(`Which job?\n\n${names}\n\nEnter number:`);
-  if(!pick) return;
-  const idx = parseInt(pick)-1;
-  if(isNaN(idx)||idx<0||idx>=jobs.length){ toast('Invalid selection','warn'); return; }
-  buildCS(jobs[idx].id);
+  // Show inline picker in the case studies page header area
+  const existing = document.getElementById('cs-job-picker');
+  if(existing){ existing.remove(); return; }
+  const picker = document.createElement('div');
+  picker.id = 'cs-job-picker';
+  picker.style.cssText = 'background:var(--surface-2);border:1px solid var(--border-mid);border-radius:10px;padding:14px 16px;margin-bottom:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap';
+  picker.innerHTML = `
+    <span style="font-size:12px;color:var(--text-dim);font-weight:600">Select job:</span>
+    <select id="cs-picker-select" class="form-input" style="max-width:280px;flex:1">
+      ${jobs.map(j=>`<option value="${j.id}">${esc(j.title)} — ${SECTOR_LABELS[j.sector]||j.sector}</option>`).join('')}
+    </select>
+    <button class="btn-ai" style="font-size:12px;padding:7px 14px" onclick="buildCS(document.getElementById('cs-picker-select').value);document.getElementById('cs-job-picker').remove()">✨ Generate</button>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('cs-job-picker').remove()">✕</button>`;
+  document.getElementById('cs-list').insertAdjacentElement('beforebegin', picker);
+  document.getElementById('cs-picker-select').focus();
 }
 
 async function buildCS(jobId){
@@ -1336,7 +1348,7 @@ function renderSettings(){
   const hasKey   = !!getApiKey();
   if(onVercel){
     status.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:10px;font-size:13px;color:var(--success)"><span>✅</span><div><strong>Running on Vercel</strong> — AI active via server proxy. No key needed.</div></div>`;
-    document.getElementById('settings-local').style.display='none';
+    const sl=document.getElementById('settings-local'); if(sl) sl.style.display='none';
   } else if(hasKey){
     status.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:10px;font-size:13px;color:var(--success)"><span>✅</span><strong>API key set — AI features active.</strong></div>`;
   } else {

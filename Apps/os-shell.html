@@ -99,6 +99,7 @@
       margin-bottom: 32px;
     }
     .os-logo { display: flex; align-items: center; gap: 12px; }
+    .os-logo-img { height: 36px; object-fit: contain; flex-shrink: 0; filter: brightness(0) invert(1); }
     .os-logo-mark {
       width: 38px; height: 38px; border-radius: 9px;
       background: linear-gradient(140deg, #2E6EE0 0%, #0A2350 100%);
@@ -453,7 +454,9 @@
   <!-- ── Topbar ─────────────────────────────────── -->
   <header class="os-topbar">
     <div class="os-logo">
-      <div class="os-logo-mark">AL</div>
+      <img src="assets/al-laith-logo.png" alt="Al Laith" class="os-logo-img"
+           onerror="this.style.display='none';document.getElementById('os-logo-mark').style.display='grid'">
+      <div class="os-logo-mark" id="os-logo-mark" style="display:none">AL</div>
       <div class="os-logo-text">
         <div class="os-logo-name">Al Laith</div>
         <div class="os-logo-sub">Business OS · v0.1</div>
