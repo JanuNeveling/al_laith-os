@@ -47,10 +47,10 @@
 
 | Session | Task | File | Status | Notes |
 |---|---|---|---|---|
-| 3a | Job Logger | zone2-projects.html | 🔲 | Fields: sector, location, equipment, conditions |
-| 3b | Case Study Builder | zone2-projects.html | 🔲 | Blog + structured doc + social batch |
-| 3c | Events Workspace | zone2-projects.html | 🔲 | Per-event planning space |
-| 3d | Project Archive + Proposal Generator | zone2-projects.html | 🔲 | Searchable archive + AI proposal |
+| 3a | Job Logger | zone2-projects.html | ✅ | Sector/status/conditions/equipment fields; side-panel form; edit/delete |
+| 3b | Case Study Builder | zone2-projects.html | ✅ | AI generates structured doc + blog + IG/LI/FB social batch in parallel; tabbed panel; push to Zone 1 |
+| 3c | Events Workspace | zone2-projects.html | ✅ | Event cards, brief/content plan/checklist tabs, status control, edit in-place |
+| 3d | Project Archive + Proposal Generator | zone2-projects.html | ✅ | Searchable archive with sector filter; multi-select jobs for AI-generated proposal; save/load proposals |
 
 ---
 
@@ -81,18 +81,18 @@
 
 | Session | Task | File | Status | Notes |
 |---|---|---|---|---|
-| 6a | Content Output Tracker + Goal Tracker | zone6-pulse.html | 🔲 | |
-| 6b | Streak system + Weekly Digest | zone6-pulse.html | 🔲 | Monday auto-generation |
-| 6c | Batch Creator | zone6-pulse.html | 🔲 | Full month content generation |
+| 6a | Content Output Tracker + Goal Tracker | zone6-pulse.html | ✅ | Reads hub_posts from Zone 1; CSS bar charts by platform + pillar; goal progress bars; period filters |
+| 6b | Streak system + Weekly Digest | zone6-pulse.html | ✅ | Auto-calculated posting streaks per platform; AI weekly debrief with insights + next-week ideas; archived |
+| 6c | Batch Creator | zone6-pulse.html | ✅ | Configure platforms/frequency/pillars/duration → AI generates JSON idea list → approve/edit/push to Zone 1 |
 
 ---
 
 ## Current Session
 
-**Session:** Phase 4 + Phase 5 — Zone 3 Learning Hub + Zone 5 Knowledge Hub
-**Task:** Both zones built, Zone 3↔Zone 5 bridge wired, OS Shell updated
-**Status:** Shipped. Zone 3: tutor chat, 40 topics, resources, journal, send-to-Z5. Zone 5: Obsidian companion, export. Both online.
-**Next action:** Phase 2 (Zone 2 Projects) or Phase 2 (Zone 4 Intelligence)
+**Session:** Full OS completion — Zone 2 Projects + Zone 6 Pulse
+**Task:** Built both remaining zones from scratch; audited existing zones; Zone 3 AI tutor de-Al Laith'd
+**Status:** All 6 zones online. OS Shell updated. Committed and pushed to GitHub/Vercel.
+**Next action:** Improvements — see suggestions in session notes
 
 ---
 

@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zone 6 — Pulse | Al Laith OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+/* ── OS colour system ── */
+:root{
+  --bg:#060D1A;--bg-2:#08111F;--surface:#0C1729;--surface-2:#112038;--surface-3:#18304F;
+  --border:rgba(140,175,230,0.10);--border-mid:rgba(140,175,230,0.16);
+  --text:#E9EFF8;--text-soft:#B7C5DC;--text-dim:#6E83A6;--text-muted:#475D80;
+  --primary:#5B9BFF;--primary-dim:rgba(91,155,255,0.12);
+  --warn:#F59E0B;--success:#22C55E;--danger:#EF4444;
+  --zone-6:#06B6D4;--zone-6-dim:rgba(6,182,212,0.12);--zone-6-glow:rgba(6,182,212,0.22);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{display:flex;height:100vh;overflow:hidden;background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+
+/* ── Sidebar ── */
+.sidebar{width:220px;min-width:220px;height:100vh;background:var(--bg-2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+.sidebar-header{padding:20px 16px 14px;border-bottom:1px solid var(--border)}
+.sidebar-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+.logo-mark{width:32px;height:32px;background:var(--zone-6);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:#000;flex-shrink:0}
+.logo-title{font-weight:700;font-size:13px;line-height:1.2}
+.logo-sub{font-size:10px;color:var(--text-dim)}
+.sidebar-nav{flex:1;padding:12px 8px}
+.nav-section-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:0 8px;margin:12px 0 4px;display:block}
+.nav-section-label:first-child{margin-top:0}
+.nav-item{width:100%;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:none;background:transparent;color:var(--text-soft);font-size:13px;font-weight:500;cursor:pointer;text-align:left;transition:all .15s;font-family:inherit}
+.nav-item:hover{background:var(--surface-3);color:var(--text)}
+.nav-item.active{background:var(--zone-6-dim);color:var(--zone-6)}
+.nav-icon{width:18px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;font-size:10px;background:var(--surface-3);border-radius:10px;padding:2px 7px;color:var(--text-dim)}
+.sidebar-footer{padding:12px 8px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px}
+
+/* ── Main ── */
+.main-content{flex:1;overflow-y:auto;height:100vh}
+.page{display:none;padding:32px;min-height:100%}
+.page.active{display:block}
+.page-header{margin-bottom:24px}
+.page-title{font-size:22px;font-weight:700}
+.page-subtitle{font-size:13px;color:var(--text-dim);margin-top:4px;line-height:1.6}
+
+/* ── Cards ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px}
+.card-body{padding:20px}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card-title{font-size:13px;font-weight:700}
+
+/* ── Stat strip ── */
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:24px}
+.stat-box{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px}
+.stat-num{font-size:26px;font-weight:800;line-height:1;color:var(--zone-6)}
+.stat-lbl{font-size:10px;color:var(--text-dim);margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
+.stat-sub{font-size:11px;color:var(--text-dim);margin-top:2px}
+
+/* ── Forms ── */
+.form-input{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;transition:border-color .15s}
+.form-input:focus{outline:none;border-color:var(--zone-6)}
+.form-label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin-bottom:6px}
+textarea.form-input{resize:vertical;min-height:80px;line-height:1.6}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;font-family:inherit;font-size:12px;font-weight:600;line-height:1;border:1px solid transparent;border-radius:8px;cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none;user-select:none}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
+.btn-primary{background:var(--zone-6);color:#000;border-color:var(--zone-6)}
+.btn-primary:hover{opacity:.88}
+.btn-ghost{background:transparent;color:var(--text-soft);border-color:var(--border)}
+.btn-ghost:hover{background:var(--surface-2);color:var(--text)}
+.btn-danger-ghost{background:transparent;color:var(--danger);border-color:var(--danger)}
+.btn-danger-ghost:hover{background:rgba(239,68,68,.1)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-ai{background:linear-gradient(135deg,#0891b2,var(--zone-6));color:#000;border:none;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-ai:hover{opacity:.88}
+.btn-ai:disabled{opacity:.45;cursor:not-allowed}
+
+/* ── Progress bars ── */
+.prog-track{height:8px;background:var(--surface-3);border-radius:4px;overflow:hidden;margin-top:6px}
+.prog-fill{height:100%;border-radius:4px;background:var(--zone-6);transition:width .6s ease;max-width:100%}
+.prog-fill-warn{background:var(--warn)}
+.prog-fill-success{background:var(--success)}
+
+/* ── Bar chart ── */
+.bar-chart{display:flex;flex-direction:column;gap:10px}
+.bar-row{display:flex;align-items:center;gap:10px}
+.bar-label{width:80px;font-size:11px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em;flex-shrink:0}
+.bar-track{flex:1;height:10px;background:var(--surface-3);border-radius:5px;overflow:hidden}
+.bar-fill{height:100%;border-radius:5px;background:var(--zone-6);transition:width .5s ease}
+.bar-count{font-size:12px;font-weight:700;color:var(--text-soft);min-width:24px;text-align:right}
+
+/* ── Platform colors ── */
+.bar-instagram{background:linear-gradient(90deg,#E1306C,#C13584)}
+.bar-linkedin{background:#0077B5}
+.bar-facebook{background:#1877F2}
+.bar-other{background:var(--text-dim)}
+
+/* ── Goal cards ── */
+.goal-card{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:10px;transition:border-color .15s}
+.goal-card:hover{border-color:var(--border-mid)}
+.goal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.goal-name{font-weight:600;font-size:13px}
+.goal-period{font-size:11px;color:var(--text-dim)}
+.goal-progress-label{display:flex;justify-content:space-between;margin-top:8px}
+.goal-current{font-size:13px;font-weight:700}
+.goal-target{font-size:11px;color:var(--text-dim)}
+
+/* ── Section label ── */
+.section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:8px}
+
+/* ── Batch idea cards ── */
+.idea-card{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start;transition:border-color .15s}
+.idea-card.approved{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.06)}
+.idea-card.removed{opacity:.4;pointer-events:none}
+.idea-check{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);background:var(--surface-3);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .15s;margin-top:1px}
+.idea-check.on{background:var(--success);border-color:var(--success);color:#fff}
+.idea-body{flex:1;min-width:0}
+.idea-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.idea-caption{font-size:13px;line-height:1.7;color:var(--text-soft)}
+.idea-date{font-size:11px;color:var(--text-muted);margin-top:4px}
+.platform-pill{font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px}
+.pill-instagram{background:rgba(225,48,108,.15);color:#E1306C}
+.pill-linkedin{background:rgba(0,119,181,.15);color:#60A5FA}
+.pill-facebook{background:rgba(24,119,242,.15);color:#93C5FD}
+.pill-other{background:var(--surface-3);color:var(--text-dim)}
+.pillar-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--zone-6-dim);color:var(--zone-6)}
+
+/* ── Digest ── */
+.digest-card{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:10px}
+.digest-week{font-size:11px;font-weight:700;color:var(--zone-6);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.digest-body{font-size:13px;line-height:1.8;color:var(--text-soft);white-space:pre-wrap}
+
+/* ── Streak ── */
+.streak-card{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;align-items:center;gap:16px;margin-bottom:10px}
+.streak-flame{font-size:28px}
+.streak-info{flex:1}
+.streak-platform{font-weight:600;font-size:13px;margin-bottom:2px}
+.streak-current{font-size:24px;font-weight:800;color:var(--zone-6)}
+.streak-detail{font-size:11px;color:var(--text-dim);margin-top:2px}
+
+/* ── Toast ── */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.3);animation:slideIn .2s ease}
+@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toast-success{border-left:3px solid var(--success)}
+.toast-warn{border-left:3px solid var(--warn)}
+.toast-info{border-left:3px solid var(--primary)}
+
+/* ── Empty state ── */
+.empty-state{text-align:center;padding:48px 24px;color:var(--text-dim)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-state p{font-size:13px;line-height:1.7;max-width:300px;margin:0 auto}
+
+/* ── Check group ── */
+.check-group{display:flex;flex-wrap:wrap;gap:8px}
+.check-item{display:flex;align-items:center;gap:6px;background:var(--surface-3);border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12px;transition:all .15s;user-select:none}
+.check-item.checked{background:var(--zone-6-dim);border-color:var(--zone-6);color:var(--zone-6)}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <a href="os-shell.html" class="sidebar-logo">
+      <div class="logo-mark">Z6</div>
+      <div>
+        <div class="logo-title">Al Laith OS</div>
+        <div class="logo-sub">Business Pulse</div>
+      </div>
+    </a>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <button class="nav-item active" onclick="navigate('dashboard')">
+      <span class="nav-icon">📊</span> Dashboard
+    </button>
+    <button class="nav-item" onclick="navigate('output')">
+      <span class="nav-icon">📈</span> Output Tracker
+    </button>
+    <div class="nav-section-label">Track</div>
+    <button class="nav-item" onclick="navigate('goals')">
+      <span class="nav-icon">🎯</span> Goals & Streaks
+      <span class="nav-badge" id="nb-goals">0</span>
+    </button>
+    <button class="nav-item" onclick="navigate('digest')">
+      <span class="nav-icon">📰</span> Weekly Digest
+      <span class="nav-badge" id="nb-digests">0</span>
+    </button>
+    <div class="nav-section-label">Create</div>
+    <button class="nav-item" onclick="navigate('batch')">
+      <span class="nav-icon">⚡</span> Batch Creator
+    </button>
+    <div class="nav-section-label">System</div>
+    <button class="nav-item" onclick="navigate('settings')">
+      <span class="nav-icon">⚙️</span> Settings
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="zone1-content.html" class="btn btn-ghost btn-sm" style="justify-content:center">📝 Zone 1 Content</a>
+    <a href="os-shell.html" class="btn btn-ghost btn-sm" style="justify-content:center">← Command Centre</a>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+
+  <!-- ── DASHBOARD ── -->
+  <div id="page-dashboard" class="page active">
+    <div class="page-header">
+      <h1 class="page-title">Business Pulse</h1>
+      <p class="page-subtitle">Your content activity, goals, and momentum — all in one place.</p>
+    </div>
+    <div class="stat-row" id="dash-stats"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" id="dash-charts-row">
+      <div class="card" style="margin:0">
+        <div class="card-header"><span class="card-title">Posts this week</span></div>
+        <div class="card-body" id="dash-week-chart"></div>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="card-header"><span class="card-title">Goal progress</span></div>
+        <div class="card-body" id="dash-goals-mini"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Recent content</span></div>
+      <div class="card-body" id="dash-recent"></div>
+    </div>
+  </div>
+
+  <!-- ── OUTPUT TRACKER ── -->
+  <div id="page-output" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Output Tracker</h1>
+      <p class="page-subtitle">Visual breakdown of your content output by platform, pillar, and time period.</p>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:20px">
+      <button class="btn btn-primary btn-sm" id="out-filter-week"   onclick="setOutFilter('week',this)">This week</button>
+      <button class="btn btn-ghost btn-sm"   id="out-filter-month"  onclick="setOutFilter('month',this)">This month</button>
+      <button class="btn btn-ghost btn-sm"   id="out-filter-all"    onclick="setOutFilter('all',this)">All time</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="card" style="margin:0">
+        <div class="card-header"><span class="card-title">By platform</span></div>
+        <div class="card-body" id="out-by-platform"></div>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="card-header"><span class="card-title">By pillar</span></div>
+        <div class="card-body" id="out-by-pillar"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Posts in this period</span>
+        <span id="out-count-label" style="font-size:11px;color:var(--text-dim)"></span>
+      </div>
+      <div class="card-body" id="out-post-list"></div>
+    </div>
+  </div>
+
+  <!-- ── GOALS & STREAKS ── -->
+  <div id="page-goals" class="page">
+    <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1 class="page-title">Goals & Streaks</h1>
+        <p class="page-subtitle">Set posting targets by platform. Streaks are calculated from your Zone 1 content history.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">Add a goal</span></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:flex-end">
+          <div>
+            <label class="form-label">Platform</label>
+            <select class="form-input" id="goal-platform">
+              <option value="instagram">Instagram</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="facebook">Facebook</option>
+              <option value="all">All platforms</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Target posts</label>
+            <input type="number" class="form-input" id="goal-target" placeholder="e.g. 5" min="1" max="30">
+          </div>
+          <div>
+            <label class="form-label">Period</label>
+            <select class="form-input" id="goal-period">
+              <option value="week">Per week</option>
+              <option value="month">Per month</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="addGoal()">Add Goal</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:4px">Active goals</div>
+    <div id="goals-list"></div>
+
+    <div style="margin-top:28px">
+      <div class="section-label">Posting streaks</div>
+      <p style="font-size:12px;color:var(--text-dim);margin-bottom:12px">Consecutive days with at least one post published, by platform.</p>
+      <div id="streaks-list"></div>
+    </div>
+  </div>
+
+  <!-- ── WEEKLY DIGEST ── -->
+  <div id="page-digest" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Weekly Digest</h1>
+      <p class="page-subtitle">AI reads your last week's activity across all zones and generates a focused debrief with insights and next-week ideas.</p>
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-body">
+        <p style="font-size:13px;color:var(--text-soft);margin-bottom:16px;line-height:1.7">The digest reads your recent posts, goal progress, and job activity to give you a personalised weekly debrief. Generate it on Mondays for the best recap.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn-ai" id="digest-gen-btn" onclick="generateDigest()">✨ Generate This Week's Digest</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="digest-latest" style="margin-bottom:20px"></div>
+
+    <div id="digests-archive-wrap" style="display:none">
+      <div class="section-label" style="margin-bottom:10px">Previous digests</div>
+      <div id="digests-archive"></div>
+    </div>
+  </div>
+
+  <!-- ── BATCH CREATOR ── -->
+  <div id="page-batch" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Batch Creator</h1>
+      <p class="page-subtitle">Generate a full week or month of content ideas in one session. Review, edit, and push approved posts to Zone 1 as drafts.</p>
+    </div>
+
+    <!-- Step 1: Configure -->
+    <div id="batch-config-section">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Step 1 — Configure your batch</span></div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+          <div class="form-grid">
+            <div>
+              <label class="form-label">Duration</label>
+              <select class="form-input" id="batch-duration">
+                <option value="7">1 week (7 days)</option>
+                <option value="14">2 weeks (14 days)</option>
+                <option value="30">1 month (30 days)</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Start date</label>
+              <input type="date" class="form-input" id="batch-start">
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Platforms to include</label>
+            <div class="check-group" id="batch-platforms">
+              <div class="check-item checked" data-val="instagram">📸 Instagram</div>
+              <div class="check-item checked" data-val="linkedin">💼 LinkedIn</div>
+              <div class="check-item" data-val="facebook">📘 Facebook</div>
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Posts per platform per week</label>
+            <div style="display:flex;gap:10px;align-items:center">
+              <input type="range" id="batch-freq" min="1" max="7" value="3" oninput="document.getElementById('batch-freq-val').textContent=this.value" style="flex:1;accent-color:var(--zone-6)">
+              <span id="batch-freq-val" style="font-size:16px;font-weight:700;color:var(--zone-6);min-width:20px">3</span>
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Content focus (optional)</label>
+            <textarea class="form-input" id="batch-focus" rows="2" placeholder="e.g. upcoming ADIPEC season, push scaffolding capability, highlight recent events work, Ramadan content…"></textarea>
+          </div>
+          <div>
+            <label class="form-label">Pillar mix (select which pillars to use)</label>
+            <div class="check-group" id="batch-pillars">
+              <div class="check-item checked" data-val="sectors">🏗️ Sectors</div>
+              <div class="check-item checked" data-val="products">⚙️ Products</div>
+              <div class="check-item checked" data-val="messaging">💬 Messaging</div>
+              <div class="check-item checked" data-val="community">👥 Community</div>
+              <div class="check-item" data-val="interactive">❓ Interactive</div>
+              <div class="check-item" data-val="training">🎓 Training</div>
+            </div>
+          </div>
+          <div>
+            <button class="btn-ai" id="batch-gen-btn" onclick="generateBatch()">✨ Generate Ideas</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Review ideas -->
+    <div id="batch-review-section" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:15px;font-weight:700">Step 2 — Review your ideas</div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:2px" id="batch-review-meta">Tick the ones you want to keep. Edit captions as needed.</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="toggleAllIdeas(true)">Select all</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleAllIdeas(false)">Deselect all</button>
+          <button class="btn btn-ghost btn-sm" onclick="showBatchConfig()">← Reconfigure</button>
+          <button class="btn btn-primary" onclick="pushBatchToZ1()" id="batch-push-btn">🚀 Push approved to Zone 1</button>
+        </div>
+      </div>
+      <div id="batch-ideas-list"></div>
+    </div>
+  </div>
+
+  <!-- ── SETTINGS ── -->
+  <div id="page-settings" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Settings</h1>
+      <p class="page-subtitle">API key and data source configuration for Zone 6.</p>
+    </div>
+    <div id="settings-status" style="margin-bottom:20px"></div>
+    <div id="settings-local" class="card" style="margin-bottom:16px">
+      <div class="card-body">
+        <h3 style="font-weight:600;margin-bottom:4px">Anthropic API Key</h3>
+        <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px">Required locally. On Vercel, the key is stored server-side.</p>
+        <div style="display:flex;gap:10px;align-items:flex-end">
+          <div style="flex:1">
+            <label class="form-label">API Key</label>
+            <input type="password" class="form-input" id="api-key-input" placeholder="sk-ant-api03-…" autocomplete="off">
+          </div>
+          <button class="btn btn-primary" onclick="saveApiKey()">Save</button>
+          <button class="btn btn-danger-ghost" onclick="clearApiKey()">Clear</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h3 style="font-weight:600;margin-bottom:4px">Zone 1 Connection</h3>
+        <p style="font-size:13px;color:var(--text-dim);margin-bottom:12px">Pulse reads from Zone 1's content library to calculate output stats, streaks, and digests.</p>
+        <div id="z1-connection-status"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- TOASTS -->
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+'use strict';
+
+/* ════════════════════════════════════════════════════
+   STORAGE
+════════════════════════════════════════════════════ */
+const KEYS = {
+  goals:'z6_goals', digests:'z6_digests',
+  z1posts:'hub_posts', z2jobs:'z2_jobs',
+  apiKey:'anthropic_api_key'
+};
+
+const ls  = k => { try{ return JSON.parse(localStorage.getItem(k)||'[]'); }catch(){ return []; } };
+const lsS = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+const uid = () => 'z6_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+
+const getGoals   = () => ls(KEYS.goals);
+const getDigests = () => ls(KEYS.digests);
+const getZ1Posts = () => { try{ return JSON.parse(localStorage.getItem(KEYS.z1posts)||'[]'); }catch(){ return []; } };
+const getZ2Jobs  = () => { try{ return JSON.parse(localStorage.getItem(KEYS.z2jobs)||'[]'); }catch(){ return []; } };
+
+/* ════════════════════════════════════════════════════
+   API KEY + AI
+════════════════════════════════════════════════════ */
+const AI_MODEL  = 'claude-haiku-4-5';
+const getApiKey = () => localStorage.getItem(KEYS.apiKey)||'';
+
+async function claudeFetch(body){
+  if(window.location.protocol==='https:'){
+    const r = await fetch('/api/claude',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.error?.message||'API error '+r.status); }
+    return r.json();
+  }
+  const key = getApiKey();
+  if(!key) throw Object.assign(new Error('No API key — go to Settings'),{noKey:true});
+  const r = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-allow-browser-access':'true'},
+    body:JSON.stringify(body)
+  });
+  if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.error?.message||'API error '+r.status); }
+  return r.json();
+}
+
+/* ════════════════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════════════════ */
+const NAV_MAP = {dashboard:0,output:1,goals:2,digest:3,batch:4,settings:5};
+
+function navigate(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const el = document.getElementById('page-'+page);
+  if(el) el.classList.add('active');
+  const items = document.querySelectorAll('.nav-item');
+  if(items[NAV_MAP[page]]) items[NAV_MAP[page]].classList.add('active');
+  const renders = {
+    dashboard:renderDashboard, output:()=>renderOutput('week'),
+    goals:renderGoalsPage, digest:renderDigestPage,
+    batch:()=>{}, settings:renderSettings
+  };
+  renders[page]?.();
+  updateBadges();
+}
+
+/* ════════════════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════════════════ */
+const PLATFORM_LABELS = {instagram:'Instagram',linkedin:'LinkedIn',facebook:'Facebook'};
+const PILLAR_LABELS   = {sectors:'Sectors',products:'Products',messaging:'Messaging',community:'Community',interactive:'Interactive',training:'Training'};
+
+const esc  = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const fmtD = d => { try{ return d?new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''; }catch(){ return d||''; } };
+const fmtS = d => { try{ return d?new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):''; }catch(){ return ''; } };
+
+function toast(msg, type='info'){
+  const el = document.createElement('div');
+  el.className = 'toast toast-'+(type==='success'?'success':type==='warn'?'warn':'info');
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>el.remove(), 3500);
+}
+
+// Date helpers
+function startOfWeek(d){ const dt=new Date(d); dt.setHours(0,0,0,0); dt.setDate(dt.getDate()-dt.getDay()); return dt; }
+function startOfMonth(d){ const dt=new Date(d); dt.setDate(1); dt.setHours(0,0,0,0); return dt; }
+
+function filterPostsByPeriod(posts, period){
+  const now = Date.now();
+  const cutoff = period==='week' ? startOfWeek(new Date()).getTime()
+               : period==='month'? startOfMonth(new Date()).getTime()
+               : 0;
+  return posts.filter(p=>{
+    const ts = p.created_at || p.scheduled_date ? new Date(p.created_at||p.scheduled_date||0).getTime() : 0;
+    return ts >= cutoff;
+  });
+}
+
+/* ════════════════════════════════════════════════════
+   DASHBOARD
+════════════════════════════════════════════════════ */
+function renderDashboard(){
+  const posts   = getZ1Posts();
+  const goals   = getGoals();
+  const thisWk  = filterPostsByPeriod(posts,'week');
+  const thisMth = filterPostsByPeriod(posts,'month');
+  const active  = goals.length;
+
+  // Stats
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="stat-box">
+      <div class="stat-num">${thisWk.length}</div>
+      <div class="stat-lbl">Posts this week</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">${thisMth.length}</div>
+      <div class="stat-lbl">Posts this month</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">${posts.length}</div>
+      <div class="stat-lbl">Total in library</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">${active}</div>
+      <div class="stat-lbl">Active goals</div>
+    </div>`;
+
+  // Week chart
+  const wkByPlatform = {};
+  thisWk.forEach(p=>{ const pl=p.platform||'other'; wkByPlatform[pl]=(wkByPlatform[pl]||0)+1; });
+  const maxWk = Math.max(1,...Object.values(wkByPlatform));
+  const wkEl = document.getElementById('dash-week-chart');
+  if(!thisWk.length){
+    wkEl.innerHTML = '<p style="font-size:12px;color:var(--text-dim)">No posts this week yet.</p>';
+  } else {
+    wkEl.innerHTML = `<div class="bar-chart">${
+      Object.entries(wkByPlatform).map(([p,n])=>`
+        <div class="bar-row">
+          <span class="bar-label">${esc(PLATFORM_LABELS[p]||p)}</span>
+          <div class="bar-track"><div class="bar-fill bar-${p}" style="width:${Math.round(n/maxWk*100)}%"></div></div>
+          <span class="bar-count">${n}</span>
+        </div>`).join('')
+    }</div>`;
+  }
+
+  // Goals mini
+  const goalsEl = document.getElementById('dash-goals-mini');
+  if(!goals.length){
+    goalsEl.innerHTML = '<p style="font-size:12px;color:var(--text-dim)">No goals set. <button onclick="navigate(\'goals\')" class="btn btn-ghost btn-sm" style="margin-left:4px">Set a goal →</button></p>';
+  } else {
+    goalsEl.innerHTML = goals.map(g=>{
+      const current = calcGoalCurrent(g);
+      const pct = Math.min(100, Math.round(current/g.target*100));
+      return `<div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:12px;font-weight:600">${esc(PLATFORM_LABELS[g.platform]||g.platform)} — ${g.target}/${g.period}</span>
+          <span style="font-size:12px;color:${pct>=100?'var(--success)':pct>=70?'var(--zone-6)':'var(--text-dim)'}">${current}/${g.target}</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill ${pct>=100?'prog-fill-success':''}" style="width:${pct}%"></div></div>
+      </div>`;
+    }).join('');
+  }
+
+  // Recent posts
+  const recent = [...posts].sort((a,b)=>(b.created_at||0)-(a.created_at||0)).slice(0,5);
+  const recEl  = document.getElementById('dash-recent');
+  if(!recent.length){
+    recEl.innerHTML = '<p style="font-size:12px;color:var(--text-dim)">No posts in Zone 1 yet. <a href="zone1-content.html" style="color:var(--zone-6)">Go to Zone 1 →</a></p>';
+  } else {
+    recEl.innerHTML = recent.map(p=>`
+      <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span class="platform-pill pill-${p.platform||'other'}">${esc(PLATFORM_LABELS[p.platform]||p.platform||'—')}</span>
+        <span style="font-size:12px;color:var(--text-soft);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${esc((p.caption||'').slice(0,80))}</span>
+        <span style="font-size:11px;color:var(--text-dim);flex-shrink:0">${fmtS(new Date(p.created_at||0).toISOString().split('T')[0])}</span>
+      </div>`).join('');
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   OUTPUT TRACKER
+════════════════════════════════════════════════════ */
+let outFilter = 'week';
+
+function setOutFilter(f, el){
+  outFilter = f;
+  document.querySelectorAll('#page-output .btn[id^="out-filter"]').forEach(b=>b.className='btn btn-ghost btn-sm');
+  el.className = 'btn btn-primary btn-sm';
+  renderOutput(f);
+}
+
+function renderOutput(period){
+  const allPosts = getZ1Posts();
+  const posts    = filterPostsByPeriod(allPosts, period);
+  const label    = document.getElementById('out-count-label');
+  if(label) label.textContent = `${posts.length} post${posts.length!==1?'s':''}`;
+
+  // By platform
+  const byPlatform = {};
+  posts.forEach(p=>{ const pl=p.platform||'other'; byPlatform[pl]=(byPlatform[pl]||0)+1; });
+  const maxP = Math.max(1,...Object.values(byPlatform));
+  const platEl = document.getElementById('out-by-platform');
+  if(platEl){
+    if(!posts.length){ platEl.innerHTML='<p style="font-size:12px;color:var(--text-dim)">No posts in this period.</p>'; }
+    else platEl.innerHTML = `<div class="bar-chart">${
+      Object.entries(byPlatform).sort((a,b)=>b[1]-a[1]).map(([p,n])=>`
+        <div class="bar-row">
+          <span class="bar-label">${esc(PLATFORM_LABELS[p]||p)}</span>
+          <div class="bar-track"><div class="bar-fill bar-${p}" style="width:${Math.round(n/maxP*100)}%"></div></div>
+          <span class="bar-count">${n}</span>
+        </div>`).join('')
+    }</div>`;
+  }
+
+  // By pillar
+  const byPillar = {};
+  posts.forEach(p=>{ const pl=p.pillar||'other'; byPillar[pl]=(byPillar[pl]||0)+1; });
+  const maxPil = Math.max(1,...Object.values(byPillar));
+  const pilEl  = document.getElementById('out-by-pillar');
+  if(pilEl){
+    if(!posts.length){ pilEl.innerHTML='<p style="font-size:12px;color:var(--text-dim)">No posts in this period.</p>'; }
+    else pilEl.innerHTML = `<div class="bar-chart">${
+      Object.entries(byPillar).sort((a,b)=>b[1]-a[1]).map(([p,n])=>`
+        <div class="bar-row">
+          <span class="bar-label" style="font-size:10px">${esc(PILLAR_LABELS[p]||p)}</span>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/maxPil*100)}%;background:var(--zone-6)"></div></div>
+          <span class="bar-count">${n}</span>
+        </div>`).join('')
+    }</div>`;
+  }
+
+  // Post list
+  const listEl = document.getElementById('out-post-list');
+  if(listEl){
+    if(!posts.length){ listEl.innerHTML='<div class="empty-state"><div class="empty-icon">📊</div><p>No posts in this period yet.</p></div>'; }
+    else {
+      const sorted = [...posts].sort((a,b)=>(b.created_at||0)-(a.created_at||0));
+      listEl.innerHTML = sorted.map(p=>`
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <span class="platform-pill pill-${p.platform||'other'}" style="flex-shrink:0;margin-top:2px">${esc(PLATFORM_LABELS[p.platform]||p.platform||'—')}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;color:var(--text-soft);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${esc(p.caption||'No caption')}</div>
+            ${p.pillar?`<span class="pillar-pill" style="margin-top:4px;display:inline-block">${esc(PILLAR_LABELS[p.pillar]||p.pillar)}</span>`:''}
+          </div>
+          <span style="font-size:11px;color:var(--text-dim);flex-shrink:0">${fmtS(new Date(p.created_at||0).toISOString().split('T')[0])}</span>
+        </div>`).join('');
+    }
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   GOALS
+════════════════════════════════════════════════════ */
+function calcGoalCurrent(goal){
+  const posts = getZ1Posts();
+  const period = goal.period||'week';
+  const filtered = filterPostsByPeriod(posts, period);
+  if(goal.platform==='all') return filtered.length;
+  return filtered.filter(p=>(p.platform||'').toLowerCase()===goal.platform).length;
+}
+
+function calcStreaks(){
+  const posts = getZ1Posts();
+  const platforms = ['instagram','linkedin','facebook'];
+  const result = {};
+  platforms.forEach(platform=>{
+    const platPosts = posts.filter(p=>(p.platform||'').toLowerCase()===platform);
+    const days = new Set(platPosts.map(p=>{
+      if(!p.created_at) return null;
+      const d = new Date(p.created_at);
+      return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    }).filter(Boolean));
+    // Calculate streak from today backwards
+    let streak = 0;
+    const today = new Date();
+    for(let i=0; i<365; i++){
+      const d = new Date(today); d.setDate(d.getDate()-i);
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      if(days.has(key)) streak++;
+      else if(i>0) break;
+    }
+    result[platform] = { current:streak, total:platPosts.length };
+  });
+  return result;
+}
+
+function addGoal(){
+  const platform = document.getElementById('goal-platform').value;
+  const target   = parseInt(document.getElementById('goal-target').value)||0;
+  const period   = document.getElementById('goal-period').value;
+  if(!target||target<1){ toast('Enter a target number','warn'); return; }
+  const existing = getGoals();
+  // Remove any existing goal for same platform+period
+  const filtered = existing.filter(g=>!(g.platform===platform&&g.period===period));
+  filtered.push({ id:uid(), platform, target, period, created_at:Date.now() });
+  lsS(KEYS.goals, filtered);
+  renderGoalsPage(); updateBadges();
+  document.getElementById('goal-target').value='';
+  toast('Goal added','success');
+}
+
+function deleteGoal(id){
+  lsS(KEYS.goals, getGoals().filter(g=>g.id!==id));
+  renderGoalsPage(); updateBadges();
+  toast('Goal removed','info');
+}
+
+function renderGoalsPage(){
+  const goals = getGoals();
+  const list  = document.getElementById('goals-list');
+  if(!goals.length){
+    list.innerHTML = '<div class="empty-state" style="padding:24px"><div class="empty-icon" style="font-size:32px">🎯</div><p style="font-size:12px">No goals set yet. Add your first posting target above.</p></div>';
+  } else {
+    list.innerHTML = goals.map(g=>{
+      const current = calcGoalCurrent(g);
+      const pct     = Math.min(100, Math.round(current/g.target*100));
+      const colour  = pct>=100?'var(--success)':pct>=60?'var(--zone-6)':'var(--warn)';
+      return `<div class="goal-card">
+        <div class="goal-head">
+          <div>
+            <div class="goal-name">${esc(PLATFORM_LABELS[g.platform]||g.platform)}</div>
+            <div class="goal-period">${g.target} posts per ${g.period}</div>
+          </div>
+          <button class="btn btn-danger-ghost btn-sm" onclick="deleteGoal('${g.id}')">Remove</button>
+        </div>
+        <div class="goal-progress-label">
+          <span class="goal-current" style="color:${colour}">${current}</span>
+          <span class="goal-target">of ${g.target} this ${g.period}</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill ${pct>=100?'prog-fill-success':''}" style="width:${pct}%;background:${colour}"></div></div>
+        ${pct>=100?`<p style="font-size:11px;color:var(--success);margin-top:6px">✅ Goal met!</p>`:''}
+      </div>`;
+    }).join('');
+  }
+
+  // Streaks
+  const streaks   = calcStreaks();
+  const streakEl  = document.getElementById('streaks-list');
+  const platforms = Object.entries(streaks);
+  streakEl.innerHTML = platforms.map(([pl, data])=>`
+    <div class="streak-card">
+      <div class="streak-flame">${data.current>0?'🔥':'💤'}</div>
+      <div class="streak-info">
+        <div class="streak-platform">${esc(PLATFORM_LABELS[pl]||pl)}</div>
+        <div class="streak-current">${data.current}<span style="font-size:14px;font-weight:400;color:var(--text-dim)"> day${data.current!==1?'s':''} streak</span></div>
+        <div class="streak-detail">${data.total} total post${data.total!==1?'s':''} in library</div>
+      </div>
+    </div>`).join('');
+}
+
+/* ════════════════════════════════════════════════════
+   WEEKLY DIGEST
+════════════════════════════════════════════════════ */
+function renderDigestPage(){
+  const digests = getDigests();
+  const latestEl = document.getElementById('digest-latest');
+  const archWrap = document.getElementById('digests-archive-wrap');
+  const archEl   = document.getElementById('digests-archive');
+
+  if(!digests.length){
+    latestEl.innerHTML = '<div class="empty-state"><div class="empty-icon">📰</div><p>No digests yet. Generate your first one above.</p></div>';
+    archWrap.style.display = 'none';
+    return;
+  }
+
+  const [latest, ...older] = digests;
+  latestEl.innerHTML = `
+    <div class="section-label" style="margin-bottom:10px">Latest digest</div>
+    <div class="digest-card" style="border-color:var(--zone-6-glow)">
+      <div class="digest-week">Week of ${fmtD(latest.weekStart)}</div>
+      <div class="digest-body">${esc(latest.content)}</div>
+    </div>`;
+
+  if(older.length){
+    archWrap.style.display = 'block';
+    archEl.innerHTML = older.map(d=>`
+      <div class="digest-card">
+        <div class="digest-week">Week of ${fmtD(d.weekStart)}</div>
+        <div class="digest-body" style="-webkit-line-clamp:3;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden">${esc(d.content)}</div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="expandDigest('${d.id}',this)">Read more</button>
+      </div>`).join('');
+  } else {
+    archWrap.style.display = 'none';
+  }
+}
+
+function expandDigest(id, btn){
+  const d = getDigests().find(x=>x.id===id);
+  if(!d) return;
+  const bodyEl = btn.previousElementSibling;
+  bodyEl.style.cssText = '';
+  btn.remove();
+}
+
+async function generateDigest(){
+  const btn = document.getElementById('digest-gen-btn');
+  btn.disabled=true; btn.textContent='✨ Generating…';
+
+  const posts   = getZ1Posts();
+  const z2jobs  = getZ2Jobs();
+  const goals   = getGoals();
+  const wkPosts = filterPostsByPeriod(posts,'week');
+  const wkMth   = filterPostsByPeriod(posts,'month');
+
+  const postSummary = wkPosts.length
+    ? wkPosts.slice(0,8).map(p=>`• [${p.platform||'?'}] ${(p.caption||'').slice(0,80)}…`).join('\n')
+    : 'No posts this week';
+
+  const goalSummary = goals.map(g=>{
+    const curr = calcGoalCurrent(g);
+    return `• ${PLATFORM_LABELS[g.platform]||g.platform}: ${curr}/${g.target} per ${g.period}`;
+  }).join('\n')||'No goals set';
+
+  const jobSummary = z2jobs.length
+    ? z2jobs.slice(0,3).map(j=>`• ${j.title} (${j.sector||''})`).join('\n')
+    : 'No recent jobs logged';
+
+  try{
+    const data = await claudeFetch({
+      model:AI_MODEL, max_tokens:700,
+      system:'You are a focused marketing analyst summarising weekly performance for Al Laith Group. Be specific, practical, and direct. No filler.',
+      messages:[{role:'user',content:`Generate a concise weekly marketing debrief.
+
+Posts this week (${wkPosts.length} total):
+${postSummary}
+
+Goal progress:
+${goalSummary}
+
+Posts this month: ${wkMth.length}
+Recent jobs logged in Zone 2:
+${jobSummary}
+
+Write a debrief (300-400 words) covering:
+1. **This Week** — what was published and how it performed relative to goals
+2. **Momentum** — what's on track, what's slipping, honest assessment
+3. **Next Week** — 3 specific content ideas based on the jobs and gaps spotted
+4. **One thing to do differently** — a single focused improvement
+
+Keep it direct, specific, and actionable. No motivational fluff.`}]
+    });
+    const text = data.content?.[0]?.text||'';
+    const now  = new Date();
+    const wkStart = startOfWeek(now).toISOString().split('T')[0];
+    const digest = { id:uid(), weekStart:wkStart, content:text, generated_at:Date.now() };
+    lsS(KEYS.digests, [digest, ...getDigests()].slice(0,20));
+    renderDigestPage(); updateBadges();
+    toast('Digest generated','success');
+  }catch(e){
+    toast(e.noKey?'⚙️ Add your API key in Settings':'Error: '+e.message,'warn');
+  }finally{
+    btn.disabled=false; btn.textContent='✨ Generate This Week\'s Digest';
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   BATCH CREATOR
+════════════════════════════════════════════════════ */
+let batchIdeas = []; // [{id, platform, pillar, caption, date, approved}]
+
+function showBatchConfig(){
+  document.getElementById('batch-config-section').style.display='block';
+  document.getElementById('batch-review-section').style.display='none';
+}
+
+async function generateBatch(){
+  const platforms = [];
+  document.querySelectorAll('#batch-platforms .check-item.checked').forEach(el=>platforms.push(el.dataset.val));
+  if(!platforms.length){ toast('Select at least one platform','warn'); return; }
+
+  const pillars = [];
+  document.querySelectorAll('#batch-pillars .check-item.checked').forEach(el=>pillars.push(el.dataset.val));
+  if(!pillars.length){ toast('Select at least one pillar','warn'); return; }
+
+  const days    = parseInt(document.getElementById('batch-duration').value)||7;
+  const freq    = parseInt(document.getElementById('batch-freq').value)||3;
+  const startD  = document.getElementById('batch-start').value || new Date().toISOString().split('T')[0];
+  const focus   = document.getElementById('batch-focus').value.trim();
+  const totalPosts = Math.round((days/7)*freq*platforms.length);
+
+  const btn = document.getElementById('batch-gen-btn');
+  btn.disabled=true; btn.textContent='✨ Generating…';
+
+  try{
+    const data = await claudeFetch({
+      model: AI_MODEL, max_tokens: 2000,
+      system: 'You are a B2B social media content planner for Al Laith Group — UAE equipment rental, scaffolding, and events infrastructure. Create varied, specific, platform-appropriate content ideas.',
+      messages:[{role:'user',content:`Generate ${totalPosts} social media post ideas as a JSON array.
+
+Configuration:
+- Platforms: ${platforms.join(', ')}
+- Content pillars to use: ${pillars.join(', ')}
+- Duration: ${days} days starting ${startD}
+- Posts per platform per week: ${freq}
+${focus?`- Content focus: ${focus}`:''}
+
+Rules:
+- Alternate platforms evenly across the date range
+- Vary pillars — don't repeat the same pillar more than twice in a row
+- Instagram: visual, punchy, hook in first line
+- LinkedIn: professional, thought leadership angle, 100-150 words
+- Facebook: warm, community-focused, 80-120 words
+- Use specific details (numbers, project types, locations, equipment names)
+
+Return ONLY a valid JSON array, no other text:
+[
+  {
+    "platform": "instagram",
+    "pillar": "sectors",
+    "caption": "The full post caption here",
+    "day": 1
+  }
+]`}]
+    });
+
+    const raw  = data.content?.[0]?.text||'[]';
+    // Parse JSON (extract JSON array from response)
+    const match = raw.match(/\[[\s\S]*\]/);
+    if(!match) throw new Error('AI did not return valid JSON. Try again.');
+    const parsed = JSON.parse(match[0]);
+    if(!Array.isArray(parsed)||!parsed.length) throw new Error('No ideas generated. Try again.');
+
+    const start = new Date(startD);
+    batchIdeas = parsed.map((idea,i)=>{
+      const dt = new Date(start);
+      dt.setDate(dt.getDate()+(idea.day-1||i));
+      return {
+        id: uid(),
+        platform: idea.platform||platforms[i%platforms.length],
+        pillar:   idea.pillar||pillars[i%pillars.length],
+        caption:  idea.caption||'',
+        date:     dt.toISOString().split('T')[0],
+        approved: true
+      };
+    });
+
+    renderBatchIdeas();
+    document.getElementById('batch-config-section').style.display = 'none';
+    document.getElementById('batch-review-section').style.display = 'block';
+    document.getElementById('batch-review-meta').textContent = `${batchIdeas.length} ideas generated — approve, edit, or remove each.`;
+    toast(`${batchIdeas.length} ideas generated!`,'success');
+  }catch(e){
+    toast(e.noKey?'⚙️ Add your API key in Settings':e.message,'warn');
+  }finally{
+    btn.disabled=false; btn.textContent='✨ Generate Ideas';
+  }
+}
+
+function renderBatchIdeas(){
+  const list = document.getElementById('batch-ideas-list');
+  if(!batchIdeas.length){ list.innerHTML=''; return; }
+  list.innerHTML = batchIdeas.map((idea,i)=>`
+    <div class="idea-card ${idea.approved?'approved':''}" id="idea-card-${i}">
+      <div class="idea-check ${idea.approved?'on':''}" onclick="toggleIdea(${i})">
+        ${idea.approved?'✓':''}
+      </div>
+      <div class="idea-body">
+        <div class="idea-meta">
+          <span class="platform-pill pill-${idea.platform||'other'}">${esc(PLATFORM_LABELS[idea.platform]||idea.platform)}</span>
+          <span class="pillar-pill">${esc(PILLAR_LABELS[idea.pillar]||idea.pillar)}</span>
+        </div>
+        <textarea class="form-input idea-caption" id="idea-text-${i}" style="min-height:80px;font-size:12px;line-height:1.7;border:none;background:transparent;padding:0;resize:none"
+          oninput="batchIdeas[${i}].caption=this.value"
+        >${esc(idea.caption)}</textarea>
+        <div class="idea-date">📅 ${fmtD(idea.date)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleIdea(i){
+  if(!batchIdeas[i]) return;
+  batchIdeas[i].approved = !batchIdeas[i].approved;
+  renderBatchIdeas();
+}
+
+function toggleAllIdeas(val){
+  batchIdeas.forEach(idea=>idea.approved=val);
+  renderBatchIdeas();
+}
+
+function pushBatchToZ1(){
+  const approved = batchIdeas.filter(i=>i.approved);
+  if(!approved.length){ toast('No ideas approved','warn'); return; }
+  // Read updated captions from the DOM
+  batchIdeas.forEach((idea,i)=>{
+    const el = document.getElementById('idea-text-'+i);
+    if(el) idea.caption = el.value.trim();
+  });
+  const existing = getZ1Posts();
+  const t = Date.now();
+  const newPosts = approved.map((idea,i)=>({
+    id:        'z6b_'+t+'_'+i,
+    caption:   idea.caption,
+    platform:  idea.platform,
+    pillar:    idea.pillar,
+    status:    'idea',
+    schedule_date: idea.date,
+    source:    'batch',
+    created_at: t
+  }));
+  lsS(KEYS.z1posts, [...existing, ...newPosts]);
+  toast(`${newPosts.length} post${newPosts.length!==1?'s':''} pushed to Zone 1 as drafts!`,'success');
+  // Reset batch
+  batchIdeas = [];
+  showBatchConfig();
+}
+
+/* ════════════════════════════════════════════════════
+   SETTINGS
+════════════════════════════════════════════════════ */
+function saveApiKey(){
+  const v = document.getElementById('api-key-input')?.value?.trim();
+  if(!v){ toast('Enter a key','warn'); return; }
+  localStorage.setItem(KEYS.apiKey, v);
+  renderSettings(); toast('API key saved','success');
+}
+function clearApiKey(){
+  localStorage.removeItem(KEYS.apiKey);
+  const i = document.getElementById('api-key-input'); if(i) i.value='';
+  renderSettings(); toast('API key cleared','info');
+}
+
+function renderSettings(){
+  const status = document.getElementById('settings-status');
+  if(!status) return;
+  const inp = document.getElementById('api-key-input');
+  if(inp && getApiKey()) inp.value = getApiKey();
+  const onVercel = window.location.protocol==='https:';
+  const hasKey   = !!getApiKey();
+  if(onVercel){
+    status.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:10px;font-size:13px;color:var(--success)"><span>✅</span><strong>Running on Vercel — AI active.</strong></div>`;
+    document.getElementById('settings-local').style.display = 'none';
+  } else if(hasKey){
+    status.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:10px;font-size:13px;color:var(--success)"><span>✅</span><strong>API key set — AI features active.</strong></div>`;
+  } else {
+    status.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;font-size:13px;color:var(--warn)"><span>⚠️</span><div><strong>No API key.</strong> Enter below to activate AI.</div></div>`;
+  }
+
+  // Zone 1 status
+  const z1El = document.getElementById('z1-connection-status');
+  if(z1El){
+    const posts = getZ1Posts();
+    z1El.innerHTML = posts.length
+      ? `<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--success)">✅ Connected — ${posts.length} posts found in Zone 1 library.</div>`
+      : `<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-dim)">⚪ No Zone 1 data found. Create content in Zone 1 first.</div>`;
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   BADGES
+════════════════════════════════════════════════════ */
+function updateBadges(){
+  const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  set('nb-goals',   getGoals().length);
+  set('nb-digests', getDigests().length);
+}
+
+/* ════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════ */
+// Toggle handlers for check-group items
+document.querySelectorAll('.check-group .check-item').forEach(el=>{
+  el.addEventListener('click', ()=>el.classList.toggle('checked'));
+});
+
+// Set default batch start date to today
+document.getElementById('batch-start').value = new Date().toISOString().split('T')[0];
+
+renderDashboard();
+updateBadges();
+renderSettings();
+</script>
+</body>
+</html>

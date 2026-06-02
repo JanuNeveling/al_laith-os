@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zone 2 — Projects | Al Laith OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+/* ── OS colour system ── */
+:root{
+  --bg:#060D1A;--bg-2:#08111F;--surface:#0C1729;--surface-2:#112038;--surface-3:#18304F;
+  --border:rgba(140,175,230,0.10);--border-mid:rgba(140,175,230,0.16);--border-strong:rgba(140,175,230,0.28);
+  --text:#E9EFF8;--text-soft:#B7C5DC;--text-dim:#6E83A6;--text-muted:#475D80;
+  --primary:#5B9BFF;--primary-dim:rgba(91,155,255,0.12);
+  --warn:#F59E0B;--success:#22C55E;--danger:#EF4444;
+  --zone-2:#F59E0B;--zone-2-dim:rgba(245,158,11,0.12);--zone-2-glow:rgba(245,158,11,0.22);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{display:flex;height:100vh;overflow:hidden;background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+
+/* ── Sidebar ── */
+.sidebar{width:220px;min-width:220px;height:100vh;background:var(--bg-2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+.sidebar-header{padding:20px 16px 14px;border-bottom:1px solid var(--border)}
+.sidebar-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+.logo-mark{width:32px;height:32px;background:var(--zone-2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:#000;flex-shrink:0}
+.logo-title{font-weight:700;font-size:13px;line-height:1.2}
+.logo-sub{font-size:10px;color:var(--text-dim)}
+.sidebar-nav{flex:1;padding:12px 8px}
+.nav-section-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:0 8px;margin:12px 0 4px;display:block}
+.nav-section-label:first-child{margin-top:0}
+.nav-item{width:100%;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:none;background:transparent;color:var(--text-soft);font-size:13px;font-weight:500;cursor:pointer;text-align:left;transition:all .15s;font-family:inherit}
+.nav-item:hover{background:var(--surface-3);color:var(--text)}
+.nav-item.active{background:var(--zone-2-dim);color:var(--zone-2)}
+.nav-icon{width:18px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;font-size:10px;background:var(--surface-3);border-radius:10px;padding:2px 7px;color:var(--text-dim)}
+.sidebar-footer{padding:12px 8px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px}
+
+/* ── Main ── */
+.main-content{flex:1;overflow-y:auto;height:100vh}
+.page{display:none;padding:32px;min-height:100%}
+.page.active{display:block}
+.page-header{margin-bottom:24px}
+.page-title{font-size:22px;font-weight:700}
+.page-subtitle{font-size:13px;color:var(--text-dim);margin-top:4px;line-height:1.6}
+
+/* ── Cards ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px}
+.card-body{padding:20px}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card-title{font-size:13px;font-weight:700}
+
+/* ── Forms ── */
+.form-input{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;transition:border-color .15s}
+.form-input:focus{outline:none;border-color:var(--zone-2)}
+.form-label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin-bottom:6px}
+textarea.form-input{resize:vertical;min-height:80px;line-height:1.6}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;font-family:inherit;font-size:12px;font-weight:600;line-height:1;border:1px solid transparent;border-radius:8px;cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none;user-select:none}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
+.btn-primary{background:var(--zone-2);color:#000;border-color:var(--zone-2)}
+.btn-primary:hover{opacity:.88}
+.btn-ghost{background:transparent;color:var(--text-soft);border-color:var(--border)}
+.btn-ghost:hover{background:var(--surface-2);color:var(--text)}
+.btn-danger-ghost{background:transparent;color:var(--danger);border-color:var(--danger)}
+.btn-danger-ghost:hover{background:rgba(239,68,68,.1)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-ai{background:linear-gradient(135deg,#d97706,var(--zone-2));color:#000;border:none;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-ai:hover{opacity:.88}
+.btn-ai:disabled{opacity:.45;cursor:not-allowed}
+
+/* ── Labels ── */
+.section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:8px}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.02em}
+.badge-construction{background:rgba(245,158,11,.15);color:#FCD34D}
+.badge-events{background:rgba(139,92,246,.15);color:#A78BFA}
+.badge-oil-gas{background:rgba(239,68,68,.15);color:#F87171}
+.badge-aviation{background:rgba(59,130,246,.15);color:#60A5FA}
+.badge-other{background:var(--surface-3);color:var(--text-dim)}
+.badge-active{background:rgba(34,197,94,.15);color:var(--success)}
+.badge-completed{background:rgba(91,155,255,.12);color:var(--primary)}
+
+/* ── Item cards ── */
+.item-card{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:14px;margin-bottom:8px}
+.item-card:hover{border-color:var(--zone-2);background:var(--surface-3)}
+.item-icon{width:36px;height:36px;border-radius:8px;background:var(--zone-2-dim);border:1px solid var(--zone-2-glow);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.item-body{flex:1;min-width:0}
+.item-title{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.item-meta{font-size:11px;color:var(--text-dim);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.item-actions{display:flex;gap:6px;flex-shrink:0}
+
+/* ── Stats ── */
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:24px}
+.stat-box{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px}
+.stat-num{font-size:26px;font-weight:800;line-height:1;color:var(--zone-2)}
+.stat-lbl{font-size:10px;color:var(--text-dim);margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
+
+/* ── Tabs ── */
+.tab-row{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px}
+.tab-btn{padding:9px 18px;font-size:12px;font-weight:600;border:none;background:transparent;color:var(--text-dim);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:inherit;transition:all .15s}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--zone-2);border-bottom-color:var(--zone-2)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* ── Side panels ── */
+.panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:299;display:none}
+.panel-overlay.open{display:block}
+.side-panel{position:fixed;top:0;right:0;width:560px;max-width:95vw;height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:300;transform:translateX(110%);transition:transform .25s ease;display:flex;flex-direction:column}
+.side-panel.open{transform:translateX(0)}
+.side-panel.wide{width:700px}
+.panel-head{padding:20px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px;flex-shrink:0;background:var(--surface)}
+.panel-close{margin-left:auto;background:transparent;border:none;color:var(--text-dim);cursor:pointer;font-size:18px;padding:2px 6px;border-radius:6px;line-height:1}
+.panel-close:hover{background:var(--surface-2);color:var(--text)}
+.panel-body{flex:1;overflow-y:auto;padding:24px}
+
+/* ── Conditions toggle ── */
+.check-group{display:flex;flex-wrap:wrap;gap:8px}
+.check-item{display:flex;align-items:center;gap:6px;background:var(--surface-3);border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12px;transition:all .15s;user-select:none}
+.check-item.checked{background:var(--zone-2-dim);border-color:var(--zone-2);color:var(--zone-2)}
+
+/* ── Filter bar ── */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.filter-btn{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-dim);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.filter-btn.active{background:var(--zone-2);border-color:var(--zone-2);color:#000}
+
+/* ── AI output box ── */
+.ai-output{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:16px;font-size:13px;line-height:1.8;white-space:pre-wrap;min-height:120px;font-family:inherit}
+
+/* ── Search ── */
+.search-wrap{position:relative;display:inline-block}
+.search-input{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 12px 8px 34px;font-size:13px;color:var(--text);font-family:inherit;width:280px;transition:border-color .15s}
+.search-input:focus{outline:none;border-color:var(--zone-2)}
+.search-wrap::before{content:'🔍';position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:12px;pointer-events:none}
+
+/* ── Toast ── */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.3);animation:slideIn .2s ease}
+@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toast-success{border-left:3px solid var(--success)}
+.toast-warn{border-left:3px solid var(--warn)}
+.toast-info{border-left:3px solid var(--primary)}
+
+/* ── Empty state ── */
+.empty-state{text-align:center;padding:56px 24px;color:var(--text-dim)}
+.empty-icon{font-size:44px;margin-bottom:12px}
+.empty-state p{font-size:13px;line-height:1.7;max-width:320px;margin:0 auto}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <a href="os-shell.html" class="sidebar-logo">
+      <div class="logo-mark">Z2</div>
+      <div>
+        <div class="logo-title">Al Laith OS</div>
+        <div class="logo-sub">Projects</div>
+      </div>
+    </a>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Log</div>
+    <button class="nav-item active" onclick="navigate('jobs')">
+      <span class="nav-icon">🔧</span> Job Logger
+      <span class="nav-badge" id="nb-jobs">0</span>
+    </button>
+    <button class="nav-item" onclick="navigate('case-studies')">
+      <span class="nav-icon">📄</span> Case Studies
+      <span class="nav-badge" id="nb-cs">0</span>
+    </button>
+    <div class="nav-section-label">Plan</div>
+    <button class="nav-item" onclick="navigate('events')">
+      <span class="nav-icon">🏗️</span> Events
+      <span class="nav-badge" id="nb-events">0</span>
+    </button>
+    <div class="nav-section-label">Export</div>
+    <button class="nav-item" onclick="navigate('archive')">
+      <span class="nav-icon">🗂️</span> Archive
+    </button>
+    <button class="nav-item" onclick="navigate('proposals')">
+      <span class="nav-icon">📝</span> Proposals
+      <span class="nav-badge" id="nb-proposals">0</span>
+    </button>
+    <div class="nav-section-label">System</div>
+    <button class="nav-item" onclick="navigate('settings')">
+      <span class="nav-icon">⚙️</span> Settings
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="zone1-content.html" class="btn btn-ghost btn-sm" style="justify-content:center">📝 Zone 1 Content</a>
+    <a href="os-shell.html" class="btn btn-ghost btn-sm" style="justify-content:center">← Command Centre</a>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+
+  <!-- ── JOBS ── -->
+  <div id="page-jobs" class="page active">
+    <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1 class="page-title">Job Logger</h1>
+        <p class="page-subtitle">Log active and completed jobs. Every job becomes source material for case studies, social content, and proposals.</p>
+      </div>
+      <button class="btn btn-primary" onclick="openJobForm()">+ Log New Job</button>
+    </div>
+    <div class="stat-row" id="jobs-stats"></div>
+    <div class="filter-row">
+      <button class="filter-btn active" data-jf="all" onclick="setJobFilter('all',this)">All</button>
+      <button class="filter-btn" data-jf="active" onclick="setJobFilter('active',this)">Active</button>
+      <button class="filter-btn" data-jf="completed" onclick="setJobFilter('completed',this)">Completed</button>
+      <button class="filter-btn" data-jf="construction" onclick="setJobFilter('construction',this)">🏗️ Construction</button>
+      <button class="filter-btn" data-jf="events" onclick="setJobFilter('events',this)">🎪 Events</button>
+      <button class="filter-btn" data-jf="oil-gas" onclick="setJobFilter('oil-gas',this)">⛽ Oil & Gas</button>
+      <button class="filter-btn" data-jf="aviation" onclick="setJobFilter('aviation',this)">✈️ Aviation</button>
+    </div>
+    <div id="jobs-list"></div>
+    <div class="empty-state" id="jobs-empty" style="display:none">
+      <div class="empty-icon">🔧</div>
+      <p>No jobs logged yet.<br>Click <strong>Log New Job</strong> to start building your project record.</p>
+    </div>
+  </div>
+
+  <!-- ── CASE STUDIES ── -->
+  <div id="page-case-studies" class="page">
+    <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1 class="page-title">Case Studies</h1>
+        <p class="page-subtitle">AI-generated structured docs, blog articles, and social content from your logged jobs. Edit, copy, or push directly to Zone 1.</p>
+      </div>
+      <button class="btn btn-primary" onclick="openNewCSPicker()">+ New Case Study</button>
+    </div>
+    <div id="cs-list"></div>
+    <div class="empty-state" id="cs-empty" style="display:none">
+      <div class="empty-icon">📄</div>
+      <p>No case studies yet.<br>Log a job first, then generate a case study from the Job Logger.</p>
+    </div>
+  </div>
+
+  <!-- ── EVENTS ── -->
+  <div id="page-events" class="page">
+    <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1 class="page-title">Events Workspace</h1>
+        <p class="page-subtitle">Deep planning workspace for each major event. Brief, content plan, and delivery checklist all in one place.</p>
+      </div>
+      <button class="btn btn-primary" onclick="openEventForm()">+ New Event</button>
+    </div>
+    <div id="events-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px"></div>
+    <div class="empty-state" id="events-empty" style="display:none">
+      <div class="empty-icon">🏗️</div>
+      <p>No events added yet.<br>Add an upcoming event to start your planning workspace.</p>
+    </div>
+  </div>
+
+  <!-- ── ARCHIVE ── -->
+  <div id="page-archive" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Project Archive</h1>
+      <p class="page-subtitle">Searchable record of all jobs and case studies. Use any job as the foundation for a client proposal.</p>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+      <div class="search-wrap">
+        <input type="text" class="search-input" id="archive-search" placeholder="Search by name, location, highlights…" oninput="renderArchive()">
+      </div>
+      <select class="form-input" id="archive-sector" onchange="renderArchive()" style="max-width:160px">
+        <option value="all">All sectors</option>
+        <option value="construction">Construction</option>
+        <option value="events">Events</option>
+        <option value="oil-gas">Oil & Gas</option>
+        <option value="aviation">Aviation</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div id="archive-list"></div>
+    <div class="empty-state" id="archive-empty" style="display:none">
+      <div class="empty-icon">🗂️</div>
+      <p>Archive is empty.<br>Jobs you log will appear here for search and reuse.</p>
+    </div>
+  </div>
+
+  <!-- ── PROPOSALS ── -->
+  <div id="page-proposals" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Proposal Generator</h1>
+      <p class="page-subtitle">Pick 2–5 relevant past jobs, describe the brief, and AI drafts a client-ready capability proposal.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">Step 1 — Select past jobs to include</span></div>
+      <div class="card-body">
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:12px">Choose 2–5 jobs that best demonstrate capability for this new client.</p>
+        <div id="proposal-picker"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">Step 2 — Client brief</span></div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
+        <div class="form-grid">
+          <div>
+            <label class="form-label">Client name</label>
+            <input class="form-input" id="prop-client" placeholder="e.g. ADNOC, Abu Dhabi Events Council">
+          </div>
+          <div>
+            <label class="form-label">Project type</label>
+            <select class="form-input" id="prop-type">
+              <option value="">Select type…</option>
+              <option value="equipment rental">Equipment Rental</option>
+              <option value="scaffolding">Scaffolding</option>
+              <option value="events infrastructure">Events Infrastructure</option>
+              <option value="full project support">Full Project Support</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="form-label">Key requirements / what they've mentioned</label>
+          <textarea class="form-input" id="prop-reqs" rows="3" placeholder="Scale, timeline, specific equipment, safety, budget…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;align-items:center">
+      <button class="btn-ai" id="prop-gen-btn" onclick="generateProposal()">✨ Generate Proposal</button>
+      <button class="btn btn-ghost" onclick="navigate('archive')">← Browse Archive</button>
+    </div>
+
+    <div id="prop-output-wrap" style="display:none;margin-bottom:32px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div class="section-label" style="margin:0">Generated proposal</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="copyProp()">📋 Copy</button>
+          <button class="btn btn-primary btn-sm" onclick="saveProp()">💾 Save</button>
+        </div>
+      </div>
+      <textarea class="form-input ai-output" id="prop-text" rows="22" style="min-height:420px"></textarea>
+    </div>
+
+    <div>
+      <div class="section-label">Saved proposals</div>
+      <div id="proposals-list"></div>
+    </div>
+  </div>
+
+  <!-- ── SETTINGS ── -->
+  <div id="page-settings" class="page">
+    <div class="page-header">
+      <h1 class="page-title">Settings</h1>
+      <p class="page-subtitle">API key configuration for Zone 2. The key is shared across all zones.</p>
+    </div>
+    <div id="settings-status" style="margin-bottom:20px"></div>
+    <div id="settings-local" class="card">
+      <div class="card-body">
+        <h3 style="font-weight:600;margin-bottom:4px">Anthropic API Key</h3>
+        <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px;line-height:1.6">Required when running locally. On Vercel, the key is stored server-side — you don't need it here.</p>
+        <div style="display:flex;gap:10px;align-items:flex-end">
+          <div style="flex:1">
+            <label class="form-label">API Key</label>
+            <input type="password" class="form-input" id="api-key-input" placeholder="sk-ant-api03-…" autocomplete="off">
+          </div>
+          <button class="btn btn-primary" onclick="saveApiKey()">Save</button>
+          <button class="btn btn-danger-ghost" onclick="clearApiKey()">Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- JOB FORM PANEL -->
+<div class="panel-overlay" id="job-form-overlay" onclick="closeJobForm()"></div>
+<div class="side-panel" id="job-form-panel">
+  <div class="panel-head">
+    <div>
+      <div style="font-weight:700;font-size:15px" id="job-form-title">Log New Job</div>
+      <div style="font-size:12px;color:var(--text-dim);margin-top:2px">More detail = better case study and proposal output</div>
+    </div>
+    <button class="panel-close" onclick="closeJobForm()">✕</button>
+  </div>
+  <div class="panel-body">
+    <input type="hidden" id="job-edit-id">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div>
+        <label class="form-label">Job / Project name *</label>
+        <input class="form-input" id="job-title" placeholder="e.g. ADIPEC 2024 Scaffolding, DFC Crowd Barrier Setup">
+      </div>
+      <div class="form-grid">
+        <div>
+          <label class="form-label">Sector</label>
+          <select class="form-input" id="job-sector">
+            <option value="construction">Construction</option>
+            <option value="events">Events</option>
+            <option value="oil-gas">Oil & Gas</option>
+            <option value="aviation">Aviation</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Status</label>
+          <select class="form-input" id="job-status">
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div>
+          <label class="form-label">Location</label>
+          <input class="form-input" id="job-location" placeholder="e.g. ADNEC Abu Dhabi">
+        </div>
+        <div>
+          <label class="form-label">Date</label>
+          <input type="date" class="form-input" id="job-date">
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Equipment & services</label>
+        <input class="form-input" id="job-equipment" placeholder="e.g. 2,000 scaffolding frames, 40 MEWPs, 500 crowd barriers">
+      </div>
+      <div class="form-grid">
+        <div>
+          <label class="form-label">Team size</label>
+          <input class="form-input" id="job-team" type="number" placeholder="e.g. 24">
+        </div>
+        <div>
+          <label class="form-label">Duration</label>
+          <input class="form-input" id="job-duration" placeholder="e.g. 3 weeks, 72 hours">
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Conditions (tap to select)</label>
+        <div class="check-group" id="conditions-group">
+          <div class="check-item" data-val="heat">🌡️ Extreme heat</div>
+          <div class="check-item" data-val="overnight">🌙 Night work</div>
+          <div class="check-item" data-val="tight-timeline">⏱️ Tight timeline</div>
+          <div class="check-item" data-val="ramadan">🌙 Ramadan</div>
+          <div class="check-item" data-val="remote">📍 Remote site</div>
+          <div class="check-item" data-val="large-scale">📐 Large scale</div>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Key outcomes & highlights</label>
+        <textarea class="form-input" id="job-highlights" rows="3" placeholder="e.g. Zero safety incidents, delivered 2 days early, 4,200 sqm staging area, worked overnight across 3 days"></textarea>
+      </div>
+      <div>
+        <label class="form-label">Client type</label>
+        <select class="form-input" id="job-client-type">
+          <option value="direct">Direct client</option>
+          <option value="contractor">Main contractor</option>
+          <option value="government">Government / Authority</option>
+          <option value="events-company">Events company</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Internal notes (not used in content)</label>
+        <textarea class="form-input" id="job-notes" rows="2" placeholder="Budget, contacts, lessons learned…"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;padding-top:4px">
+        <button class="btn btn-primary" onclick="saveJob()" style="flex:1">Save Job</button>
+        <button class="btn btn-ghost" onclick="closeJobForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JOB DETAIL PANEL -->
+<div class="panel-overlay" id="job-detail-overlay" onclick="closeJobDetail()"></div>
+<div class="side-panel" id="job-detail-panel">
+  <div class="panel-head">
+    <div>
+      <div style="font-weight:700;font-size:15px" id="jd-title">Job Detail</div>
+      <div style="font-size:12px;color:var(--text-dim);margin-top:2px" id="jd-meta"></div>
+    </div>
+    <button class="panel-close" onclick="closeJobDetail()">✕</button>
+  </div>
+  <div class="panel-body" id="jd-body"></div>
+</div>
+
+<!-- CASE STUDY PANEL -->
+<div class="panel-overlay" id="cs-overlay" onclick="closeCSPanel()"></div>
+<div class="side-panel wide" id="cs-panel">
+  <div class="panel-head">
+    <div>
+      <div style="font-weight:700;font-size:15px" id="cs-title">Case Study</div>
+      <div style="font-size:12px;color:var(--text-dim);margin-top:2px" id="cs-meta"></div>
+    </div>
+    <button class="panel-close" onclick="closeCSPanel()">✕</button>
+  </div>
+  <div class="panel-body" id="cs-body"></div>
+</div>
+
+<!-- EVENT FORM PANEL -->
+<div class="panel-overlay" id="event-form-overlay" onclick="closeEventForm()"></div>
+<div class="side-panel" id="event-form-panel">
+  <div class="panel-head">
+    <div>
+      <div style="font-weight:700;font-size:15px" id="event-form-title">New Event</div>
+    </div>
+    <button class="panel-close" onclick="closeEventForm()">✕</button>
+  </div>
+  <div class="panel-body">
+    <input type="hidden" id="event-edit-id">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div>
+        <label class="form-label">Event name *</label>
+        <input class="form-input" id="ev-name" placeholder="e.g. Dubai Airshow 2025, GITEX 2026">
+      </div>
+      <div class="form-grid">
+        <div>
+          <label class="form-label">Date</label>
+          <input type="date" class="form-input" id="ev-date">
+        </div>
+        <div>
+          <label class="form-label">Status</label>
+          <select class="form-input" id="ev-status">
+            <option value="planning">Planning</option>
+            <option value="active">Active / Live</option>
+            <option value="delivered">Delivered</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Event brief</label>
+        <textarea class="form-input" id="ev-brief" rows="3" placeholder="What is this event? What are we providing? Scale, client, location, key requirements…"></textarea>
+      </div>
+      <div>
+        <label class="form-label">Content plan</label>
+        <textarea class="form-input" id="ev-content" rows="3" placeholder="Content to create: teaser posts (2 weeks before), day-before reveal, live BTS, wrap-up post…"></textarea>
+      </div>
+      <div>
+        <label class="form-label">Notes</label>
+        <textarea class="form-input" id="ev-notes" rows="2" placeholder="Key contacts, deadlines, special requirements, lessons from last time…"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;padding-top:4px">
+        <button class="btn btn-primary" onclick="saveEvent()" style="flex:1">Save Event</button>
+        <button class="btn btn-ghost" onclick="closeEventForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EVENT DETAIL PANEL -->
+<div class="panel-overlay" id="event-detail-overlay" onclick="closeEventDetail()"></div>
+<div class="side-panel wide" id="event-detail-panel">
+  <div class="panel-head">
+    <div>
+      <div style="font-weight:700;font-size:15px" id="evd-title"></div>
+      <div style="font-size:12px;color:var(--text-dim);margin-top:2px" id="evd-meta"></div>
+    </div>
+    <button class="panel-close" onclick="closeEventDetail()">✕</button>
+  </div>
+  <div class="panel-body" id="evd-body"></div>
+</div>
+
+<!-- TOASTS -->
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+'use strict';
+
+/* ════════════════════════════════════════════════════
+   STORAGE
+════════════════════════════════════════════════════ */
+const KEYS = {
+  jobs:'z2_jobs', cs:'z2_case_studies', events:'z2_events',
+  proposals:'z2_proposals', z1posts:'hub_posts', apiKey:'anthropic_api_key'
+};
+
+const ls   = k => { try{ return JSON.parse(localStorage.getItem(k)||'[]'); }catch(){ return []; } };
+const lsO  = k => { try{ return JSON.parse(localStorage.getItem(k)||'{}'); }catch(){ return {}; } };
+const lsS  = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+const uid  = () => 'z2_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+
+const getJobs      = () => ls(KEYS.jobs);
+const getCS        = () => ls(KEYS.cs);
+const getEvents    = () => ls(KEYS.events);
+const getProposals = () => ls(KEYS.proposals);
+
+function upsert(key, item){
+  const all = ls(key);
+  const i = all.findIndex(x=>x.id===item.id);
+  if(i>=0) all[i]=item; else all.unshift(item);
+  lsS(key, all);
+}
+
+/* ════════════════════════════════════════════════════
+   API KEY + AI
+════════════════════════════════════════════════════ */
+const AI_MODEL = 'claude-haiku-4-5';
+const getApiKey = () => localStorage.getItem(KEYS.apiKey)||'';
+
+async function claudeFetch(body){
+  if(window.location.protocol==='https:'){
+    const r = await fetch('/api/claude',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.error?.message||'API error '+r.status); }
+    return r.json();
+  }
+  const key = getApiKey();
+  if(!key) throw Object.assign(new Error('No API key — go to Settings'),{noKey:true});
+  const r = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-allow-browser-access':'true'},
+    body:JSON.stringify(body)
+  });
+  if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.error?.message||'API error '+r.status); }
+  return r.json();
+}
+
+/* ════════════════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════════════════ */
+const NAV_MAP = {jobs:0,'case-studies':1,events:2,archive:3,proposals:4,settings:5};
+
+function navigate(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const el = document.getElementById('page-'+page);
+  if(el) el.classList.add('active');
+  const items = document.querySelectorAll('.nav-item');
+  if(items[NAV_MAP[page]]) items[NAV_MAP[page]].classList.add('active');
+  const renders = {
+    jobs:renderJobs, 'case-studies':renderCS, events:renderEvents,
+    archive:renderArchive, proposals:()=>{renderPropPicker();renderPropList();},
+    settings:renderSettings
+  };
+  renders[page]?.();
+  updateBadges();
+}
+
+/* ════════════════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════════════════ */
+const SECTOR_LABELS = {construction:'Construction',events:'Events','oil-gas':'Oil & Gas',aviation:'Aviation',other:'Other'};
+const SECTOR_BADGE  = {construction:'badge-construction',events:'badge-events','oil-gas':'badge-oil-gas',aviation:'badge-aviation',other:'badge-other'};
+const SECTOR_ICON   = {construction:'🏗️',events:'🎪','oil-gas':'⛽',aviation:'✈️',other:'🔧'};
+const CONDITION_LABELS = {heat:'Extreme heat',overnight:'Night work','tight-timeline':'Tight timeline',ramadan:'Ramadan',remote:'Remote site','large-scale':'Large scale'};
+
+const esc  = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const fmtD = d => { try{ return d?new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''; }catch(){ return d||''; } };
+
+function toast(msg, type='info'){
+  const el = document.createElement('div');
+  el.className = 'toast toast-'+(type==='success'?'success':type==='warn'?'warn':'info');
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>el.remove(), 3500);
+}
+
+function openPanel(id){ document.getElementById(id).classList.add('open'); }
+function closePanel(id){ document.getElementById(id).classList.remove('open'); }
+function toggleOverlay(id, open){ document.getElementById(id).classList.toggle('open', open); }
+
+/* ════════════════════════════════════════════════════
+   JOBS
+════════════════════════════════════════════════════ */
+let jobFilter = 'all';
+
+function setJobFilter(f, el){
+  jobFilter = f;
+  document.querySelectorAll('.filter-btn[data-jf]').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderJobs();
+}
+
+function renderJobs(){
+  let jobs = getJobs();
+  if(jobFilter==='active') jobs = jobs.filter(j=>j.status==='active');
+  else if(jobFilter==='completed') jobs = jobs.filter(j=>j.status==='completed');
+  else if(['construction','events','oil-gas','aviation'].includes(jobFilter)) jobs = jobs.filter(j=>j.sector===jobFilter);
+
+  const all = getJobs();
+  document.getElementById('jobs-stats').innerHTML = `
+    <div class="stat-box"><div class="stat-num">${all.length}</div><div class="stat-lbl">Total jobs</div></div>
+    <div class="stat-box"><div class="stat-num">${all.filter(j=>j.status==='active').length}</div><div class="stat-lbl">Active</div></div>
+    <div class="stat-box"><div class="stat-num">${all.filter(j=>j.status==='completed').length}</div><div class="stat-lbl">Completed</div></div>
+    <div class="stat-box"><div class="stat-num">${[...new Set(all.map(j=>j.sector))].length}</div><div class="stat-lbl">Sectors</div></div>`;
+
+  const list  = document.getElementById('jobs-list');
+  const empty = document.getElementById('jobs-empty');
+  if(!jobs.length){ list.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  list.innerHTML = jobs.map(j=>`
+    <div class="item-card" onclick="openJobDetail('${j.id}')">
+      <div class="item-icon">${SECTOR_ICON[j.sector]||'🔧'}</div>
+      <div class="item-body">
+        <div class="item-title">${esc(j.title)}</div>
+        <div class="item-meta">
+          <span class="badge ${SECTOR_BADGE[j.sector]||'badge-other'}">${SECTOR_LABELS[j.sector]||j.sector}</span>
+          ${j.location?`<span>${esc(j.location)}</span>`:''}
+          ${j.date?`<span>${fmtD(j.date)}</span>`:''}
+          <span class="badge ${j.status==='active'?'badge-active':'badge-completed'}">${j.status}</span>
+        </div>
+      </div>
+      <div class="item-actions" onclick="event.stopPropagation()">
+        <button class="btn btn-ghost btn-sm" onclick="buildCS('${j.id}')">📄 Case study</button>
+        <button class="btn btn-ghost btn-sm" onclick="editJob('${j.id}')">✏️</button>
+        <button class="btn btn-danger-ghost btn-sm" onclick="deleteJob('${j.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function openJobForm(){
+  resetJobForm();
+  document.getElementById('job-form-title').textContent = 'Log New Job';
+  document.getElementById('job-edit-id').value = '';
+  document.getElementById('job-date').value = new Date().toISOString().split('T')[0];
+  openPanel('job-form-panel'); toggleOverlay('job-form-overlay', true);
+}
+
+function editJob(id){
+  const j = getJobs().find(x=>x.id===id);
+  if(!j) return;
+  resetJobForm();
+  document.getElementById('job-form-title').textContent = 'Edit Job';
+  document.getElementById('job-edit-id').value = id;
+  document.getElementById('job-title').value    = j.title||'';
+  document.getElementById('job-sector').value   = j.sector||'construction';
+  document.getElementById('job-status').value   = j.status||'active';
+  document.getElementById('job-location').value = j.location||'';
+  document.getElementById('job-date').value     = j.date||'';
+  document.getElementById('job-equipment').value= j.equipment||'';
+  document.getElementById('job-team').value     = j.teamSize||'';
+  document.getElementById('job-duration').value = j.duration||'';
+  document.getElementById('job-highlights').value = j.highlights||'';
+  document.getElementById('job-client-type').value = j.clientType||'direct';
+  document.getElementById('job-notes').value    = j.notes||'';
+  (j.conditions||[]).forEach(c=>{
+    const el = document.querySelector(`#conditions-group [data-val="${c}"]`);
+    if(el) el.classList.add('checked');
+  });
+  openPanel('job-form-panel'); toggleOverlay('job-form-overlay', true);
+}
+
+function resetJobForm(){
+  ['job-title','job-location','job-equipment','job-highlights','job-notes','job-team','job-duration'].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.value='';
+  });
+  document.querySelectorAll('#conditions-group .check-item').forEach(el=>el.classList.remove('checked'));
+  document.getElementById('job-sector').value = 'construction';
+  document.getElementById('job-status').value = 'active';
+  document.getElementById('job-client-type').value = 'direct';
+}
+
+function closeJobForm(){ closePanel('job-form-panel'); toggleOverlay('job-form-overlay', false); }
+
+function saveJob(){
+  const title = document.getElementById('job-title').value.trim();
+  if(!title){ toast('Enter a job name','warn'); return; }
+  const conditions = [];
+  document.querySelectorAll('#conditions-group .check-item.checked').forEach(el=>conditions.push(el.dataset.val));
+  const id = document.getElementById('job-edit-id').value || uid();
+  upsert(KEYS.jobs, {
+    id, title,
+    sector:      document.getElementById('job-sector').value,
+    status:      document.getElementById('job-status').value,
+    location:    document.getElementById('job-location').value.trim(),
+    date:        document.getElementById('job-date').value,
+    equipment:   document.getElementById('job-equipment').value.trim(),
+    teamSize:    document.getElementById('job-team').value.trim(),
+    duration:    document.getElementById('job-duration').value.trim(),
+    conditions,
+    highlights:  document.getElementById('job-highlights').value.trim(),
+    clientType:  document.getElementById('job-client-type').value,
+    notes:       document.getElementById('job-notes').value.trim(),
+    created_at:  Date.now()
+  });
+  closeJobForm();
+  renderJobs();
+  updateBadges();
+  toast('Job saved','success');
+}
+
+function deleteJob(id){
+  if(!confirm('Delete this job?')) return;
+  lsS(KEYS.jobs, getJobs().filter(j=>j.id!==id));
+  renderJobs(); updateBadges();
+  toast('Job deleted','info');
+}
+
+/* ── Job Detail ── */
+function openJobDetail(id){
+  const j = getJobs().find(x=>x.id===id);
+  if(!j) return;
+  document.getElementById('jd-title').textContent = j.title;
+  document.getElementById('jd-meta').textContent = `${SECTOR_LABELS[j.sector]||j.sector}${j.date?' · '+fmtD(j.date):''}`;
+  const cs = getCS().find(c=>c.jobId===id);
+  const detailRow = (label,val) => val?`<div style="margin-bottom:12px"><div class="section-label">${esc(label)}</div><div style="font-size:13px;line-height:1.7;color:var(--text-soft)">${esc(val)}</div></div>`:'';
+  document.getElementById('jd-body').innerHTML = `
+    <div style="display:flex;flex-direction:column">
+      ${detailRow('📍 Location', j.location)}
+      ${detailRow('⚙️ Equipment / Services', j.equipment)}
+      ${detailRow('👥 Team size', j.teamSize)}
+      ${detailRow('⏱️ Duration', j.duration)}
+      ${(j.conditions||[]).length?detailRow('🌡️ Conditions', j.conditions.map(c=>CONDITION_LABELS[c]||c).join(', ')):''}
+      ${detailRow('✅ Key highlights', j.highlights)}
+      ${detailRow('🤝 Client type', j.clientType)}
+      ${detailRow('📋 Notes', j.notes)}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+        <button class="btn-ai" onclick="buildCS('${id}');closeJobDetail()">${cs?'🔄 Regenerate Case Study':'✨ Build Case Study'}</button>
+        <button class="btn btn-ghost" onclick="editJob('${id}');closeJobDetail()">✏️ Edit</button>
+      </div>
+      ${cs?`<div style="margin-top:12px;padding:10px 14px;background:var(--zone-2-dim);border:1px solid var(--zone-2-glow);border-radius:8px;font-size:12px;color:var(--zone-2)">✅ Case study generated on ${fmtD(new Date(cs.generated_at).toISOString().split('T')[0])}</div>`:''}
+    </div>`;
+  openPanel('job-detail-panel'); toggleOverlay('job-detail-overlay', true);
+}
+function closeJobDetail(){ closePanel('job-detail-panel'); toggleOverlay('job-detail-overlay', false); }
+
+/* ════════════════════════════════════════════════════
+   CASE STUDIES
+════════════════════════════════════════════════════ */
+function renderCS(){
+  const all   = getCS();
+  const list  = document.getElementById('cs-list');
+  const empty = document.getElementById('cs-empty');
+  if(!all.length){ list.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  list.innerHTML = all.map(cs=>{
+    const j = getJobs().find(x=>x.id===cs.jobId);
+    return `<div class="item-card" onclick="openCSPanel('${cs.id}')">
+      <div class="item-icon">📄</div>
+      <div class="item-body">
+        <div class="item-title">${esc(cs.jobTitle||'Untitled')}</div>
+        <div class="item-meta">
+          ${j?`<span class="badge ${SECTOR_BADGE[j.sector]||'badge-other'}">${SECTOR_LABELS[j.sector]||j.sector}</span>`:''}
+          <span>Generated ${fmtD(new Date(cs.generated_at).toISOString().split('T')[0])}</span>
+          ${cs.sentToZ1?'<span style="color:var(--success);font-size:11px">✅ In Zone 1</span>':''}
+        </div>
+      </div>
+      <div class="item-actions" onclick="event.stopPropagation()">
+        <button class="btn btn-ghost btn-sm" onclick="openCSPanel('${cs.id}')">View</button>
+        <button class="btn btn-danger-ghost btn-sm" onclick="deleteCS('${cs.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openNewCSPicker(){
+  const jobs = getJobs();
+  if(!jobs.length){ toast('Log a job first','warn'); navigate('jobs'); return; }
+  const names = jobs.map((j,i)=>`${i+1}. ${j.title}`).join('\n');
+  const pick = prompt(`Which job?\n\n${names}\n\nEnter number:`);
+  if(!pick) return;
+  const idx = parseInt(pick)-1;
+  if(isNaN(idx)||idx<0||idx>=jobs.length){ toast('Invalid selection','warn'); return; }
+  buildCS(jobs[idx].id);
+}
+
+async function buildCS(jobId){
+  const j = getJobs().find(x=>x.id===jobId);
+  if(!j){ toast('Job not found','warn'); return; }
+  toast('Generating case study — ~30 seconds…','info');
+
+  const spec = `Job: ${j.title}
+Sector: ${SECTOR_LABELS[j.sector]||j.sector}
+Location: ${j.location||'UAE'}
+Date: ${fmtD(j.date)}
+Equipment: ${j.equipment||'N/A'}
+Team: ${j.teamSize||'N/A'} people
+Duration: ${j.duration||'N/A'}
+Conditions: ${(j.conditions||[]).map(c=>CONDITION_LABELS[c]||c).join(', ')||'Standard'}
+Highlights: ${j.highlights||'N/A'}
+Client type: ${j.clientType||'N/A'}`;
+
+  const sys = 'You are a B2B content writer for Al Laith Group — UAE equipment rental, scaffolding, and events infrastructure. Be specific, evidence-first, and direct. Use the exact numbers given.';
+
+  try{
+    const [docR, blogR, socialR] = await Promise.all([
+      claudeFetch({ model:AI_MODEL, max_tokens:600, system:sys,
+        messages:[{role:'user',content:`Write a structured case study. Use this exact format:\n\n**CHALLENGE**\n2-3 sentences: what the client needed, the scale, specific difficulties.\n\n**WHAT WE DELIVERED**\n4-5 bullet points with specific quantities, team size, timeline, and any conditions overcome.\n\n**RESULT**\n2-3 sentences: outcome, safety record, and what was made possible.\n\nJob details:\n${spec}`}]
+      }),
+      claudeFetch({ model:AI_MODEL, max_tokens:900, system:sys,
+        messages:[{role:'user',content:`Write a blog article (550-650 words) about this project.\n\nInclude:\n- A headline that leads with the most impressive fact\n- 2-3 subheadings\n- Specific numbers throughout\n- What made this project challenging\n- How Al Laith delivered\n- CTA: "Planning a project? Contact Al Laith."\n\nNo filler. Every sentence earns its place.\n\nJob details:\n${spec}`}]
+      }),
+      claudeFetch({ model:AI_MODEL, max_tokens:700, system:sys,
+        messages:[{role:'user',content:`Write 3 social posts for this job separated by ---\n\n1. INSTAGRAM: Strong hook line, 3-4 punchy paragraphs, specific numbers, CTA, then hashtags (15-20 tags including #AlLaith #UAE #EquipmentRental etc)\n2. LINKEDIN: Professional, 150-200 words, lead with scale/outcome, end with insight or question\n3. FACEBOOK: Warm but professional, 100-150 words, community angle\n\nJob details:\n${spec}`}]
+      })
+    ]);
+
+    const txt  = d => d.content?.[0]?.text||'';
+    const parts = txt(socialR).split(/---+/);
+    const cs = {
+      id: uid(), jobId, jobTitle: j.title,
+      structuredDoc: txt(docR),
+      blog:          txt(blogR),
+      instagram:     (parts[0]||txt(socialR)).trim(),
+      linkedin:      (parts[1]||'').trim(),
+      facebook:      (parts[2]||'').trim(),
+      sentToZ1:      false,
+      generated_at:  Date.now()
+    };
+    upsert(KEYS.cs, cs);
+    renderCS(); updateBadges();
+    toast('Case study generated!','success');
+    openCSPanel(cs.id);
+  }catch(e){
+    toast(e.noKey?'⚙️ Add your API key in Settings to use AI features':'Error: '+e.message,'warn');
+  }
+}
+
+function deleteCS(id){
+  if(!confirm('Delete this case study?')) return;
+  lsS(KEYS.cs, getCS().filter(c=>c.id!==id));
+  renderCS(); updateBadges();
+  toast('Deleted','info');
+}
+
+/* ── CS Panel ── */
+let csTab = 'doc';
+function openCSPanel(id){
+  const cs = getCS().find(c=>c.id===id);
+  if(!cs) return;
+  document.getElementById('cs-title').textContent = cs.jobTitle||'Case Study';
+  document.getElementById('cs-meta').textContent  = 'Generated '+fmtD(new Date(cs.generated_at).toISOString().split('T')[0]);
+
+  document.getElementById('cs-body').innerHTML = `
+    <div class="tab-row">
+      <button class="tab-btn ${csTab==='doc'?'active':''}"    onclick="setCSTab('doc','${id}')">📋 Structured Doc</button>
+      <button class="tab-btn ${csTab==='blog'?'active':''}"   onclick="setCSTab('blog','${id}')">📰 Blog Article</button>
+      <button class="tab-btn ${csTab==='social'?'active':''}" onclick="setCSTab('social','${id}')">📱 Social Batch</button>
+    </div>
+    <div class="tab-pane ${csTab==='doc'?'active':''}">
+      <textarea class="form-input ai-output" id="cs-doc" style="min-height:400px">${esc(cs.structuredDoc)}</textarea>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-primary btn-sm" onclick="saveCSEdit('${id}','doc')">Save edits</button>
+        <button class="btn btn-ghost btn-sm"   onclick="copyEl('cs-doc')">📋 Copy</button>
+      </div>
+    </div>
+    <div class="tab-pane ${csTab==='blog'?'active':''}">
+      <textarea class="form-input ai-output" id="cs-blog" style="min-height:500px">${esc(cs.blog)}</textarea>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-primary btn-sm" onclick="saveCSEdit('${id}','blog')">Save edits</button>
+        <button class="btn btn-ghost btn-sm"   onclick="copyEl('cs-blog')">📋 Copy</button>
+      </div>
+    </div>
+    <div class="tab-pane ${csTab==='social'?'active':''}">
+      <div style="margin-bottom:14px">
+        <div class="section-label">Instagram</div>
+        <textarea class="form-input ai-output" id="cs-ig" style="min-height:200px">${esc(cs.instagram)}</textarea>
+      </div>
+      <div style="margin-bottom:14px">
+        <div class="section-label">LinkedIn</div>
+        <textarea class="form-input ai-output" id="cs-li" style="min-height:160px">${esc(cs.linkedin)}</textarea>
+      </div>
+      <div style="margin-bottom:14px">
+        <div class="section-label">Facebook</div>
+        <textarea class="form-input ai-output" id="cs-fb" style="min-height:130px">${esc(cs.facebook)}</textarea>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="saveCSEdit('${id}','social')">Save edits</button>
+        <button class="btn btn-ghost btn-sm"   onclick="copyEl('cs-ig')">📋 Copy IG</button>
+        <button class="btn btn-ghost btn-sm"   onclick="copyEl('cs-li')">📋 Copy LI</button>
+        <button class="btn btn-ghost btn-sm"   onclick="copyEl('cs-fb')">📋 Copy FB</button>
+        <button class="btn-ai"                 onclick="pushCSToZ1('${id}')" style="font-size:11px;padding:5px 12px">🚀 Push all to Zone 1</button>
+      </div>
+      ${cs.sentToZ1?'<p style="margin-top:10px;font-size:12px;color:var(--success)">✅ Already pushed to Zone 1 Content Library</p>':''}
+    </div>`;
+
+  openPanel('cs-panel'); toggleOverlay('cs-overlay', true);
+}
+function setCSTab(tab, id){ csTab=tab; openCSPanel(id); }
+function closeCSPanel(){ closePanel('cs-panel'); toggleOverlay('cs-overlay', false); }
+
+function saveCSEdit(csId, section){
+  const cs = getCS().find(c=>c.id===csId);
+  if(!cs) return;
+  if(section==='doc')    cs.structuredDoc = document.getElementById('cs-doc')?.value||cs.structuredDoc;
+  if(section==='blog')   cs.blog          = document.getElementById('cs-blog')?.value||cs.blog;
+  if(section==='social'){
+    cs.instagram = document.getElementById('cs-ig')?.value||cs.instagram;
+    cs.linkedin  = document.getElementById('cs-li')?.value||cs.linkedin;
+    cs.facebook  = document.getElementById('cs-fb')?.value||cs.facebook;
+  }
+  upsert(KEYS.cs, cs);
+  toast('Saved','success');
+}
+
+function copyEl(id){ const el=document.getElementById(id); if(!el) return; navigator.clipboard.writeText(el.value||el.textContent||'').then(()=>toast('Copied!','success')).catch(()=>toast('Copy failed','warn')); }
+
+function pushCSToZ1(csId){
+  const cs = getCS().find(c=>c.id===csId);
+  if(!cs) return;
+  const existing = ls(KEYS.z1posts);
+  const t = Date.now();
+  const newPosts = [
+    {id:'z2ig'+t, caption:cs.instagram, platform:'instagram', pillar:'sectors', status:'draft', source:'zone2', jobTitle:cs.jobTitle, created_at:t},
+    {id:'z2li'+t, caption:cs.linkedin,  platform:'linkedin',  pillar:'sectors', status:'draft', source:'zone2', jobTitle:cs.jobTitle, created_at:t},
+    {id:'z2fb'+t, caption:cs.facebook,  platform:'facebook',  pillar:'sectors', status:'draft', source:'zone2', jobTitle:cs.jobTitle, created_at:t}
+  ];
+  lsS(KEYS.z1posts, [...existing, ...newPosts]);
+  cs.sentToZ1 = true;
+  upsert(KEYS.cs, cs);
+  toast('3 draft posts pushed to Zone 1 Content Library','success');
+  openCSPanel(csId); // refresh panel
+}
+
+/* ════════════════════════════════════════════════════
+   EVENTS
+════════════════════════════════════════════════════ */
+const EV_STATUS = {planning:'Planning',active:'Active',delivered:'Delivered'};
+const EV_COLOR  = {planning:'var(--warn)',active:'var(--success)',delivered:'var(--primary)'};
+
+function renderEvents(){
+  const events = getEvents();
+  const grid   = document.getElementById('events-grid');
+  const empty  = document.getElementById('events-empty');
+  if(!events.length){ grid.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = events.map(ev=>`
+    <div class="card" style="cursor:pointer;margin:0" onclick="openEventDetail('${ev.id}')">
+      <div class="card-body">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px">
+          <div style="font-weight:700;font-size:14px;line-height:1.3">${esc(ev.name)}</div>
+          <span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(0,0,0,.25);color:${EV_COLOR[ev.status]||'var(--text-dim)'};white-space:nowrap">${EV_STATUS[ev.status]||ev.status}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px">${ev.date?fmtD(ev.date):'Date not set'}</div>
+        <p style="font-size:12px;color:var(--text-soft);line-height:1.6;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${esc(ev.brief)||'No brief yet.'}</p>
+        <div style="display:flex;gap:6px;margin-top:12px" onclick="event.stopPropagation()">
+          <button class="btn btn-ghost btn-sm" onclick="openEventDetail('${ev.id}')">Open workspace</button>
+          <button class="btn btn-danger-ghost btn-sm" onclick="deleteEvent('${ev.id}')">Delete</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function openEventForm(){
+  ['ev-name','ev-brief','ev-content','ev-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('ev-date').value='';
+  document.getElementById('ev-status').value='planning';
+  document.getElementById('event-edit-id').value='';
+  document.getElementById('event-form-title').textContent='New Event';
+  openPanel('event-form-panel'); toggleOverlay('event-form-overlay', true);
+}
+function closeEventForm(){ closePanel('event-form-panel'); toggleOverlay('event-form-overlay', false); }
+
+function saveEvent(){
+  const name = document.getElementById('ev-name').value.trim();
+  if(!name){ toast('Enter an event name','warn'); return; }
+  const id = document.getElementById('event-edit-id').value || uid();
+  upsert(KEYS.events, {
+    id, name,
+    date:        document.getElementById('ev-date').value,
+    status:      document.getElementById('ev-status').value,
+    brief:       document.getElementById('ev-brief').value.trim(),
+    contentPlan: document.getElementById('ev-content').value.trim(),
+    notes:       document.getElementById('ev-notes').value.trim(),
+    checklist:   getEvents().find(e=>e.id===id)?.checklist||[],
+    created_at:  Date.now()
+  });
+  closeEventForm(); renderEvents(); updateBadges();
+  toast('Event saved','success');
+}
+
+function deleteEvent(id){
+  if(!confirm('Delete this event?')) return;
+  lsS(KEYS.events, getEvents().filter(e=>e.id!==id));
+  renderEvents(); updateBadges();
+  toast('Event deleted','info');
+}
+
+function openEventDetail(id){
+  const ev = getEvents().find(e=>e.id===id);
+  if(!ev) return;
+  document.getElementById('evd-title').textContent = ev.name;
+  document.getElementById('evd-meta').textContent  = ev.date?fmtD(ev.date):'';
+  const cl = ev.checklist||[];
+  const done = cl.filter(x=>x.done).length;
+  document.getElementById('evd-body').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select class="form-input" style="max-width:140px" onchange="updateEvStatus('${id}',this.value)">
+          <option value="planning" ${ev.status==='planning'?'selected':''}>Planning</option>
+          <option value="active"   ${ev.status==='active'?'selected':''}>Active</option>
+          <option value="delivered"${ev.status==='delivered'?'selected':''}>Delivered</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="editEventDirect('${id}')">✏️ Edit</button>
+      </div>
+      ${ev.brief?`<div><div class="section-label">Brief</div><div style="font-size:13px;line-height:1.7;color:var(--text-soft);white-space:pre-wrap">${esc(ev.brief)}</div></div>`:''}
+      ${ev.contentPlan?`<div><div class="section-label">Content Plan</div><div style="font-size:13px;line-height:1.7;color:var(--text-soft);white-space:pre-wrap">${esc(ev.contentPlan)}</div></div>`:''}
+      <div>
+        <div class="section-label" style="margin-bottom:10px">Checklist (${done}/${cl.length} done)</div>
+        <div id="ev-checklist-items">
+          ${cl.map((item,i)=>`
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;padding:7px 0;border-bottom:1px solid var(--border)">
+              <input type="checkbox" ${item.done?'checked':''} onchange="toggleCheck('${id}',${i},this.checked)" style="width:15px;height:15px;accent-color:var(--zone-2)">
+              <span style="${item.done?'text-decoration:line-through;color:var(--text-dim)':''}">${esc(item.text)}</span>
+              <button onclick="removeCheck('${id}',${i})" style="background:none;border:none;color:var(--text-muted);cursor:pointer;margin-left:auto;font-size:13px;padding:0 4px" title="Remove">✕</button>
+            </label>`).join('')}
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <input class="form-input" id="new-check-text" placeholder="Add checklist item…" onkeydown="if(event.key==='Enter')addCheck('${id}')" style="flex:1">
+          <button class="btn btn-ghost btn-sm" onclick="addCheck('${id}')">Add</button>
+        </div>
+      </div>
+      ${ev.notes?`<div><div class="section-label">Notes</div><div style="font-size:13px;line-height:1.7;color:var(--text-soft);white-space:pre-wrap">${esc(ev.notes)}</div></div>`:''}
+    </div>`;
+  openPanel('event-detail-panel'); toggleOverlay('event-detail-overlay', true);
+}
+function closeEventDetail(){ closePanel('event-detail-panel'); toggleOverlay('event-detail-overlay', false); }
+
+function updateEvStatus(id, status){
+  const ev = getEvents().find(e=>e.id===id);
+  if(!ev) return;
+  ev.status = status;
+  upsert(KEYS.events, ev);
+  renderEvents();
+}
+
+function editEventDirect(id){
+  const ev = getEvents().find(e=>e.id===id);
+  if(!ev) return;
+  closeEventDetail();
+  document.getElementById('event-edit-id').value = id;
+  document.getElementById('event-form-title').textContent = 'Edit Event';
+  document.getElementById('ev-name').value    = ev.name||'';
+  document.getElementById('ev-date').value    = ev.date||'';
+  document.getElementById('ev-status').value  = ev.status||'planning';
+  document.getElementById('ev-brief').value   = ev.brief||'';
+  document.getElementById('ev-content').value = ev.contentPlan||'';
+  document.getElementById('ev-notes').value   = ev.notes||'';
+  openPanel('event-form-panel'); toggleOverlay('event-form-overlay', true);
+}
+
+function addCheck(evId){
+  const input = document.getElementById('new-check-text');
+  const text  = input?.value?.trim();
+  if(!text) return;
+  const ev = getEvents().find(e=>e.id===evId);
+  if(!ev) return;
+  ev.checklist = [...(ev.checklist||[]), {text, done:false}];
+  upsert(KEYS.events, ev);
+  input.value = '';
+  openEventDetail(evId);
+}
+
+function toggleCheck(evId, idx, done){
+  const ev = getEvents().find(e=>e.id===evId);
+  if(!ev||!ev.checklist[idx]) return;
+  ev.checklist[idx].done = done;
+  upsert(KEYS.events, ev);
+}
+
+function removeCheck(evId, idx){
+  const ev = getEvents().find(e=>e.id===evId);
+  if(!ev) return;
+  ev.checklist.splice(idx,1);
+  upsert(KEYS.events, ev);
+  openEventDetail(evId);
+}
+
+/* ════════════════════════════════════════════════════
+   ARCHIVE
+════════════════════════════════════════════════════ */
+function renderArchive(){
+  const q  = (document.getElementById('archive-search')?.value||'').toLowerCase();
+  const sf = document.getElementById('archive-sector')?.value||'all';
+  let jobs = getJobs();
+  if(sf!=='all') jobs = jobs.filter(j=>j.sector===sf);
+  if(q) jobs = jobs.filter(j=>(j.title+' '+j.location+' '+j.highlights+' '+j.equipment).toLowerCase().includes(q));
+  const list  = document.getElementById('archive-list');
+  const empty = document.getElementById('archive-empty');
+  if(!jobs.length){ list.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  const allCS = getCS();
+  list.innerHTML = jobs.map(j=>{
+    const cs = allCS.find(c=>c.jobId===j.id);
+    return `<div class="item-card">
+      <div class="item-icon">${SECTOR_ICON[j.sector]||'🔧'}</div>
+      <div class="item-body">
+        <div class="item-title">${esc(j.title)}</div>
+        <div class="item-meta">
+          <span class="badge ${SECTOR_BADGE[j.sector]||'badge-other'}">${SECTOR_LABELS[j.sector]||j.sector}</span>
+          ${j.location?`<span>${esc(j.location)}</span>`:''}
+          ${j.date?`<span>${fmtD(j.date)}</span>`:''}
+          ${cs?'<span style="color:var(--success);font-size:11px">📄 Case study</span>':''}
+        </div>
+        ${j.highlights?`<div style="font-size:12px;color:var(--text-dim);margin-top:4px">${esc(j.highlights)}</div>`:''}
+      </div>
+      <div class="item-actions">
+        ${cs?`<button class="btn btn-ghost btn-sm" onclick="openCSPanel('${cs.id}')">Case study</button>`:''}
+        <button class="btn btn-ghost btn-sm" onclick="pickForProposal('${j.id}')">+ Proposal</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function pickForProposal(jobId){
+  navigate('proposals');
+  setTimeout(()=>{
+    const el = document.querySelector(`#proposal-picker [data-job="${jobId}"]`);
+    if(el){ el.classList.add('checked'); }
+  }, 80);
+}
+
+/* ════════════════════════════════════════════════════
+   PROPOSALS
+════════════════════════════════════════════════════ */
+function renderPropPicker(){
+  const jobs = getJobs();
+  const el   = document.getElementById('proposal-picker');
+  if(!el) return;
+  if(!jobs.length){
+    el.innerHTML = '<p style="font-size:12px;color:var(--text-dim)">No jobs logged yet. <button onclick="navigate(\'jobs\')" class="btn btn-ghost btn-sm" style="margin-left:4px">Log a job →</button></p>';
+    return;
+  }
+  el.innerHTML = `<div class="check-group">${
+    jobs.map(j=>`<div class="check-item" data-job="${j.id}" onclick="this.classList.toggle('checked')">${SECTOR_ICON[j.sector]||'🔧'} ${esc(j.title)}</div>`).join('')
+  }</div>`;
+}
+
+function renderPropList(){
+  const all  = getProposals();
+  const list = document.getElementById('proposals-list');
+  if(!list) return;
+  if(!all.length){ list.innerHTML='<p style="font-size:12px;color:var(--text-dim)">No proposals saved yet.</p>'; return; }
+  list.innerHTML = all.map(p=>`
+    <div class="item-card">
+      <div class="item-icon">📝</div>
+      <div class="item-body">
+        <div class="item-title">${esc(p.clientName||'Untitled')}</div>
+        <div class="item-meta"><span>${esc(p.projectType||'')}</span><span>${fmtD(new Date(p.created_at).toISOString().split('T')[0])}</span></div>
+      </div>
+      <div class="item-actions">
+        <button class="btn btn-ghost btn-sm" onclick="loadProp('${p.id}')">View</button>
+        <button class="btn btn-danger-ghost btn-sm" onclick="deleteProp('${p.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+async function generateProposal(){
+  const selected = [];
+  document.querySelectorAll('#proposal-picker .check-item.checked').forEach(el=>selected.push(el.dataset.job));
+  if(!selected.length){ toast('Select at least one job','warn'); return; }
+  const client = document.getElementById('prop-client').value.trim();
+  if(!client){ toast('Enter the client name','warn'); return; }
+  const type = document.getElementById('prop-type').value;
+  const reqs = document.getElementById('prop-reqs').value.trim();
+  const jobs = getJobs().filter(j=>selected.includes(j.id));
+  const cases = jobs.map(j=>`• ${j.title} — ${SECTOR_LABELS[j.sector]||j.sector}, ${j.location||'UAE'}, ${j.duration||''} ${j.teamSize?`, ${j.teamSize} people`:''}. ${j.highlights||''}`).join('\n');
+  const btn = document.getElementById('prop-gen-btn');
+  btn.disabled=true; btn.textContent='✨ Generating…';
+  try{
+    const data = await claudeFetch({
+      model:AI_MODEL, max_tokens:1200,
+      system:'You are a professional proposal writer for Al Laith Group. Write confident, evidence-led capability proposals for UAE B2B clients. Specific over vague. Every sentence earns its place.',
+      messages:[{role:'user',content:`Write a client capability proposal.
+
+Client: ${client}
+Project type: ${type||'Equipment Rental / Scaffolding / Events'}
+Their requirements: ${reqs||'Not specified'}
+
+Relevant past work to reference:
+${cases}
+
+Structure:
+1. Opening paragraph — who Al Laith is and why we're right for this scope
+2. Relevant Experience — reference the specific past jobs above, with real figures
+3. What We Deliver — specific to their project type and stated requirements
+4. Why Al Laith — 3-4 evidence-based differentiators (not generic claims)
+5. Next Steps — clear, simple call to action
+
+Tone: direct, professional, evidence-first. No generic marketing language.`}]
+    });
+    document.getElementById('prop-text').value = data.content?.[0]?.text||'';
+    document.getElementById('prop-output-wrap').style.display = 'block';
+    toast('Proposal generated','success');
+    document.getElementById('prop-output-wrap').scrollIntoView({behavior:'smooth'});
+  }catch(e){
+    toast(e.noKey?'⚙️ Add your API key in Settings':'Error: '+e.message,'warn');
+  }finally{
+    btn.disabled=false; btn.textContent='✨ Generate Proposal';
+  }
+}
+
+function copyProp(){ navigator.clipboard.writeText(document.getElementById('prop-text').value||'').then(()=>toast('Copied!','success')); }
+
+function saveProp(){
+  const content = document.getElementById('prop-text').value;
+  if(!content){ toast('Generate a proposal first','warn'); return; }
+  upsert(KEYS.proposals, {
+    id: uid(),
+    clientName:  document.getElementById('prop-client').value.trim()||'Unnamed',
+    projectType: document.getElementById('prop-type').value,
+    content,
+    created_at: Date.now()
+  });
+  renderPropList(); updateBadges();
+  toast('Proposal saved','success');
+}
+
+function loadProp(id){
+  const p = getProposals().find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('prop-client').value = p.clientName||'';
+  document.getElementById('prop-type').value   = p.projectType||'';
+  document.getElementById('prop-text').value   = p.content||'';
+  document.getElementById('prop-output-wrap').style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function deleteProp(id){
+  if(!confirm('Delete this proposal?')) return;
+  lsS(KEYS.proposals, getProposals().filter(p=>p.id!==id));
+  renderPropList(); updateBadges();
+  toast('Deleted','info');
+}
+
+/* ════════════════════════════════════════════════════
+   SETTINGS
+════════════════════════════════════════════════════ */
+function saveApiKey(){
+  const v = document.getElementById('api-key-input')?.value?.trim();
+  if(!v){ toast('Enter a key','warn'); return; }
+  localStorage.setItem(KEYS.apiKey, v);
+  renderSettings(); toast('API key saved','success');
+}
+function clearApiKey(){
+  localStorage.removeItem(KEYS.apiKey);
+  const i = document.getElementById('api-key-input'); if(i) i.value='';
+  renderSettings(); toast('API key cleared','info');
+}
+function renderSettings(){
+  const status = document.getElementById('settings-status');
+  if(!status) return;
+  const inp = document.getElementById('api-key-input');
+  if(inp && getApiKey()) inp.value = getApiKey();
+  const onVercel = window.location.protocol==='https:';
+  const hasKey   = !!getApiKey();
+  if(onVercel){
+    status.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:10px;font-size:13px;color:var(--success)"><span>✅</span><div><strong>Running on Vercel</strong> — AI active via server proxy. No key needed.</div></div>`;
+    document.getElementById('settings-local').style.display='none';
+  } else if(hasKey){
+    status.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:10px;font-size:13px;color:var(--success)"><span>✅</span><strong>API key set — AI features active.</strong></div>`;
+  } else {
+    status.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;font-size:13px;color:var(--warn)"><span>⚠️</span><div><strong>No API key.</strong> Enter below to activate AI features.</div></div>`;
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   BADGES
+════════════════════════════════════════════════════ */
+function updateBadges(){
+  const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  set('nb-jobs',      getJobs().length);
+  set('nb-cs',        getCS().length);
+  set('nb-events',    getEvents().length);
+  set('nb-proposals', getProposals().length);
+}
+
+/* ════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════ */
+// Conditions toggle
+document.querySelectorAll('#conditions-group .check-item').forEach(el=>{
+  el.addEventListener('click', ()=>el.classList.toggle('checked'));
+});
+
+renderJobs();
+updateBadges();
+renderSettings();
+</script>
+</body>
+</html>
